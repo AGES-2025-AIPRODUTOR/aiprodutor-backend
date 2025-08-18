@@ -1,0 +1,26 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: aiprodutor-db
+    restart: always
+    ports:
+      - "5433:5432" # Mantendo a porta 5433 na sua máquina
+    environment:
+      POSTGRES_USER: devuser
+      POSTGRES_PASSWORD: devpassword
+      POSTGRES_DB: aiprodutor
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    container_name: aiprodutor-api
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://devuser:devpassword@postgres:5432/aiprodutor"
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
