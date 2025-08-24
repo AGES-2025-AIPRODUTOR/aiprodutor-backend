@@ -1,19 +1,18 @@
 // src/app.module.ts
+
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { PrismaModule } from './shared/prisma/prisma.module';
+import { ProducersModule } from './producers/producers.module';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { PropertiesModule } from './properties/properties.module';
-
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true, // Torna as variáveis de ambiente disponíveis em todo o app
-    }),
-    PropertiesModule,
+    ConfigModule.forRoot({ isGlobal: true }),
+    PrismaModule,
+    ProducersModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [],
 })
 export class AppModule {}

@@ -1,8 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// prisma/schema.prisma
 
 generator client {
   provider = "prisma-client-js"
@@ -13,4 +9,142 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-  
+
+// ---------------------
+// Modelos Principais
+// ---------------------
+
+model Producer {
+  id        Int      @id @default(autoincrement())
+  name      String
+  document  String   @unique // CPF ou CNPJ
+  phone     String
+  email     String   @unique
+  zipCode   String
+  city      String
+  street    String
+  number    String
+  complement String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  areas     Area[]
+  harvests  Harvest[]
+
+  @@map("producers")
+}
+
+model Area {
+  id               Int      @id @default(autoincrement())
+  name             String
+  polygon          Unsupported("geometry") // Para usar o tipo Geometry do PostGIS
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  producer         Producer @relation(fields: [producerId], references: [id])
+  producerId       Int
+
+  soilType         SoilType @relation(fields: [soilTypeId], references: [id])
+  soilTypeId       Int
+
+  irrigationType   IrrigationType @relation(fields: [irrigationTypeId], references: [id])
+  irrigationTypeId Int
+
+  plantings        Planting[]
+
+  @@map("areas")
+}
+
+model Harvest {
+  id        Int      @id @default(autoincrement())
+  name      String
+  startDate DateTime
+  endDate   DateTime
+  status    String
+  cycle     String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  producer   Producer @relation(fields: [producerId], references: [id])
+  producerId Int
+
+  plantings  Planting[]
+
+  @@map("harvests")
+}
+
+model Planting {
+  id                Int       @id @default(autoincrement())
+  plantingDate      DateTime
+  harvestForecast   DateTime
+  harvestDate       DateTime?
+  quantityPlanted   Decimal
+  quantityHarvested  Decimal?
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  area              Area      @relation(fields: [areaId], references: [id])
+  areaId            Int
+
+  harvest           Harvest   @relation(fields: [harvestId], references: [id])
+  harvestId         Int
+
+  product           Product   @relation(fields: [productId], references: [id])
+  productId         Int
+
+  variety           Variety   @relation(fields: [varietyId], references: [id])
+  varietyId         Int
+
+  @@map("plantings")
+}
+
+
+// ---------------------
+// Modelos Auxiliares (Catálogos)
+// ---------------------
+
+model SoilType {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+
+  areas       Area[]
+
+  @@map("soil_types")
+}
+
+model IrrigationType {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+
+  areas       Area[]
+
+  @@map("irrigation_types")
+}
+
+model Product {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+
+  varieties Variety[]
+  plantings Planting[]
+
+  @@map("products")
+}
+
+model Variety {
+  id        Int       @id @default(autoincrement())
+  name      String
+
+  product   Product   @relation(fields: [productId], references: [id])
+  productId Int
+
+  plantings Planting[]
+
+  @@map("varieties")
+}

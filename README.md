@@ -2,36 +2,38 @@
 
 > API RESTful para o sistema de cadastro e gestão de produtores de hortifrúti, desenvolvido para a disciplina de AGES.
 
-Este projeto contém todo o código relacionado ao servidor e à lógica de negócios da aplicação. Ele é construído com NestJS, se conecta a um banco de dados PostgreSQL via Prisma e fornece uma API documentada com Swagger para ser consumida pelo [aiprodutor-frontend](https://tools.ages.pucrs.br/ai-produtor-sistema-de-cadastro-e-gestao-de-produtores-de-hortifrutie/aiprodutor-frontend.git).
+Este projeto contém todo o código relacionado ao servidor e à lógica de negócios da aplicação. Ele é construído com NestJS, se conecta a um banco de dados PostgreSQL com PostGIS via Prisma e fornece uma API documentada com Swagger para ser consumida pelo [aiprodutor-frontend](https://tools.ages.pucrs.br/ai-produtor-sistema-de-cadastro-e-gestao-de-produtores-de-hortifrutie/aiprodutor-frontend.git).
 
 ## ✨ Funcionalidades
 
+- Arquitetura Modular e escalável.
 - Validação automática dos dados de entrada (DTOs).
 - Documentação interativa e automática de todos os endpoints com Swagger.
 - Gerenciamento de configuração através de variáveis de ambiente.
+- Suporte a dados geoespaciais com PostGIS.
 
 ## 🛠️ Tecnologias Utilizadas
 
 - **Framework:** [NestJS](https://nestjs.com/)
 - **Linguagem:** [TypeScript](https://www.typescriptlang.org/)
 - **ORM:** [Prisma](https://www.prisma.io/)
-- **Banco de Dados:** [PostgreSQL](https://www.postgresql.org/)
+- **Banco de Dados:** [PostgreSQL](https://www.postgresql.org/) + [PostGIS](https://postgis.net/)
+- **Containerização:** [Docker](https://www.docker.com/)
 - **Validação:** [class-validator](https://github.com/typestack/class-validator), [class-transformer](https://github.com/typestack/class-transformer)
 - **Documentação:** [Swagger (OpenAPI)](https://swagger.io/)
 - **Qualidade de Código:** [ESLint](https://eslint.org/) e [Prettier](https://prettier.io/)
 
 ## 🚀 Começando
 
-Siga os passos abaixo para configurar e rodar o projeto em seu ambiente de desenvolvimento local.
+Siga os passos abaixo para configurar e rodar o projeto. A aplicação inteira (API e Banco de Dados) é orquestrada com Docker, garantindo um ambiente consistente para todos os desenvolvedores.
 
 ### Pré-requisitos
 
-- [Node.js](https://nodejs.org/) (versão LTS, ex: 20.x ou superior)
-- [npm](https://www.npmjs.com/)
 - [Git](https://git-scm.com/)
-- [Docker](https://www.docker.com/products/docker-desktop/)
+- [Docker](https://www.docker.com/products/docker-desktop/) e Docker Compose
+- [Node.js](https://nodejs.org/) e [npm](https://www.npmjs.com/) → Fortemente recomendados para executar comandos do Prisma localmente e para a integração com o VS Code (TypeScript/ESLint).
 
-### Instalação (Feita apenas uma vez)
+### Instalação e Primeira Execução (Feito apenas uma vez)
 
 1.  **Clone o repositório:**
     ```bash
@@ -40,39 +42,42 @@ Siga os passos abaixo para configurar e rodar o projeto em seu ambiente de desen
     ```
 
 2.  **Configure as Variáveis de Ambiente:**
-    Copie o arquivo de exemplo `.env.example` para um novo arquivo chamado `.env`.
+    Copie o arquivo de exemplo `.env.example` para um novo arquivo chamado `.env`. O arquivo já vem pré-configurado para o ambiente Docker.
     ```bash
     cp .env.example .env
     ```
 
-3.  **Instale as dependências:**
+3.  **Construa e Inicie os Containers:**
+    Este comando irá construir a imagem da API (instalando as dependências do `npm` dentro dela) e iniciar os containers do backend e do banco de dados em segundo plano.
     ```bash
-    npm install
+    docker compose up -d --build
     ```
+    *É normal que o container da API (`aiprodutor-api`) pare ou reinicie na primeira vez, pois o banco de dados ainda não foi configurado com as tabelas.*
 
-4.  **Inicie o Banco de Dados com Docker:**
-    Este comando irá criar e iniciar um container PostgreSQL em segundo plano.
-    ```bash
-    docker compose up -d
-    ```
-
-5.  **Aplique as Migrações do Banco de Dados:**
-    Este comando irá ler o `schema.prisma` e criar as tabelas no seu banco de dados Docker.
+4.  **Aplique as Migrações do Banco de Dados:**
+    Este comando irá criar as tabelas no seu banco de dados que está rodando no Docker.
     ```bash
     npx prisma migrate dev
+    ```
+    *Se for a primeira vez ou se precisar recomeçar do zero, o comando `npx prisma migrate reset` é uma opção mais segura.*
+
+5.  **Reinicie o Container da API (se necessário):**
+    Após a migração, a API já deve se reconectar automaticamente. Se não, reinicie-a:
+    ```bash
+    docker compose restart backend
     ```
 
 ### Como Rodar a Aplicação no Dia a Dia
 
-Com a instalação concluída, o processo para trabalhar no projeto é muito simples.
-
-1.  **Suba toda a stack (API + Banco de Dados) com Docker:**
+1.  **Inicie os containers:**
+    Na raiz do projeto, execute:
     ```bash
     docker compose up
     ```
-    *Este comando irá iniciar o container do banco de dados e o container da API. Você verá os logs de ambos os serviços neste terminal.*
+    *Este comando irá iniciar o container do banco de dados e o da API. Você verá os logs de ambos os serviços neste terminal. As alterações no código-fonte na sua máquina serão refletidas automaticamente dentro do container.*
 
 2.  A API estará disponível em [http://localhost:3000](http://localhost:3000).
+3.  A documentação interativa da API (Swagger) estará em [http://localhost:3000/api-docs](http://localhost:3000/api-docs).
 
 ### 🛑 Parando a Aplicação
 
