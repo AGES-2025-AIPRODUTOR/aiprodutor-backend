@@ -79,8 +79,49 @@ Siga os passos abaixo para configurar e rodar o projeto. A aplicação inteira (
 2.  A API estará disponível em [http://localhost:3000](http://localhost:3000).
 3.  A documentação interativa da API (Swagger) estará em [http://localhost:3000/api-docs](http://localhost:3000/api-docs).
 
+---
+
+### 💡 Rodando em modo desenvolvimento com auto-reload (sem Docker para a API)
+
+Se você deseja desenvolver com atualização automática do código (hot-reload) e maior agilidade, pode rodar apenas o banco de dados via Docker e executar a API localmente:
+
+1. **Suba apenas o banco de dados com Docker:**
+   ```bash
+   docker compose up -d postgres
+   ```
+
+2. **Execute a API em modo desenvolvimento na sua máquina:**
+   ```bash
+   npm run start:dev
+   ```
+   *Assim, qualquer alteração feita no código será refletida automaticamente, sem precisar reconstruir o container.*
+
+3. **Certifique-se de que as variáveis de ambiente (`.env`) estejam corretas e apontando para o banco de dados rodando no Docker (exemplo: `localhost:5433`).*
+
+---
+
 ### 🛑 Parando a Aplicação
 
 Para parar todos os containers (API e Banco de Dados), pressione `Ctrl + C` no terminal onde o `docker compose up` está rodando, ou em outro terminal execute:
 ```bash
 docker compose down
+```
+
+## 🔄 Resetando o Banco de Dados
+
+Se você precisar **resetar o banco de dados** (por exemplo, para limpar todos os dados e recriar as tabelas do zero durante o desenvolvimento ou testes), utilize o comando:
+
+```bash
+npx prisma migrate reset
+```
+
+Esse comando irá:
+- Apagar todas as tabelas e dados do banco,
+- Reaplicar todas as migrações existentes,
+- (Opcionalmente) executar o script de seed, se houver.
+
+**Por que isso é útil?**
+- Permite começar do zero rapidamente, útil para testes automatizados, desenvolvimento de novas funcionalidades ou correção de problemas de estrutura.
+- Garante que o banco está alinhado com o estado atual do seu modelo Prisma.
+
+> **Atenção:** Use apenas em ambientes de desenvolvimento ou testes, pois todos os dados serão perdidos!

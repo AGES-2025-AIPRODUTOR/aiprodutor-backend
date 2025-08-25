@@ -1,5 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Matches,
+  Length,
+  IsInt,
+  Min,
+  IsNumberString,
+} from 'class-validator';
 
 export class CreateProducerDto {
   @ApiProperty({
@@ -11,19 +21,25 @@ export class CreateProducerDto {
   name: string;
 
   @ApiProperty({
-    description: 'O CPF ou CNPJ do produtor (sem formatação).',
+    description: 'O CPF ou CNPJ do produtor (somente números, sem formatação).',
     example: '12345678901',
   })
   @IsString()
   @IsNotEmpty()
+  @Matches(/^(\d{11}|\d{14})$/, {
+    message: 'document deve ser um CPF (11 dígitos) ou CNPJ (14 dígitos) válido, somente números.',
+  })
   document: string;
 
   @ApiProperty({
-    description: 'Telefone de contato do produtor.',
+    description: 'Telefone de contato do produtor (somente números).',
     example: '51999998888',
   })
   @IsString()
   @IsNotEmpty()
+  @Matches(/^\d{10,11}$/, {
+    message: 'phone deve conter 10 ou 11 dígitos, somente números.',
+  })
   phone: string;
 
   @ApiProperty({
@@ -35,11 +51,14 @@ export class CreateProducerDto {
   email: string;
 
   @ApiProperty({
-    description: 'CEP do endereço do produtor.',
+    description: 'CEP do endereço do produtor (8 dígitos, somente números).',
     example: '90619900',
   })
   @IsString()
   @IsNotEmpty()
+  @Matches(/^\d{8}$/, {
+    message: 'zipCode deve conter exatamente 8 dígitos, somente números.',
+  })
   zipCode: string;
 
   @ApiProperty({
@@ -64,6 +83,7 @@ export class CreateProducerDto {
   })
   @IsString()
   @IsNotEmpty()
+  @Matches(/^\d+$/, { message: 'number deve conter apenas dígitos.' })
   number: string;
 
   @ApiProperty({
