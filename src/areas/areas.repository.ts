@@ -14,14 +14,14 @@ export class AreasRepository {
     const result = await this.prisma.$queryRawUnsafe(
       `
       INSERT INTO areas
-        (name, polygon, status, "producerId", "soilTypeId", "irrigationTypeId", "createdAt", "updatedAt")
+        (name, polygon, ativo, "producerId", "soilTypeId", "irrigationTypeId", "createdAt", "updatedAt")
       VALUES
         ($1, ST_GeomFromGeoJSON($2), $3, $4, $5, $6, NOW(), NOW())
-      RETURNING id, name, status, "producerId", "soilTypeId", "irrigationTypeId", "createdAt", ST_AsGeoJSON(polygon) AS polygon;
+      RETURNING id, name, ativo, "producerId", "soilTypeId", "irrigationTypeId", "createdAt", ST_AsGeoJSON(polygon) AS polygon;
       `,
       name,
       geojsonString,
-      'ativo',
+      true,
       producerId,
       soilTypeId,
       irrigationTypeId
@@ -31,5 +31,16 @@ export class AreasRepository {
       ...row,
       polygon: row && row.polygon ? JSON.parse(row.polygon) : undefined,
     };
+  }
+
+  async findById(id: number): Promise<any | null> {
+    return this.prisma.area.findUnique({ where: { id } });
+  }
+
+  async updateStatus(id: number, ativo: boolean): Promise<any> {
+    return this.prisma.area.update({
+      where: { id },
+      data: { ativo: ativo, updatedAt: new Date() },
+    });
   }
 }

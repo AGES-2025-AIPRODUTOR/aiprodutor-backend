@@ -5,6 +5,7 @@ import { ProducersRepository } from '../producers/producers.repository';
 import { SoilTypesRepository } from '../soil-types/soil-types.repository';
 import { IrrigationTypesRepository } from '../irrigation-types/irrigation-types.repository';
 import { AreaRequestDto } from './dto/area-request.dto';
+import { UpdateAreaStatusDto } from './dto/update-area-status.dto';
 
 @Injectable()
 export class AreasService {
@@ -34,5 +35,21 @@ export class AreasService {
     }
 
     return this.repository.create(areaRequestDto);
+  }
+
+  async updateStatus(id: number, dto: UpdateAreaStatusDto): Promise<any> {
+    // Busca área
+    const area = await this.repository.findById(id);
+    if (!area) {
+      throw new NotFoundException('Área não encontrada');
+    }
+    // status atual
+    const ativoAtual = area.ativo === true;
+    // idempotência: se já está no status desejado, retorna sem alterar
+    if (ativoAtual === dto.ativo) {
+      return area;
+    }
+    // Atualiza ativo
+    return this.repository.updateStatus(id, dto.ativo);
   }
 }

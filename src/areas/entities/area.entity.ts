@@ -19,8 +19,8 @@ export class Area {
   @ApiProperty({ description: 'Data de criação', example: '2025-08-25T12:00:00Z' })
   createdAt: Date;
 
-  @ApiProperty({ description: 'Status da área', example: 'ativo' })
-  status: string;
+  @ApiProperty({ description: 'Área está ativa?', example: true })
+  ativo: boolean;
 
   @ApiProperty({ description: 'Data de atualização', example: '2025-08-25T12:00:00Z' })
   updatedAt: Date;
