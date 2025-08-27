@@ -39,6 +39,7 @@ model Area {
   id               Int      @id @default(autoincrement())
   name             String
   polygon          Unsupported("geometry") // Para usar o tipo Geometry do PostGIS
+  ativo            Boolean  @default(true)
 
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
