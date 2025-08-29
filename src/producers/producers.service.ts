@@ -52,4 +52,13 @@ export class ProducersService {
     await this.findOne(id);
     return this.repository.remove(id);
   }
+
+  async findDocument(document: string) {
+    const producer = await this.repository.findByDocument(document);
+    if (!producer) {
+      throw new NotFoundException(`Produtor com o CPF/ CNPJ #${document} não encontrado.`);
+    }
+    return producer;
+  }
+
 }
