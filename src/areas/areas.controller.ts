@@ -1,8 +1,9 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, Patch, Param, ParseIntPipe } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post, Patch, Param, ParseIntPipe, NotFoundException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam } from '@nestjs/swagger';
 import { AreasService } from './areas.service';
 import { AreaRequestDto } from './dto/area-request.dto';
 import { UpdateAreaStatusDto } from './dto/update-area-status.dto';
+import { UpdateAreaDto } from './dto/update-area.dto';
 
 @ApiTags('Áreas')
 @Controller('areas')
@@ -32,5 +33,27 @@ export class AreasController {
     @Body() updateAreaStatusDto: UpdateAreaStatusDto,
   ) {
     return await this.areasService.updateStatus(id, updateAreaStatusDto);
+  }
+
+  @Patch(':id')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Edita uma área de plantio' })
+  @ApiParam({ name: 'id', type: Number, description: 'ID da área' })
+  @ApiBody({ type: UpdateAreaDto })
+  @ApiResponse({ status: 200, description: 'Área atualizada com sucesso.' })
+  @ApiResponse({ status: 404, description: 'Área não encontrada.' })
+  @ApiResponse({ status: 422, description: 'Payload inválido.' })
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateAreaDto: UpdateAreaDto,
+  ) {
+    try {
+      return await this.areasService.update(id, updateAreaDto);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw new NotFoundException(error.message);
+      }
+      throw error;
+    }
   }
 }
