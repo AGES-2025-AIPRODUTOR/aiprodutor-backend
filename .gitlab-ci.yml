@@ -1,0 +1,111 @@
+# Define os estágios (fases) da pipeline. Eles rodam em sequência.
+stages:
+  - setup
+  - test
+  - build
+
+# Inclui o template de SAST (Static Application Security Testing) gerenciado pelo GitLab.
+# Isso adicionará automaticamente um job de segurança à sua pipeline no estágio 'test'.
+include:
+  - template: Security/SAST.gitlab-ci.yml
+
+# Variáveis globais para manter a consistência das versões de imagem.
+variables:
+  NODE_IMAGE: node:20.11.1-alpine
+  DOCKER_IMAGE: docker:20.10.24
+
+# Otimização: Guarda a pasta node_modules para acelerar jobs futuros.
+# O cache é compartilhado entre todos os jobs que usam a mesma chave.
+cache:
+  key:
+    files:
+      - package-lock.json
+  paths:
+    - node_modules/
+
+# --- ESTÁGIO 1: SETUP ---
+# Este job instala as dependências uma vez para toda a pipeline.
+install_dependencies:
+  stage: setup
+  image: $NODE_IMAGE
+  script:
+    - echo "Instalando dependências do Node.js..."
+    - npm install
+  # Salva a pasta node_modules para ser usada pelos jobs no estágio 'test'.
+  artifacts:
+    paths:
+      - node_modules/
+    expire_in: 1 hour # O artefato não precisa ser guardado por muito tempo.
+  # REGRA: Roda apenas em Merge Requests para a branch 'developer'.
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "developer"'
+
+# --- ESTÁGIO 2: TESTE E VALIDAÇÃO ---
+# Todos os jobs neste estágio rodam em paralelo para economizar tempo.
+
+# Job para verificar a qualidade e o estilo do código.
+run_lint:
+  stage: test
+  image: $NODE_IMAGE
+  needs: [install_dependencies] # Precisa das dependências instaladas.
+  script:
+    - echo "Verificando a qualidade do código com ESLint..."
+    - npm run lint
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "developer"'
+
+# Job para verificar vulnerabilidades conhecidas nas dependências.
+run_security_audit:
+  stage: test
+  image: $NODE_IMAGE
+  needs: [install_dependencies]
+  script:
+    - echo "Verificando vulnerabilidades nas dependências com NPM Audit..."
+    - npm audit
+  # Importante: Permite que este job falhe sem parar a pipeline inteira.
+  # Útil porque o npm audit pode encontrar vulnerabilidades de baixo risco que não são críticas.
+  allow_failure: true
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "developer"'
+
+# Job para rodar os testes unitários com Jest e calcular a cobertura.
+run_unit_tests:
+  stage: test
+  image: $NODE_IMAGE
+  needs: [install_dependencies]
+  script:
+    - echo "Rodando testes unitários e gerando relatório de cobertura..."
+    - npm run test:cov
+  # Lê a saída do Jest e exibe a porcentagem de cobertura no Merge Request.
+  coverage: /All files\s*\|\s*(\d+.\d+)/
+  # Salva o relatório HTML completo da cobertura para que você possa visualizá-lo.
+  artifacts:
+    paths:
+      - coverage/
+    when: on_success
+    expire_in: 1 week
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "developer"'
+
+# O job de SAST (incluído no topo) roda por padrão no estágio 'test'.
+# Apenas precisamos adicionar a regra para ele.
+sast:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "developer"'
+
+# --- ESTÁGIO 3: BUILD ---
+# Este job verifica se a aplicação pode ser empacotada em uma imagem Docker.
+docker_build_test:
+  stage: build
+  image: $DOCKER_IMAGE
+  services:
+    - name: $DOCKER_IMAGE
+      alias: docker
+      command: ["dind"]
+  script:
+    - echo "Testando o build da imagem Docker..."
+    # Apenas constrói a imagem para garantir que não há erros. Não envia para nenhum lugar.
+    - docker build -t aiprodutor-backend-test:$CI_COMMIT_SHA .
+    - echo "Build da imagem Docker concluído com sucesso."
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "developer"'
