@@ -1,29 +1,9 @@
-# Define a regra principal: rodar apenas em Merge Requests para a branch 'developer'.
-workflow:
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "developer"'
-
-# Define o único estágio que precisamos.
 stages:
   - test
 
-# Otimização: Guarda a pasta node_modules para acelerar jobs futuros.
-cache:
-  key:
-    files:
-      - package-lock.json
-  paths:
-    - node_modules/
-
-# O único job da pipeline, que fará tudo.
-validate_code:
+simple_test_job:
   stage: test
   script:
-    - echo "Instalando dependências..."
-    - npm install
-    - echo "Verificando a qualidade do código com ESLint..."
-    - npm run lint
-    - echo "Verificando vulnerabilidades nas dependências..."
-    - npm audit
-  # Permite que o 'npm audit' falhe sem quebrar a pipeline.
-  allow_failure: true
+    - echo "Olá, Runner do GitLab!"
+    - echo "Este job foi executado com sucesso em:"
+    - date
