@@ -5,7 +5,7 @@ stages:
   - build
 
 # Inclui o template de SAST (Static Application Security Testing) gerenciado pelo GitLab.
-# Isso adicionará automaticamente um job de segurança à sua pipeline no estágio 'test'.
+# Adiciona automaticamente um job de segurança à sua pipeline no estágio 'test'.
 include:
   - template: Security/SAST.gitlab-ci.yml
 
