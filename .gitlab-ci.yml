@@ -1,18 +1,23 @@
-# Define os estágios (fases) da pipeline. O template SAST precisa do estágio 'test'.
-stages:
-  - setup
-  - test
-  - build
+# A REGRA PRINCIPAL: Define quando a pipeline inteira deve ser executada.
+# Roda apenas em Merge Requests direcionados para a branch 'developer'.
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "developer"'
 
 # Inclui o template de SAST. Ele irá adicionar seus jobs automaticamente ao estágio 'test'.
 include:
   - template: Security/SAST.gitlab-ci.yml
 
-# A REGRA PRINCIPAL: Define quando a pipeline inteira deve ser executada.
-# Isso é mais limpo do que repetir a regra em cada job.
-workflow:
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "developer"'
+# Define os estágios (fases) da pipeline. O SAST usa o estágio 'test' por padrão.
+stages:
+  - setup
+  - test
+  - build
+
+# Variáveis globais para manter a consistência.
+variables:
+  NODE_IMAGE: node:20.11.1-alpine
+  DOCKER_IMAGE: docker:20.10.24
 
 # Otimização: Guarda a pasta node_modules para acelerar jobs futuros.
 cache:
@@ -25,9 +30,9 @@ cache:
 # --- ESTÁGIO DE CONFIGURAÇÃO ---
 install_dependencies:
   stage: setup
-  image: node:20.11.1-alpine
+  image: $NODE_IMAGE
   script:
-    - echo "Instalando dependências..."
+    - echo "Instalando dependências do Node.js..."
     - npm install
   artifacts:
     paths:
@@ -35,11 +40,11 @@ install_dependencies:
     expire_in: 1 hour
 
 # --- ESTÁGIO DE TESTE E VALIDAÇÃO ---
-# Os jobs de SAST (semgrep-sast, etc.) serão adicionados aqui automaticamente.
+# Os jobs de SAST (semgrep-sast, etc.) serão adicionados aqui automaticamente pelo 'include'.
 
 run_lint:
   stage: test
-  image: node:20.11.1-alpine
+  image: $NODE_IMAGE
   needs: [install_dependencies]
   script:
     - echo "Verificando a qualidade do código com ESLint..."
@@ -47,16 +52,16 @@ run_lint:
 
 run_security_audit:
   stage: test
-  image: node:20.11.1-alpine
+  image: $NODE_IMAGE
   needs: [install_dependencies]
   script:
     - echo "Verificando vulnerabilidades nas dependências com NPM Audit..."
     - npm audit
-  allow_failure: true # Permite falhas para não bloquear o MR por vulnerabilidades baixas.
+  allow_failure: true
 
 run_unit_tests:
   stage: test
-  image: node:20.11.1-alpine
+  image: $NODE_IMAGE
   needs: [install_dependencies]
   script:
     - echo "Rodando testes unitários e gerando relatório de cobertura..."
@@ -71,9 +76,9 @@ run_unit_tests:
 # --- ESTÁGIO DE BUILD ---
 docker_build_test:
   stage: build
-  image: docker:20.10.24
+  image: $DOCKER_IMAGE
   services:
-    - name: docker:20.10.24
+    - name: $DOCKER_IMAGE
       alias: docker
       command: ["dind"]
   script:
