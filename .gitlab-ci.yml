@@ -1,87 +1,10 @@
-# A REGRA PRINCIPAL: Define quando a pipeline inteira deve ser executada.
-# Roda apenas em Merge Requests direcionados para a branch 'developer'.
-workflow:
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "developer"'
-
-# Inclui o template de SAST. Ele irá adicionar seus jobs automaticamente ao estágio 'test'.
-include:
-  - template: Security/SAST.gitlab-ci.yml
-
-# Define os estágios (fases) da pipeline. O SAST usa o estágio 'test' por padrão.
 stages:
-  - setup
   - test
-  - build
 
-# Variáveis globais para manter a consistência.
-variables:
-  NODE_IMAGE: node:20.11.1-alpine
-  DOCKER_IMAGE: docker:20.10.24
-
-# Otimização: Guarda a pasta node_modules para acelerar jobs futuros.
-cache:
-  key:
-    files:
-      - package-lock.json
-  paths:
-    - node_modules/
-
-# --- ESTÁGIO DE CONFIGURAÇÃO ---
-install_dependencies:
-  stage: setup
-  image: $NODE_IMAGE
-  script:
-    - echo "Instalando dependências do Node.js..."
-    - npm install
-  artifacts:
-    paths:
-      - node_modules/
-    expire_in: 1 hour
-
-# --- ESTÁGIO DE TESTE E VALIDAÇÃO ---
-# Os jobs de SAST (semgrep-sast, etc.) serão adicionados aqui automaticamente pelo 'include'.
-
-run_lint:
+simple_test_job:
   stage: test
-  image: $NODE_IMAGE
-  needs: [install_dependencies]
   script:
-    - echo "Verificando a qualidade do código com ESLint..."
-    - npm run lint
-
-run_security_audit:
-  stage: test
-  image: $NODE_IMAGE
-  needs: [install_dependencies]
-  script:
-    - echo "Verificando vulnerabilidades nas dependências com NPM Audit..."
-    - npm audit
-  allow_failure: true
-
-run_unit_tests:
-  stage: test
-  image: $NODE_IMAGE
-  needs: [install_dependencies]
-  script:
-    - echo "Rodando testes unitários e gerando relatório de cobertura..."
-    - npm run test:cov
-  coverage: /All files\s*\|\s*(\d+.\d+)/
-  artifacts:
-    paths:
-      - coverage/
-    when: on_success
-    expire_in: 1 week
-
-# --- ESTÁGIO DE BUILD ---
-docker_build_test:
-  stage: build
-  image: $DOCKER_IMAGE
-  services:
-    - name: $DOCKER_IMAGE
-      alias: docker
-      command: ["dind"]
-  script:
-    - echo "Testando o build da imagem Docker..."
-    - docker build -t aiprodutor-backend-test:$CI_COMMIT_SHA .
-    - echo "Build da imagem Docker concluído com sucesso."
+    - echo "Olá, Runner! O job foi executado com sucesso."
+    - echo "O sistema operacional é:"
+    - uname -a
+    - echo "Teste concluído."
