@@ -33,7 +33,6 @@ export class ProducersController {
   @ApiOperation({ summary: 'Lista todos os produtores ou busca por cpf'})
   @ApiResponse({ status: 404, description: 'Produtor não encontrado.'})
   @ApiResponse({ status: 400, description: 'Formato incorreto.'})
-  @ApiQuery({ name: 'cpf_cnpj', required: false, type: String, description: 'CPF ou CNPJ do produtor (opcional)'})
   findAllOrByDocument(@Query() findDocumentoProducerDto?: FindDocumentoProducerDto) {
     return this.producersService.findAllOrByDocument(findDocumentoProducerDto?.document);
   }
