@@ -29,6 +29,13 @@ export class ProducersService {
     return this.repository.create(createProducerDto);
   }
 
+  async findAllOrByDocument(cpfCnpj?: string) {
+    if(cpfCnpj) {
+      return this.findDocument(cpfCnpj);
+    }
+    return this.findAll();
+  }
+
   async findAll() {
     return this.repository.findAll();
   }
