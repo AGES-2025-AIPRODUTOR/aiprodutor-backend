@@ -37,10 +37,11 @@ model Producer {
 
 model Area {
   id               Int      @id @default(autoincrement())
-  name             String
-  polygon          Unsupported("geometry") // Para usar o tipo Geometry do PostGIS
+  nome             String
+  poligono_geo     Unsupported("geometry") // PostGIS geometry
 
-  createdAt        DateTime @default(now())
+  ativo            Boolean  @default(true)
+  criado_em        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
   producer         Producer @relation(fields: [producerId], references: [id])
@@ -57,6 +58,7 @@ model Area {
   @@map("areas")
 }
 
+  
 model Harvest {
   id        Int      @id @default(autoincrement())
   name      String
