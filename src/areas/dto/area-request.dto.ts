@@ -32,13 +32,15 @@ export class AreaRequestDto {
           [-51.92528, -14.235005],
           [-51.92529, -14.235005],
           [-51.92529, -14.235004],
-          [-51.92528, -14.235004]
+          [-51.92528, -14.235004],
         ],
       ],
     },
     description: 'Polígono GeoJSON representando a área',
   })
   @IsNotEmpty()
-  @IsGeoJSONPolygon({ message: 'O campo polygon deve ser um GeoJSON Polygon válido.' })
+  @IsGeoJSONPolygon({
+    message: 'O campo polygon deve ser um GeoJSON Polygon válido.',
+  })
   polygon: Record<string, any>;
 }

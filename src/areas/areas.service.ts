@@ -30,9 +30,8 @@ export class AreasService {
       throw new NotFoundException('Tipo de solo não encontrado');
     }
     // Verifica se o tipo de irrigação existe
-    const irrigationType = await this.irrigationTypesRepository.findById(
-      irrigationTypeId,
-    );
+    const irrigationType =
+      await this.irrigationTypesRepository.findById(irrigationTypeId);
     if (!irrigationType) {
       throw new NotFoundException('Tipo de irrigação não encontrado');
     }

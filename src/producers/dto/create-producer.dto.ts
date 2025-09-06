@@ -27,7 +27,8 @@ export class CreateProducerDto {
   @IsString()
   @IsNotEmpty()
   @Matches(/^(\d{11}|\d{14})$/, {
-    message: 'document deve ser um CPF (11 dígitos) ou CNPJ (14 dígitos) válido, somente números.',
+    message:
+      'document deve ser um CPF (11 dígitos) ou CNPJ (14 dígitos) válido, somente números.',
   })
   document: string;
 

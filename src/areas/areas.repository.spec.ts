@@ -119,7 +119,9 @@ describe('AreasRepository', () => {
 
     it('should handle undefined polygon in result', async () => {
       const resultWithoutPolygon = { ...mockAreaResult, polygon: undefined };
-      mockPrismaService.$queryRawUnsafe.mockResolvedValue([resultWithoutPolygon]);
+      mockPrismaService.$queryRawUnsafe.mockResolvedValue([
+        resultWithoutPolygon,
+      ]);
 
       const result = await repository.create(mockAreaRequestDto);
 
@@ -131,7 +133,9 @@ describe('AreasRepository', () => {
 
     it('should handle null polygon in result', async () => {
       const resultWithNullPolygon = { ...mockAreaResult, polygon: null };
-      mockPrismaService.$queryRawUnsafe.mockResolvedValue([resultWithNullPolygon]);
+      mockPrismaService.$queryRawUnsafe.mockResolvedValue([
+        resultWithNullPolygon,
+      ]);
 
       const result = await repository.create(mockAreaRequestDto);
 
@@ -146,14 +150,21 @@ describe('AreasRepository', () => {
 
       await repository.create(mockAreaRequestDto);
 
-      const [query, ...params] = mockPrismaService.$queryRawUnsafe.mock.calls[0];
-      
+      const [query, ...params] =
+        mockPrismaService.$queryRawUnsafe.mock.calls[0];
+
       expect(query).toContain('INSERT INTO areas');
-      expect(query).toContain('(name, polygon, ativo, "producerId", "soilTypeId", "irrigationTypeId", "createdAt", "updatedAt")');
+      expect(query).toContain(
+        '(name, polygon, ativo, "producerId", "soilTypeId", "irrigationTypeId", "createdAt", "updatedAt")',
+      );
       expect(query).toContain('VALUES');
-      expect(query).toContain('($1, ST_GeomFromGeoJSON($2), $3, $4, $5, $6, NOW(), NOW())');
-      expect(query).toContain('RETURNING id, name, ativo, "producerId", "soilTypeId", "irrigationTypeId", "createdAt", ST_AsGeoJSON(polygon) AS polygon');
-      
+      expect(query).toContain(
+        '($1, ST_GeomFromGeoJSON($2), $3, $4, $5, $6, NOW(), NOW())',
+      );
+      expect(query).toContain(
+        'RETURNING id, name, ativo, "producerId", "soilTypeId", "irrigationTypeId", "createdAt", ST_AsGeoJSON(polygon) AS polygon',
+      );
+
       expect(params).toEqual([
         mockAreaRequestDto.name,
         JSON.stringify(mockAreaRequestDto.polygon),
@@ -241,7 +252,7 @@ describe('AreasRepository', () => {
 
       const updateCall = mockPrismaService.area.update.mock.calls[0][0];
       const updatedAt = updateCall.data.updatedAt;
-      
+
       expect(updatedAt).toBeInstanceOf(Date);
       expect(updatedAt.getTime()).toBeGreaterThanOrEqual(beforeCall.getTime());
       expect(updatedAt.getTime()).toBeLessThanOrEqual(afterCall.getTime());

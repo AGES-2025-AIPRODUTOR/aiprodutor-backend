@@ -7,7 +7,9 @@ jest.mock('geojson-validation', () => ({
 }));
 
 class TestDto {
-  @IsGeoJSONPolygon({ message: 'O campo polygon deve ser um GeoJSON Polygon válido.' })
+  @IsGeoJSONPolygon({
+    message: 'O campo polygon deve ser um GeoJSON Polygon válido.',
+  })
   polygon: any;
 }
 
@@ -47,19 +49,19 @@ describe('IsGeoJSONPolygon Validator', () => {
         coordinates: [
           // Exterior ring
           [
-            [-51.92600, -14.23400],
-            [-51.92600, -14.23600],
-            [-51.92400, -14.23600],
-            [-51.92400, -14.23400],
-            [-51.92600, -14.23400],
+            [-51.926, -14.234],
+            [-51.926, -14.236],
+            [-51.924, -14.236],
+            [-51.924, -14.234],
+            [-51.926, -14.234],
           ],
           // Interior ring (hole)
           [
-            [-51.92550, -14.23450],
-            [-51.92550, -14.23550],
-            [-51.92450, -14.23550],
-            [-51.92450, -14.23450],
-            [-51.92550, -14.23450],
+            [-51.9255, -14.2345],
+            [-51.9255, -14.2355],
+            [-51.9245, -14.2355],
+            [-51.9245, -14.2345],
+            [-51.9255, -14.2345],
           ],
         ],
       };
@@ -86,7 +88,9 @@ describe('IsGeoJSONPolygon Validator', () => {
 
       expect(errors).toHaveLength(1);
       expect(errors[0].property).toBe('polygon');
-      expect(errors[0].constraints?.isGeoJSONPolygon).toBe('O campo polygon deve ser um GeoJSON Polygon válido.');
+      expect(errors[0].constraints?.isGeoJSONPolygon).toBe(
+        'O campo polygon deve ser um GeoJSON Polygon válido.',
+      );
     });
 
     it('should fail validation for null value', () => {
@@ -97,7 +101,9 @@ describe('IsGeoJSONPolygon Validator', () => {
 
       expect(errors).toHaveLength(1);
       expect(errors[0].property).toBe('polygon');
-      expect(errors[0].constraints?.isGeoJSONPolygon).toBe('O campo polygon deve ser um GeoJSON Polygon válido.');
+      expect(errors[0].constraints?.isGeoJSONPolygon).toBe(
+        'O campo polygon deve ser um GeoJSON Polygon válido.',
+      );
     });
 
     it('should fail validation for undefined value', () => {
@@ -108,7 +114,9 @@ describe('IsGeoJSONPolygon Validator', () => {
 
       expect(errors).toHaveLength(1);
       expect(errors[0].property).toBe('polygon');
-      expect(errors[0].constraints?.isGeoJSONPolygon).toBe('O campo polygon deve ser um GeoJSON Polygon válido.');
+      expect(errors[0].constraints?.isGeoJSONPolygon).toBe(
+        'O campo polygon deve ser um GeoJSON Polygon válido.',
+      );
     });
 
     it('should fail validation for empty object', () => {
@@ -121,7 +129,9 @@ describe('IsGeoJSONPolygon Validator', () => {
 
       expect(errors).toHaveLength(1);
       expect(errors[0].property).toBe('polygon');
-      expect(errors[0].constraints?.isGeoJSONPolygon).toBe('O campo polygon deve ser um GeoJSON Polygon válido.');
+      expect(errors[0].constraints?.isGeoJSONPolygon).toBe(
+        'O campo polygon deve ser um GeoJSON Polygon válido.',
+      );
     });
 
     it('should fail validation for empty coordinates array', () => {
@@ -137,7 +147,9 @@ describe('IsGeoJSONPolygon Validator', () => {
 
       expect(errors).toHaveLength(1);
       expect(errors[0].property).toBe('polygon');
-      expect(errors[0].constraints?.isGeoJSONPolygon).toBe('O campo polygon deve ser um GeoJSON Polygon válido.');
+      expect(errors[0].constraints?.isGeoJSONPolygon).toBe(
+        'O campo polygon deve ser um GeoJSON Polygon válido.',
+      );
     });
 
     it('should fail validation for coordinates with empty inner array', () => {
@@ -153,7 +165,9 @@ describe('IsGeoJSONPolygon Validator', () => {
 
       expect(errors).toHaveLength(1);
       expect(errors[0].property).toBe('polygon');
-      expect(errors[0].constraints?.isGeoJSONPolygon).toBe('O campo polygon deve ser um GeoJSON Polygon válido.');
+      expect(errors[0].constraints?.isGeoJSONPolygon).toBe(
+        'O campo polygon deve ser um GeoJSON Polygon válido.',
+      );
     });
 
     it('should fail validation for polygon with invalid coordinates (incomplete)', () => {
@@ -176,7 +190,9 @@ describe('IsGeoJSONPolygon Validator', () => {
 
       expect(errors).toHaveLength(1);
       expect(errors[0].property).toBe('polygon');
-      expect(errors[0].constraints?.isGeoJSONPolygon).toBe('O campo polygon deve ser um GeoJSON Polygon válido.');
+      expect(errors[0].constraints?.isGeoJSONPolygon).toBe(
+        'O campo polygon deve ser um GeoJSON Polygon válido.',
+      );
     });
 
     it('should fail validation for polygon with unclosed ring', () => {
@@ -200,7 +216,9 @@ describe('IsGeoJSONPolygon Validator', () => {
 
       expect(errors).toHaveLength(1);
       expect(errors[0].property).toBe('polygon');
-      expect(errors[0].constraints?.isGeoJSONPolygon).toBe('O campo polygon deve ser um GeoJSON Polygon válido.');
+      expect(errors[0].constraints?.isGeoJSONPolygon).toBe(
+        'O campo polygon deve ser um GeoJSON Polygon válido.',
+      );
     });
 
     it('should fail validation for coordinates out of geographic range (longitude)', () => {
@@ -224,7 +242,9 @@ describe('IsGeoJSONPolygon Validator', () => {
 
       expect(errors).toHaveLength(1);
       expect(errors[0].property).toBe('polygon');
-      expect(errors[0].constraints?.isGeoJSONPolygon).toBe('O campo polygon deve ser um GeoJSON Polygon válido.');
+      expect(errors[0].constraints?.isGeoJSONPolygon).toBe(
+        'O campo polygon deve ser um GeoJSON Polygon válido.',
+      );
     });
 
     it('should fail validation for coordinates out of geographic range (latitude)', () => {
@@ -248,7 +268,9 @@ describe('IsGeoJSONPolygon Validator', () => {
 
       expect(errors).toHaveLength(1);
       expect(errors[0].property).toBe('polygon');
-      expect(errors[0].constraints?.isGeoJSONPolygon).toBe('O campo polygon deve ser um GeoJSON Polygon válido.');
+      expect(errors[0].constraints?.isGeoJSONPolygon).toBe(
+        'O campo polygon deve ser um GeoJSON Polygon válido.',
+      );
     });
 
     it('should fail validation for coordinates with non-numeric values', () => {
@@ -272,7 +294,9 @@ describe('IsGeoJSONPolygon Validator', () => {
 
       expect(errors).toHaveLength(1);
       expect(errors[0].property).toBe('polygon');
-      expect(errors[0].constraints?.isGeoJSONPolygon).toBe('O campo polygon deve ser um GeoJSON Polygon válido.');
+      expect(errors[0].constraints?.isGeoJSONPolygon).toBe(
+        'O campo polygon deve ser um GeoJSON Polygon válido.',
+      );
     });
 
     it('should fail validation for polygon with insufficient points', () => {
@@ -294,7 +318,9 @@ describe('IsGeoJSONPolygon Validator', () => {
 
       expect(errors).toHaveLength(1);
       expect(errors[0].property).toBe('polygon');
-      expect(errors[0].constraints?.isGeoJSONPolygon).toBe('O campo polygon deve ser um GeoJSON Polygon válido.');
+      expect(errors[0].constraints?.isGeoJSONPolygon).toBe(
+        'O campo polygon deve ser um GeoJSON Polygon válido.',
+      );
     });
 
     it('should fail validation for coordinates as string', () => {
@@ -310,7 +336,9 @@ describe('IsGeoJSONPolygon Validator', () => {
 
       expect(errors).toHaveLength(1);
       expect(errors[0].property).toBe('polygon');
-      expect(errors[0].constraints?.isGeoJSONPolygon).toBe('O campo polygon deve ser um GeoJSON Polygon válido.');
+      expect(errors[0].constraints?.isGeoJSONPolygon).toBe(
+        'O campo polygon deve ser um GeoJSON Polygon válido.',
+      );
     });
 
     it('should fail validation for lowercase type', () => {
@@ -334,7 +362,9 @@ describe('IsGeoJSONPolygon Validator', () => {
 
       expect(errors).toHaveLength(1);
       expect(errors[0].property).toBe('polygon');
-      expect(errors[0].constraints?.isGeoJSONPolygon).toBe('O campo polygon deve ser um GeoJSON Polygon válido.');
+      expect(errors[0].constraints?.isGeoJSONPolygon).toBe(
+        'O campo polygon deve ser um GeoJSON Polygon válido.',
+      );
     });
 
     it('should fail validation for MultiPolygon type', () => {
@@ -360,7 +390,9 @@ describe('IsGeoJSONPolygon Validator', () => {
 
       expect(errors).toHaveLength(1);
       expect(errors[0].property).toBe('polygon');
-      expect(errors[0].constraints?.isGeoJSONPolygon).toBe('O campo polygon deve ser um GeoJSON Polygon válido.');
+      expect(errors[0].constraints?.isGeoJSONPolygon).toBe(
+        'O campo polygon deve ser um GeoJSON Polygon válido.',
+      );
     });
 
     it('should pass validation for polygon with 3D coordinates', () => {
@@ -411,7 +443,9 @@ describe('IsGeoJSONPolygon Validator', () => {
 
       expect(errors).toHaveLength(1);
       expect(errors[0].property).toBe('polygon');
-      expect(errors[0].constraints?.isGeoJSONPolygon).toBe('O campo polygon deve ser um GeoJSON Polygon válido.');
+      expect(errors[0].constraints?.isGeoJSONPolygon).toBe(
+        'O campo polygon deve ser um GeoJSON Polygon válido.',
+      );
     });
   });
 });

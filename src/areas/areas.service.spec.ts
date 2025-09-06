@@ -108,7 +108,9 @@ describe('AreasService', () => {
     areasRepository = module.get<AreasRepository>(AreasRepository);
     producersRepository = module.get<ProducersRepository>(ProducersRepository);
     soilTypesRepository = module.get<SoilTypesRepository>(SoilTypesRepository);
-    irrigationTypesRepository = module.get<IrrigationTypesRepository>(IrrigationTypesRepository);
+    irrigationTypesRepository = module.get<IrrigationTypesRepository>(
+      IrrigationTypesRepository,
+    );
   });
 
   afterEach(() => {
@@ -119,14 +121,22 @@ describe('AreasService', () => {
     it('should create a new area successfully when all dependencies exist', async () => {
       mockProducersRepository.findById.mockResolvedValue(mockProducer);
       mockSoilTypesRepository.findById.mockResolvedValue(mockSoilType);
-      mockIrrigationTypesRepository.findById.mockResolvedValue(mockIrrigationType);
+      mockIrrigationTypesRepository.findById.mockResolvedValue(
+        mockIrrigationType,
+      );
       mockAreasRepository.create.mockResolvedValue(mockArea);
 
       const result = await service.create(mockAreaRequestDto);
 
-      expect(producersRepository.findById).toHaveBeenCalledWith(mockAreaRequestDto.producerId);
-      expect(soilTypesRepository.findById).toHaveBeenCalledWith(mockAreaRequestDto.soilTypeId);
-      expect(irrigationTypesRepository.findById).toHaveBeenCalledWith(mockAreaRequestDto.irrigationTypeId);
+      expect(producersRepository.findById).toHaveBeenCalledWith(
+        mockAreaRequestDto.producerId,
+      );
+      expect(soilTypesRepository.findById).toHaveBeenCalledWith(
+        mockAreaRequestDto.soilTypeId,
+      );
+      expect(irrigationTypesRepository.findById).toHaveBeenCalledWith(
+        mockAreaRequestDto.irrigationTypeId,
+      );
       expect(areasRepository.create).toHaveBeenCalledWith(mockAreaRequestDto);
       expect(result).toEqual(mockArea);
     });
@@ -137,7 +147,9 @@ describe('AreasService', () => {
       await expect(service.create(mockAreaRequestDto)).rejects.toThrow(
         new NotFoundException('Produtor não encontrado'),
       );
-      expect(producersRepository.findById).toHaveBeenCalledWith(mockAreaRequestDto.producerId);
+      expect(producersRepository.findById).toHaveBeenCalledWith(
+        mockAreaRequestDto.producerId,
+      );
       expect(soilTypesRepository.findById).not.toHaveBeenCalled();
       expect(irrigationTypesRepository.findById).not.toHaveBeenCalled();
       expect(areasRepository.create).not.toHaveBeenCalled();
@@ -150,8 +162,12 @@ describe('AreasService', () => {
       await expect(service.create(mockAreaRequestDto)).rejects.toThrow(
         new NotFoundException('Tipo de solo não encontrado'),
       );
-      expect(producersRepository.findById).toHaveBeenCalledWith(mockAreaRequestDto.producerId);
-      expect(soilTypesRepository.findById).toHaveBeenCalledWith(mockAreaRequestDto.soilTypeId);
+      expect(producersRepository.findById).toHaveBeenCalledWith(
+        mockAreaRequestDto.producerId,
+      );
+      expect(soilTypesRepository.findById).toHaveBeenCalledWith(
+        mockAreaRequestDto.soilTypeId,
+      );
       expect(irrigationTypesRepository.findById).not.toHaveBeenCalled();
       expect(areasRepository.create).not.toHaveBeenCalled();
     });
@@ -164,9 +180,15 @@ describe('AreasService', () => {
       await expect(service.create(mockAreaRequestDto)).rejects.toThrow(
         new NotFoundException('Tipo de irrigação não encontrado'),
       );
-      expect(producersRepository.findById).toHaveBeenCalledWith(mockAreaRequestDto.producerId);
-      expect(soilTypesRepository.findById).toHaveBeenCalledWith(mockAreaRequestDto.soilTypeId);
-      expect(irrigationTypesRepository.findById).toHaveBeenCalledWith(mockAreaRequestDto.irrigationTypeId);
+      expect(producersRepository.findById).toHaveBeenCalledWith(
+        mockAreaRequestDto.producerId,
+      );
+      expect(soilTypesRepository.findById).toHaveBeenCalledWith(
+        mockAreaRequestDto.soilTypeId,
+      );
+      expect(irrigationTypesRepository.findById).toHaveBeenCalledWith(
+        mockAreaRequestDto.irrigationTypeId,
+      );
       expect(areasRepository.create).not.toHaveBeenCalled();
     });
   });
@@ -175,7 +197,11 @@ describe('AreasService', () => {
     it('should update area status successfully', async () => {
       const areaId = 1;
       const updateDto: UpdateAreaStatusDto = { ativo: false };
-      const updatedArea = { ...mockArea, ativo: false, updatedAt: new Date('2023-01-02') };
+      const updatedArea = {
+        ...mockArea,
+        ativo: false,
+        updatedAt: new Date('2023-01-02'),
+      };
 
       mockAreasRepository.findById.mockResolvedValue(mockArea);
       mockAreasRepository.updateStatus.mockResolvedValue(updatedArea);
@@ -183,7 +209,10 @@ describe('AreasService', () => {
       const result = await service.updateStatus(areaId, updateDto);
 
       expect(areasRepository.findById).toHaveBeenCalledWith(areaId);
-      expect(areasRepository.updateStatus).toHaveBeenCalledWith(areaId, updateDto.ativo);
+      expect(areasRepository.updateStatus).toHaveBeenCalledWith(
+        areaId,
+        updateDto.ativo,
+      );
       expect(result).toEqual(updatedArea);
     });
 
@@ -216,7 +245,11 @@ describe('AreasService', () => {
     it('should update status from active to inactive', async () => {
       const areaId = 1;
       const updateDto: UpdateAreaStatusDto = { ativo: false };
-      const updatedArea = { ...mockArea, ativo: false, updatedAt: new Date('2023-01-02') };
+      const updatedArea = {
+        ...mockArea,
+        ativo: false,
+        updatedAt: new Date('2023-01-02'),
+      };
 
       mockAreasRepository.findById.mockResolvedValue(mockArea);
       mockAreasRepository.updateStatus.mockResolvedValue(updatedArea);
@@ -232,7 +265,11 @@ describe('AreasService', () => {
       const areaId = 1;
       const updateDto: UpdateAreaStatusDto = { ativo: true };
       const inactiveArea = { ...mockArea, ativo: false };
-      const activatedArea = { ...mockArea, ativo: true, updatedAt: new Date('2023-01-02') };
+      const activatedArea = {
+        ...mockArea,
+        ativo: true,
+        updatedAt: new Date('2023-01-02'),
+      };
 
       mockAreasRepository.findById.mockResolvedValue(inactiveArea);
       mockAreasRepository.updateStatus.mockResolvedValue(activatedArea);
