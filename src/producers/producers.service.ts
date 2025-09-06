@@ -41,6 +41,10 @@ export class ProducersService {
     return producer;
   }
 
+  async findOneByDocument(document: string) {
+    return await this.repository.findByDocument(document);
+  }
+
   async update(id: number, updateProducerDto: Partial<CreateProducerDto>) {
     // Garante que o produtor existe antes de tentar atualizar
     await this.findOne(id);

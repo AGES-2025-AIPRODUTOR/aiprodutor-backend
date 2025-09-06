@@ -1,0 +1,9 @@
+stages:
+  - test
+
+simple_test_job:
+  stage: test
+  script:
+    - echo "Olá, Runner do GitLab!"
+    - echo "Este job foi executado com sucesso em:"
+    - date

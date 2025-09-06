@@ -31,6 +31,13 @@ export class ProducersController {
     return this.producersService.findAll();
   }
 
+  @Get(':document')
+  @ApiOperation({ summary: 'Busca um produtor pelo documento' })
+  @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
+  findOneByDocument(@Param('document') document: string) {
+    return this.producersService.findOneByDocument(document);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Busca um produtor pelo ID' })
   @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
