@@ -29,6 +29,13 @@ export class ProducersService {
     return this.repository.create(createProducerDto);
   }
 
+  async findAllOrByDocument(cpfCnpj?: string) {
+    if(cpfCnpj) {
+      return this.findDocument(cpfCnpj);
+    }
+    return this.findAll();
+  }
+
   async findAll() {
     return this.repository.findAll();
   }
@@ -39,10 +46,6 @@ export class ProducersService {
       throw new NotFoundException(`Produtor com o ID #${id} não encontrado.`);
     }
     return producer;
-  }
-
-  async findOneByDocument(document: string) {
-    return await this.repository.findByDocument(document);
   }
 
   async update(id: number, updateProducerDto: Partial<CreateProducerDto>) {
@@ -56,4 +59,13 @@ export class ProducersService {
     await this.findOne(id);
     return this.repository.remove(id);
   }
+
+  async findDocument(document: string) {
+    const producer = await this.repository.findByDocument(document);
+    if (!producer) {
+      throw new NotFoundException(`Produtor com o CPF/ CNPJ #${document} não encontrado.`);
+    }
+    return producer;
+  }
+
 }
