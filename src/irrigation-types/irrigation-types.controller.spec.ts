@@ -45,8 +45,6 @@ describe('IrrigationTypesController', () => {
         id: 1,
         name: 'Irrigação por gotejamento',
         description: 'Descrição da irrigação por gotejamento',
-        createdAt: new Date(),
-        updatedAt: new Date(),
       };
 
       mockIrrigationTypesService.create.mockResolvedValue(expectedResult);

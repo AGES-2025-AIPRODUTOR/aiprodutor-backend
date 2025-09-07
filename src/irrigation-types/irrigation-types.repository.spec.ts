@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { IrrigationTypesRepository } from './irrigation-types.repository';
 import { PrismaService } from '../shared/prisma/prisma.service';
+import { IrrigationTypes } from './entities/irrigation-types.entity';
 
 describe('IrrigationTypesRepository', () => {
   let repository: IrrigationTypesRepository;
@@ -43,12 +44,10 @@ describe('IrrigationTypesRepository', () => {
         description: 'Descrição da irrigação por gotejamento',
       };
 
-      const expectedResult = {
+      const expectedResult: IrrigationTypes = {
         id: 1,
         name: 'Irrigação por gotejamento',
         description: 'Descrição da irrigação por gotejamento',
-        createdAt: new Date(),
-        updatedAt: new Date(),
       };
 
       mockPrismaService.irrigationType.create.mockResolvedValue(expectedResult);
@@ -87,8 +86,6 @@ describe('IrrigationTypesRepository', () => {
         id: 1,
         name: 'Irrigação por gotejamento',
         description: 'Descrição da irrigação por gotejamento',
-        createdAt: new Date(),
-        updatedAt: new Date(),
       };
 
       mockPrismaService.irrigationType.findUnique.mockResolvedValue(
