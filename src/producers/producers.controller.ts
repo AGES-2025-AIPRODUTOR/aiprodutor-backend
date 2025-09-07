@@ -7,10 +7,14 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  Query,
+
 } from '@nestjs/common';
 import { ProducersService } from './producers.service';
 import { CreateProducerDto } from './dto/create-producer.dto';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { FindDocumentoProducerDto } from './dto/findDocument-producer.dto';
+import { find } from 'rxjs';
 
 @ApiTags('Producers') // Agrupa os endpoints no Swagger
 @Controller('producers')
@@ -26,17 +30,13 @@ export class ProducersController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Lista todos os produtores' })
-  findAll() {
-    return this.producersService.findAll();
+  @ApiOperation({ summary: 'Lista todos os produtores ou busca por cpf'})
+  @ApiResponse({ status: 404, description: 'Produtor não encontrado.'})
+  @ApiResponse({ status: 400, description: 'Formato incorreto.'})
+  findAllOrByDocument(@Query() findDocumentoProducerDto?: FindDocumentoProducerDto) {
+    return this.producersService.findAllOrByDocument(findDocumentoProducerDto?.document);
   }
-
-  @Get(':document')
-  @ApiOperation({ summary: 'Busca um produtor pelo documento' })
-  @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
-  findOneByDocument(@Param('document') document: string) {
-    return this.producersService.findOneByDocument(document);
-  }
+  
 
   @Get(':id')
   @ApiOperation({ summary: 'Busca um produtor pelo ID' })

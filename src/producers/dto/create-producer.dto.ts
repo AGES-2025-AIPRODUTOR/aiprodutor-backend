@@ -4,11 +4,8 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  Matches,
-  Length,
-  IsInt,
-  Min,
-  IsNumberString,
+  Matches
+  
 } from 'class-validator';
 
 export class CreateProducerDto {
@@ -36,6 +33,7 @@ export class CreateProducerDto {
     description: 'Telefone de contato do produtor (somente números).',
     example: '51999998888',
   })
+
   @IsString()
   @IsNotEmpty()
   @Matches(/^\d{10,11}$/, {
