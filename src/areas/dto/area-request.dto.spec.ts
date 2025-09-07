@@ -208,7 +208,7 @@ describe('AreaRequestDto', () => {
 
       it('should fail validation when polygon is null', async () => {
         (geojsonValidation.isPolygon as jest.Mock).mockReturnValue(false);
-        
+
         dto.name = 'Área de Teste';
         dto.producerId = 1;
         dto.soilTypeId = 1;
@@ -224,7 +224,7 @@ describe('AreaRequestDto', () => {
 
       it('should fail validation when polygon is empty object', async () => {
         (geojsonValidation.isPolygon as jest.Mock).mockReturnValue(false);
-        
+
         dto.name = 'Área de Teste';
         dto.producerId = 1;
         dto.soilTypeId = 1;
@@ -242,7 +242,7 @@ describe('AreaRequestDto', () => {
 
     it('should fail validation with multiple field errors', async () => {
       (geojsonValidation.isPolygon as jest.Mock).mockReturnValue(false);
-      
+
       dto.name = '';
       dto.producerId = 'invalid' as any;
       dto.soilTypeId = 'invalid' as any;
@@ -252,8 +252,8 @@ describe('AreaRequestDto', () => {
       const errors = await validate(dto);
 
       expect(errors).toHaveLength(5); // name, producerId, soilTypeId, irrigationTypeId, polygon
-      
-      const errorProperties = errors.map(error => error.property);
+
+      const errorProperties = errors.map((error) => error.property);
       expect(errorProperties).toContain('name');
       expect(errorProperties).toContain('producerId');
       expect(errorProperties).toContain('soilTypeId');

@@ -82,7 +82,9 @@ describe('AreasController', () => {
       const error = new Error('Service error');
       mockAreaService.create.mockRejectedValue(error);
 
-      await expect(controller.create(mockAreaRequestDto)).rejects.toThrow('Service error');
+      await expect(controller.create(mockAreaRequestDto)).rejects.toThrow(
+        'Service error',
+      );
       expect(service.create).toHaveBeenCalledWith(mockAreaRequestDto);
       expect(service.create).toHaveBeenCalledTimes(1);
     });
@@ -98,9 +100,15 @@ describe('AreasController', () => {
       };
       mockAreaService.updateStatus.mockResolvedValue(updatedAreaResponse);
 
-      const result = await controller.updateStatus(areaId, mockUpdateAreaStatusDto);
+      const result = await controller.updateStatus(
+        areaId,
+        mockUpdateAreaStatusDto,
+      );
 
-      expect(service.updateStatus).toHaveBeenCalledWith(areaId, mockUpdateAreaStatusDto);
+      expect(service.updateStatus).toHaveBeenCalledWith(
+        areaId,
+        mockUpdateAreaStatusDto,
+      );
       expect(service.updateStatus).toHaveBeenCalledTimes(1);
       expect(result).toEqual(updatedAreaResponse);
     });
@@ -110,8 +118,13 @@ describe('AreasController', () => {
       const error = new Error('Area not found');
       mockAreaService.updateStatus.mockRejectedValue(error);
 
-      await expect(controller.updateStatus(areaId, mockUpdateAreaStatusDto)).rejects.toThrow('Area not found');
-      expect(service.updateStatus).toHaveBeenCalledWith(areaId, mockUpdateAreaStatusDto);
+      await expect(
+        controller.updateStatus(areaId, mockUpdateAreaStatusDto),
+      ).rejects.toThrow('Area not found');
+      expect(service.updateStatus).toHaveBeenCalledWith(
+        areaId,
+        mockUpdateAreaStatusDto,
+      );
       expect(service.updateStatus).toHaveBeenCalledTimes(1);
     });
 
@@ -122,7 +135,10 @@ describe('AreasController', () => {
 
       const result = await controller.updateStatus(areaId, activeUpdateDto);
 
-      expect(service.updateStatus).toHaveBeenCalledWith(areaId, activeUpdateDto);
+      expect(service.updateStatus).toHaveBeenCalledWith(
+        areaId,
+        activeUpdateDto,
+      );
       expect(service.updateStatus).toHaveBeenCalledTimes(1);
       expect(result).toEqual(mockAreaResponse);
     });

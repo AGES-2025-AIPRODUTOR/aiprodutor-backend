@@ -8,6 +8,5 @@ import { ApiExcludeController } from '@nestjs/swagger';
 export class AppController {
   @Get()
   @Redirect('/api-docs', 302) // Redireciona a rota '/' para '/api-docs' para que não apareçam erros
-  redirectToDocs() {
-  }
+  redirectToDocs() {}
 }

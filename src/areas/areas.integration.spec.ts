@@ -101,7 +101,7 @@ describe('AreasController (e2e)', () => {
   beforeEach(async () => {
     // Setup do mock geojson-validation
     (geojsonValidation.isPolygon as jest.Mock).mockReturnValue(true);
-    
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AreasModule],
     })
@@ -118,13 +118,19 @@ describe('AreasController (e2e)', () => {
       .compile();
 
     app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
+    app.useGlobalPipes(
+      new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
+    );
 
     areasService = moduleFixture.get<AreasService>(AreasService);
     areasRepository = moduleFixture.get<AreasRepository>(AreasRepository);
-    producersRepository = moduleFixture.get<ProducersRepository>(ProducersRepository);
-    soilTypesRepository = moduleFixture.get<SoilTypesRepository>(SoilTypesRepository);
-    irrigationTypesRepository = moduleFixture.get<IrrigationTypesRepository>(IrrigationTypesRepository);
+    producersRepository =
+      moduleFixture.get<ProducersRepository>(ProducersRepository);
+    soilTypesRepository =
+      moduleFixture.get<SoilTypesRepository>(SoilTypesRepository);
+    irrigationTypesRepository = moduleFixture.get<IrrigationTypesRepository>(
+      IrrigationTypesRepository,
+    );
 
     await app.init();
   });
@@ -138,7 +144,9 @@ describe('AreasController (e2e)', () => {
     it('should create a new area successfully', async () => {
       mockProducersRepository.findById.mockResolvedValue(mockProducer);
       mockSoilTypesRepository.findById.mockResolvedValue(mockSoilType);
-      mockIrrigationTypesRepository.findById.mockResolvedValue(mockIrrigationType);
+      mockIrrigationTypesRepository.findById.mockResolvedValue(
+        mockIrrigationType,
+      );
       mockAreasRepository.create.mockResolvedValue(mockArea);
 
       const response = await request(app.getHttpServer())
@@ -150,7 +158,9 @@ describe('AreasController (e2e)', () => {
       expect(mockProducersRepository.findById).toHaveBeenCalledWith(1);
       expect(mockSoilTypesRepository.findById).toHaveBeenCalledWith(1);
       expect(mockIrrigationTypesRepository.findById).toHaveBeenCalledWith(1);
-      expect(mockAreasRepository.create).toHaveBeenCalledWith(mockValidAreaRequestDto);
+      expect(mockAreasRepository.create).toHaveBeenCalledWith(
+        mockValidAreaRequestDto,
+      );
     });
 
     it('should return 404 when producer is not found', async () => {
@@ -202,11 +212,11 @@ describe('AreasController (e2e)', () => {
     });
 
     it('should return 400 when name is missing', async () => {
-      const invalidDto = { 
+      const invalidDto = {
         producerId: mockValidAreaRequestDto.producerId,
         soilTypeId: mockValidAreaRequestDto.soilTypeId,
         irrigationTypeId: mockValidAreaRequestDto.irrigationTypeId,
-        polygon: mockValidAreaRequestDto.polygon
+        polygon: mockValidAreaRequestDto.polygon,
       };
 
       const response = await request(app.getHttpServer())
@@ -226,32 +236,39 @@ describe('AreasController (e2e)', () => {
         .send(invalidDto)
         .expect(400);
 
-      expect(response.body.message).toContain('producerId must be an integer number');
+      expect(response.body.message).toContain(
+        'producerId must be an integer number',
+      );
       expect(mockProducersRepository.findById).not.toHaveBeenCalled();
     });
 
     it('should return 400 when polygon is invalid', async () => {
       // Configure mock para retornar false para polígono inválido
       (geojsonValidation.isPolygon as jest.Mock).mockReturnValue(false);
-      
-      const invalidDto = { ...mockValidAreaRequestDto, polygon: { type: 'Point', coordinates: [0, 0] } };
+
+      const invalidDto = {
+        ...mockValidAreaRequestDto,
+        polygon: { type: 'Point', coordinates: [0, 0] },
+      };
 
       const response = await request(app.getHttpServer())
         .post('/areas')
         .send(invalidDto)
         .expect(400);
 
-      expect(response.body.message).toContain('O campo polygon deve ser um GeoJSON Polygon válido.');
+      expect(response.body.message).toContain(
+        'O campo polygon deve ser um GeoJSON Polygon válido.',
+      );
       expect(mockProducersRepository.findById).not.toHaveBeenCalled();
       // geojsonValidation.isPolygon não é chamado para tipos Point, pois o validador rejeita antes
     });
 
     it('should return 400 when polygon is missing', async () => {
-      const invalidDto = { 
+      const invalidDto = {
         name: mockValidAreaRequestDto.name,
         producerId: mockValidAreaRequestDto.producerId,
         soilTypeId: mockValidAreaRequestDto.soilTypeId,
-        irrigationTypeId: mockValidAreaRequestDto.irrigationTypeId
+        irrigationTypeId: mockValidAreaRequestDto.irrigationTypeId,
       };
 
       const response = await request(app.getHttpServer())
@@ -268,7 +285,11 @@ describe('AreasController (e2e)', () => {
     it('should update area status successfully', async () => {
       const areaId = 1;
       const updateDto = { ativo: false };
-      const updatedArea = { ...mockArea, ativo: false, updatedAt: '2023-01-02T00:00:00.000Z' };
+      const updatedArea = {
+        ...mockArea,
+        ativo: false,
+        updatedAt: '2023-01-02T00:00:00.000Z',
+      };
 
       mockAreasRepository.findById.mockResolvedValue(mockArea);
       mockAreasRepository.updateStatus.mockResolvedValue(updatedArea);
@@ -280,7 +301,10 @@ describe('AreasController (e2e)', () => {
 
       expect(response.body).toEqual(updatedArea);
       expect(mockAreasRepository.findById).toHaveBeenCalledWith(areaId);
-      expect(mockAreasRepository.updateStatus).toHaveBeenCalledWith(areaId, false);
+      expect(mockAreasRepository.updateStatus).toHaveBeenCalledWith(
+        areaId,
+        false,
+      );
     });
 
     it('should return 404 when area is not found', async () => {

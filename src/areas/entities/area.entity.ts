@@ -9,20 +9,36 @@ export class Area {
 
   @ApiProperty({
     description: 'Polígono da área (GeoJSON)',
-    example: { type: 'Polygon', coordinates: [ [ [0,0], [1,1], [1,0], [0,0] ] ] },
+    example: {
+      type: 'Polygon',
+      coordinates: [
+        [
+          [0, 0],
+          [1, 1],
+          [1, 0],
+          [0, 0],
+        ],
+      ],
+    },
     type: 'object',
     properties: {},
     additionalProperties: true,
   })
   polygon: Record<string, any>;
 
-  @ApiProperty({ description: 'Data de criação', example: '2025-08-25T12:00:00Z' })
+  @ApiProperty({
+    description: 'Data de criação',
+    example: '2025-08-25T12:00:00Z',
+  })
   createdAt: Date;
 
   @ApiProperty({ description: 'Área está ativa?', example: true })
   ativo: boolean;
 
-  @ApiProperty({ description: 'Data de atualização', example: '2025-08-25T12:00:00Z' })
+  @ApiProperty({
+    description: 'Data de atualização',
+    example: '2025-08-25T12:00:00Z',
+  })
   updatedAt: Date;
 
   @ApiProperty({ description: 'ID do produtor', example: 1 })
