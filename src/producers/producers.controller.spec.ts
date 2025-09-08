@@ -25,15 +25,12 @@ describe('ProducersController', () => {
     create: jest.fn(),
     findAllOrByDocument: jest.fn(),
     findOne: jest.fn(),
-    
   };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ProducersController],
-      providers: [
-        { provide: ProducersService, useValue: mockService },
-      ],
+      providers: [{ provide: ProducersService, useValue: mockService }],
     }).compile();
 
     controller = module.get<ProducersController>(ProducersController);
