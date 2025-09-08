@@ -4,11 +4,8 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  Matches,
-  Length,
-  IsInt,
-  Min,
-  IsNumberString,
+  Matches
+  
 } from 'class-validator';
 
 export class CreateProducerDto {
@@ -27,7 +24,8 @@ export class CreateProducerDto {
   @IsString()
   @IsNotEmpty()
   @Matches(/^(\d{11}|\d{14})$/, {
-    message: 'document deve ser um CPF (11 dígitos) ou CNPJ (14 dígitos) válido, somente números.',
+    message:
+      'document deve ser um CPF (11 dígitos) ou CNPJ (14 dígitos) válido, somente números.',
   })
   document: string;
 
@@ -35,6 +33,7 @@ export class CreateProducerDto {
     description: 'Telefone de contato do produtor (somente números).',
     example: '51999998888',
   })
+
   @IsString()
   @IsNotEmpty()
   @Matches(/^\d{10,11}$/, {

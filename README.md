@@ -100,6 +100,34 @@ Se você deseja desenvolver com atualização automática do código (hot-reload
 
 ---
 
+### ⚠️ Corrigindo o erro de "Collation Version Mismatch" no PostgreSQL
+
+Se ao acessar o banco de dados via Docker você encontrar uma mensagem semelhante a:
+
+```
+WARNING:  database "aiprodutor" has a collation version mismatch
+DETAIL:  The database was created using collation version X.XX, but the operating system provides version Y.YY.
+HINT:  Rebuild all objects in this database that use the default collation and run ALTER DATABASE aiprodutor REFRESH COLLATION VERSION, or build PostgreSQL with the right library version.
+```
+
+Isso significa que a versão da collation (ordenação de textos) do banco de dados está diferente da versão fornecida pelo sistema operacional atual do container.
+
+**Como corrigir:**
+
+1. Acesse o banco de dados dentro do container Docker:
+   ```bash
+   docker exec -it aiprodutor-db psql -U devuser -d aiprodutor
+   ```
+
+2. No prompt do PostgreSQL, execute:
+   ```sql
+   ALTER DATABASE template1 REFRESH COLLATION VERSION;
+   ```
+
+Isso irá atualizar a versão da collation do banco de dados para corresponder à versão do sistema operacional do container, eliminando o aviso.
+
+---
+
 ### 🛑 Parando a Aplicação
 
 Para parar todos os containers (API e Banco de Dados), pressione `Ctrl + C` no terminal onde o `docker compose up` está rodando, ou em outro terminal execute:
