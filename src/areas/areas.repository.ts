@@ -185,4 +185,23 @@ export class AreasRepository {
       data: mappedData,
     });
   }
+
+    async findAll(): Promise<AreaWithRelations[]> {
+    const result = await this.prisma.$queryRawUnsafe(
+      `
+      SELECT 
+        a.id, a.name, a."isActive", a."producerId", a."soilTypeId", a."irrigationTypeId", 
+        a."createdAt", a."updatedAt", ST_AsGeoJSON(a.polygon) AS polygon,
+        st.name as "soilTypeName",
+        it.name as "irrigationTypeName"
+      FROM areas a
+      LEFT JOIN soil_types st ON a."soilTypeId" = st.id
+      LEFT JOIN irrigation_types it ON a."irrigationTypeId" = it.id
+      ORDER BY a."createdAt" DESC
+      `,
+    );
+
+    const rows = result as RawAreaQueryResult[];
+    return rows.map((row) => this.mapRawAreaToAreaWithRelations(row));
+  }
 }

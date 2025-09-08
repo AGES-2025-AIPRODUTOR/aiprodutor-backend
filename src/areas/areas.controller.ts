@@ -89,4 +89,15 @@ export class AreasController {
   ) {
     return this.areasService.updateStatus(id, updateAreaStatusDto);
   }
+
+  @Get()
+  @ApiOperation({ summary: 'Busca todas as áreas cadastradas' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de todas as áreas retornada com sucesso.',
+  })
+  findAll() {
+    return this.areasService.findAll();
+  }
+  
 }

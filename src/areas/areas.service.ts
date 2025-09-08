@@ -65,4 +65,8 @@ export class AreasService {
     // A verificação de 'areas.length === 0' pode ser feita no controller se necessário
     return areas;
   }
+
+  async findAll(): Promise<Area[]> {
+    return this.repository.findAll();
+  }
 }
