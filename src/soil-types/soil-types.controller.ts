@@ -1,5 +1,20 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseIntPipe,
+  Post,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBody,
+  ApiParam,
+} from '@nestjs/swagger';
 import { SoilTypesDto } from './dto/soil-types.dto';
 import { SoilTypesService } from './soil-types.service';
 import { SoilTypes } from './entities/soil-types.entity';
@@ -23,5 +38,21 @@ export class SoilTypesController {
   })
   async create(@Body() soilTypesDto: SoilTypesDto): Promise<SoilTypes> {
     return await this.soilTypesService.create(soilTypesDto);
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Lista todos os tipos de solo' })
+  @ApiResponse({ status: 200, description: 'Lista retornada com sucesso.' })
+  async findAll(): Promise<SoilTypes[]> {
+    return await this.soilTypesService.findAll();
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Busca um tipo de solo pelo ID' })
+  @ApiParam({ name: 'id', type: Number })
+  @ApiResponse({ status: 200, description: 'Tipo de solo encontrado.' })
+  @ApiResponse({ status: 404, description: 'Tipo de solo não encontrado.' })
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<SoilTypes> {
+    return await this.soilTypesService.findById(id);
   }
 }

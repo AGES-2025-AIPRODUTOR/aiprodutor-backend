@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { SoilTypesDto } from './dto/soil-types.dto';
 import { SoilTypesRepository } from './soil-types.repository';
 import { SoilTypes } from './entities/soil-types.entity';
@@ -13,5 +13,19 @@ export class SoilTypesService {
       description: soilTypesDto.description ?? undefined,
     };
     return await this.repository.create(data);
+  }
+
+  async findAll(): Promise<SoilTypes[]> {
+    return await this.repository.findAll();
+  }
+
+  async findById(id: number): Promise<SoilTypes> {
+    const soilType = await this.repository.findById(id);
+    if (!soilType) {
+      throw new NotFoundException(
+        `Tipo de solo com o ID ${id} não encontrado.`,
+      );
+    }
+    return soilType;
   }
 }
