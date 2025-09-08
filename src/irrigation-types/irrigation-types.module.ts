@@ -1,12 +1,13 @@
-import { PrismaModule } from 'src/shared/prisma/prisma.module';
+import { Module } from '@nestjs/common';
 import { IrrigationTypesController } from './irrigation-types.controller';
 import { IrrigationTypesService } from './irrigation-types.service';
 import { IrrigationTypesRepository } from './irrigation-types.repository';
-import { Module } from '@nestjs/common';
+import { PrismaModule } from '../shared/prisma/prisma.module';
 
 @Module({
   imports: [PrismaModule],
   controllers: [IrrigationTypesController],
   providers: [IrrigationTypesService, IrrigationTypesRepository],
+  exports: [IrrigationTypesService],
 })
 export class IrrigationTypesModule {}
