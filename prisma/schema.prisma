@@ -36,21 +36,20 @@ model Producer {
 }
 
 model Area {
-  id               Int      @id @default(autoincrement())
+  id               Int              @id @default(autoincrement())
   name             String
-  polygon          Unsupported("geometry") // Para usar o tipo Geometry do PostGIS
-  ativo            Boolean  @default(true)
+  polygon          Unsupported("geometry") // Tipo PostGIS para o polígono
+  isActive         Boolean          @default(true) @map("ativo")
+  createdAt        DateTime         @default(now()) @map("criado_em")
+  updatedAt        DateTime         @updatedAt
 
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-
-  producer         Producer @relation(fields: [producerId], references: [id])
+  producer         Producer         @relation(fields: [producerId], references: [id])
   producerId       Int
 
-  soilType         SoilType @relation(fields: [soilTypeId], references: [id])
+  soilType         SoilType         @relation(fields: [soilTypeId], references: [id])
   soilTypeId       Int
 
-  irrigationType   IrrigationType @relation(fields: [irrigationTypeId], references: [id])
+  irrigationType   IrrigationType   @relation(fields: [irrigationTypeId], references: [id])
   irrigationTypeId Int
 
   plantings        Planting[]
@@ -58,6 +57,7 @@ model Area {
   @@map("areas")
 }
 
+  
 model Harvest {
   id        Int      @id @default(autoincrement())
   name      String

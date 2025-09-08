@@ -17,7 +17,7 @@ export class AreasService {
   ) {}
 
   async create(areaRequestDto: AreaRequestDto): Promise<any> {
-    const { name, producerId, soilTypeId, irrigationTypeId, polygon } =
+    const { producerId, soilTypeId, irrigationTypeId } =
       areaRequestDto;
     // Verifica se o produtor existe
     const producer = await this.producersRepository.findById(producerId);
@@ -63,10 +63,41 @@ export class AreasService {
     }
 
     // 2. Atualiza a área no banco de dados usando o repositório
-    // Seus critérios exigem que não se atualize o polígono.
-    // Como o DTO não tem o campo `polygon`, a única coisa que você
-    // precisa garantir é que o método do seu repositório não tente
-    // atualizar o campo.
     return this.repository.update(id, dto);
+  }
+  
+  async getAreaById(id: number) {
+    const area = await this.repository.findById(id);
+    if (!area) {
+      throw new NotFoundException('Área não encontrada');
+    }
+
+    return {
+      id: area.id,
+      nome: area.nome,
+      tipo_solo: area.soilType?.name,
+      tipo_irrigacao: area.irrigationType?.name,
+      ativo: area.ativo,
+      criado_em: area.criado_em,
+      poligono_geo: area.poligono_geo,
+    };
+  }
+
+  async getAreasByProducerId(producerId: number) {
+    const areas = await this.repository.findByProducerId(producerId);
+    if (!areas || areas.length === 0) { // Uma verificação mais robusta
+      // É melhor verificar a existência do produtor antes, mas por hora isso funciona.
+      throw new NotFoundException('Produtor não encontrado ou não possui áreas');
+    }
+
+    return areas.map((area) => ({
+      id: area.id,
+      nome: area.nome,
+      tipo_solo: area.soilType?.name,
+      tipo_irrigacao: area.irrigationType?.name,
+      ativo: area.ativo,
+      criado_em: area.criado_em,
+      poligono_geo: area.poligono_geo,
+    }));
   }
 }

@@ -34,8 +34,24 @@ export class AreasRepository {
     };
   }
 
-  async findById(id: number): Promise<any | null> {
-    return this.prisma.area.findUnique({ where: { id } });
+  async findById(id: number) {
+    return this.prisma.area.findUnique({
+      where: { id },
+      include: {
+        soilType: true,
+        irrigationType: true,
+      },
+    });
+  }
+
+  async findByProducerId(producerId: number) {
+    return this.prisma.area.findMany({
+      where: { producerId },
+      include: {
+        soilType: true,
+        irrigationType: true,
+      },
+    });
   }
 
   async updateStatus(id: number, ativo: boolean): Promise<any> {
@@ -60,7 +76,6 @@ export class AreasRepository {
       updatedAt: new Date(),
     };
 
-    // Remove campos undefined para que o Prisma não tente atualizá-los com null
     const finalData = Object.fromEntries(
       Object.entries(mappedData).filter(([, value]) => value !== undefined),
     );

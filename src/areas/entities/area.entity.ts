@@ -21,8 +21,8 @@ export class Area {
       ],
     },
     type: 'object',
-    properties: {},
     additionalProperties: true,
+
   })
   polygon: Record<string, any>;
 
