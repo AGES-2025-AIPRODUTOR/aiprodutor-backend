@@ -18,19 +18,24 @@ export class AreasService {
     private readonly irrigationTypesService: IrrigationTypesService,
   ) {}
 
-  private mapToArea(rawArea: any): Area {
-    return new Area({
-      id: rawArea.id,
-      name: rawArea.name,
-      isActive: rawArea.isActive ?? true,
-      producerId: rawArea.producerId,
-      soilTypeId: rawArea.soilTypeId,
-      irrigationTypeId: rawArea.irrigationTypeId,
-      createdAt: rawArea.createdAt,
-      updatedAt: rawArea.updatedAt,
-      polygon: rawArea.polygon || {}, // Garante que nunca seja null
-    });
+private mapToArea(rawArea: any): Area {
+  // Se o polígono for nulo, trate isso como um erro, pois sua lógica exige que ele exista.
+  if (rawArea.polygon === null || rawArea.polygon === undefined) {
+    throw new NotFoundException('O polígono para esta área não foi encontrado.');
   }
+
+  return new Area({
+    id: rawArea.id,
+    name: rawArea.name,
+    isActive: rawArea.isActive ?? true,
+    producerId: rawArea.producerId,
+    soilTypeId: rawArea.soilTypeId,
+    irrigationTypeId: rawArea.irrigationTypeId,
+    createdAt: rawArea.createdAt,
+    updatedAt: rawArea.updatedAt,
+    polygon: rawArea.polygon,
+  });
+}
 
   async create(areaRequestDto: AreaRequestDto): Promise<Area> {
     const { producerId, soilTypeId, irrigationTypeId } = areaRequestDto;
@@ -82,6 +87,7 @@ export class AreasService {
   }
 
   async findAll(): Promise<Area[]> {
-    return this.repository.findAll();
+    const areas = await this.repository.findAll();
+    return areas.map(area => this.mapToArea(area));
   }
 }

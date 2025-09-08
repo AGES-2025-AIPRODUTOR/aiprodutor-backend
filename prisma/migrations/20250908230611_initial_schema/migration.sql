@@ -1,5 +1,4 @@
--- Adiciona a extensão PostGIS se ela ainda não existir
-CREATE EXTENSION IF NOT EXISTS postgis;
+CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA public;
 
 -- CreateTable
 CREATE TABLE "public"."producers" (
@@ -29,6 +28,7 @@ CREATE TABLE "public"."areas" (
     "producerId" INTEGER NOT NULL,
     "soilTypeId" INTEGER NOT NULL,
     "irrigationTypeId" INTEGER NOT NULL,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
 
     CONSTRAINT "areas_pkey" PRIMARY KEY ("id")
 );
@@ -117,13 +117,13 @@ CREATE UNIQUE INDEX "irrigation_types_name_key" ON "public"."irrigation_types"("
 CREATE UNIQUE INDEX "products_name_key" ON "public"."products"("name");
 
 -- AddForeignKey
+ALTER TABLE "public"."areas" ADD CONSTRAINT "areas_irrigationTypeId_fkey" FOREIGN KEY ("irrigationTypeId") REFERENCES "public"."irrigation_types"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "public"."areas" ADD CONSTRAINT "areas_producerId_fkey" FOREIGN KEY ("producerId") REFERENCES "public"."producers"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."areas" ADD CONSTRAINT "areas_soilTypeId_fkey" FOREIGN KEY ("soilTypeId") REFERENCES "public"."soil_types"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "public"."areas" ADD CONSTRAINT "areas_irrigationTypeId_fkey" FOREIGN KEY ("irrigationTypeId") REFERENCES "public"."irrigation_types"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."harvests" ADD CONSTRAINT "harvests_producerId_fkey" FOREIGN KEY ("producerId") REFERENCES "public"."producers"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
