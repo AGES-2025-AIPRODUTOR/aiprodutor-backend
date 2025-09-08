@@ -17,7 +17,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { AreasService } from './areas.service';
-import { AreaRequestDto } from './dto/area-request.dto';
+import { CreateAreaDto } from './dto/create-area.dto';
 import { UpdateAreaDto } from './dto/update-area.dto';
 import { UpdateAreaStatusDto } from './dto/update-area-status.dto';
 
@@ -29,15 +29,15 @@ export class AreasController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Cria uma nova área de plantio' })
-  @ApiBody({ type: AreaRequestDto })
+  @ApiBody({ type: CreateAreaDto })
   @ApiResponse({ status: 201, description: 'Área criada com sucesso.' })
   @ApiResponse({
     status: 404,
     description: 'Recurso relacionado (produtor, etc.) não encontrado.',
   })
   @ApiResponse({ status: 400, description: 'Payload inválido.' })
-  create(@Body() areaRequestDto: AreaRequestDto) {
-    return this.areasService.create(areaRequestDto);
+  create(@Body() createAreaDto: CreateAreaDto) {
+    return this.areasService.create(createAreaDto);
   }
 
   @Get('produtor/:producerId')
@@ -49,7 +49,7 @@ export class AreasController {
   })
   @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
   findByProducer(@Param('producerId', ParseIntPipe) producerId: number) {
-    return this.areasService.getAreasByProducerId(producerId);
+    return this.areasService.findByProducerId(producerId);
   }
 
   @Get(':id')
@@ -58,7 +58,7 @@ export class AreasController {
   @ApiResponse({ status: 200, description: 'Área encontrada com sucesso.' })
   @ApiResponse({ status: 404, description: 'Área não encontrada.' })
   findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.areasService.getAreaById(id);
+    return this.areasService.findOne(id);
   }
 
   @Patch(':id')

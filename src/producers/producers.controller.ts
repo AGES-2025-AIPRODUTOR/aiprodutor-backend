@@ -8,7 +8,6 @@ import {
   Delete,
   ParseIntPipe,
   Query,
-
 } from '@nestjs/common';
 import { ProducersService } from './producers.service';
 import { CreateProducerDto } from './dto/create-producer.dto';
@@ -30,13 +29,16 @@ export class ProducersController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Lista todos os produtores ou busca por cpf'})
-  @ApiResponse({ status: 404, description: 'Produtor não encontrado.'})
-  @ApiResponse({ status: 400, description: 'Formato incorreto.'})
-  findAllOrByDocument(@Query() findDocumentoProducerDto?: FindDocumentoProducerDto) {
-    return this.producersService.findAllOrByDocument(findDocumentoProducerDto?.document);
+  @ApiOperation({ summary: 'Lista todos os produtores ou busca por cpf' })
+  @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
+  @ApiResponse({ status: 400, description: 'Formato incorreto.' })
+  findAllOrByDocument(
+    @Query() findDocumentoProducerDto?: FindDocumentoProducerDto,
+  ) {
+    return this.producersService.findAllOrByDocument(
+      findDocumentoProducerDto?.document,
+    );
   }
-  
 
   @Get(':id')
   @ApiOperation({ summary: 'Busca um produtor pelo ID' })

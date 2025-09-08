@@ -16,4 +16,8 @@ export class IrrigationTypesRepository {
   async findById(id: number) {
     return this.prisma.irrigationType.findUnique({ where: { id } });
   }
+
+  async findAll(): Promise<IrrigationTypes[]> {
+    return this.prisma.irrigationType.findMany();
+  }
 }

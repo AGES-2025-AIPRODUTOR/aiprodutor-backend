@@ -16,4 +16,8 @@ export class SoilTypesRepository {
   async findById(id: number) {
     return this.prisma.soilType.findUnique({ where: { id } });
   }
+
+  async findAll(): Promise<SoilTypes[]> {
+    return this.prisma.soilType.findMany();
+  }
 }

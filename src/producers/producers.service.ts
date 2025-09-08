@@ -35,9 +35,7 @@ export class ProducersService {
     }
     // ZipCode: 8 digits (CEP)
     if (!/^\d{8}$/.test(dto.zipCode)) {
-      throw new BadRequestException(
-        'zipCode deve conter 8 dígitos.',
-      );
+      throw new BadRequestException('zipCode deve conter 8 dígitos.');
     }
   }
 
