@@ -9,20 +9,18 @@ async function bootstrap() {
   app.enableCors();
   app.useGlobalPipes(new ValidationPipe());
 
-  // Define o prefixo global PRIMEIRO
+  // Define o prefixo global para a API
   app.setGlobalPrefix('api/v1', {
-    exclude: ['/'], // Exclui a rota raiz do prefixo
+    exclude: ['/'],
   });
 
-
-  const config = new DocumentBuilder() // Cria a configuração do Swagger
+  // Configura o Swagger
+  const config = new DocumentBuilder()
     .setTitle('API Ai Produtor')
     .setDescription(
-      'Documentação da API para o sistema de gestão de produtores', 
+      'Documentação da API para o sistema de gestão de produtores',
     )
     .setVersion('1.0')
-    // A linha abaixo informa à interface do Swagger qual o prefixo do servidor
-    .addServer('/api/v1') 
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api-docs', app, document);
