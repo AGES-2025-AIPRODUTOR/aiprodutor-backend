@@ -2,7 +2,7 @@ import { IsInt, IsNotEmpty, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsGeoJSONPolygon } from './is-geojson-polygon.validator';
 
-export class CreateAreaDto {
+export class AreaRequestDto {
   @ApiProperty({
     example: 'Área de Tomates Safra 2025',
     description: 'Nome da área de plantio',

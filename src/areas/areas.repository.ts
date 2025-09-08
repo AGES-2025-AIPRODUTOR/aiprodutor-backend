@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../shared/prisma/prisma.service';
-import { CreateAreaDto } from './dto/create-area.dto';
+import { AreaRequestDto } from './dto/area-request.dto';
 import { UpdateAreaDto } from './dto/update-area.dto';
 
 interface RawAreaResult {
@@ -70,9 +70,9 @@ export class AreasRepository {
     };
   }
 
-  async create(createAreaDto: CreateAreaDto): Promise<any> {
+  async create(areaRequestDto: AreaRequestDto): Promise<any> {
     const { name, producerId, soilTypeId, irrigationTypeId, polygon } =
-      createAreaDto;
+      areaRequestDto;
     const geojsonString = JSON.stringify(polygon);
 
     const result = await this.prisma.$queryRawUnsafe(

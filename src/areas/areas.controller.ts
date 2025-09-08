@@ -17,7 +17,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { AreasService } from './areas.service';
-import { CreateAreaDto } from './dto/create-area.dto';
+import { AreaRequestDto } from './dto/area-request.dto';
+import { AreaResponseDto } from './dto/area-response.dto';
 import { UpdateAreaDto } from './dto/update-area.dto';
 import { UpdateAreaStatusDto } from './dto/update-area-status.dto';
 
@@ -29,15 +30,15 @@ export class AreasController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Cria uma nova área de plantio' })
-  @ApiBody({ type: CreateAreaDto })
-  @ApiResponse({ status: 201, description: 'Área criada com sucesso.' })
+  @ApiBody({ type: AreaRequestDto })
+  @ApiResponse({ status: 201, description: 'Área criada com sucesso.', type: AreaResponseDto })
   @ApiResponse({
     status: 404,
     description: 'Recurso relacionado (produtor, etc.) não encontrado.',
   })
   @ApiResponse({ status: 400, description: 'Payload inválido.' })
-  create(@Body() createAreaDto: CreateAreaDto) {
-    return this.areasService.create(createAreaDto);
+  create(@Body() areaRequestDto: AreaRequestDto) {
+    return this.areasService.create(areaRequestDto);
   }
 
   @Get('produtor/:producerId')
@@ -46,6 +47,7 @@ export class AreasController {
   @ApiResponse({
     status: 200,
     description: 'Lista de áreas retornada com sucesso.',
+    type: [AreaResponseDto],
   })
   @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
   findByProducer(@Param('producerId', ParseIntPipe) producerId: number) {
@@ -55,7 +57,7 @@ export class AreasController {
   @Get(':id')
   @ApiOperation({ summary: 'Busca uma área específica pelo seu ID' })
   @ApiParam({ name: 'id', type: Number, description: 'ID da área' })
-  @ApiResponse({ status: 200, description: 'Área encontrada com sucesso.' })
+  @ApiResponse({ status: 200, description: 'Área encontrada com sucesso.', type: AreaResponseDto })
   @ApiResponse({ status: 404, description: 'Área não encontrada.' })
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.areasService.findOne(id);
@@ -65,7 +67,7 @@ export class AreasController {
   @ApiOperation({ summary: 'Edita uma área de plantio' })
   @ApiParam({ name: 'id', type: Number, description: 'ID da área' })
   @ApiBody({ type: UpdateAreaDto })
-  @ApiResponse({ status: 200, description: 'Área atualizada com sucesso.' })
+  @ApiResponse({ status: 200, description: 'Área atualizada com sucesso.', type: AreaResponseDto })
   @ApiResponse({ status: 404, description: 'Área não encontrada.' })
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -81,6 +83,7 @@ export class AreasController {
   @ApiResponse({
     status: 200,
     description: 'Status da área atualizado com sucesso.',
+    type: AreaResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Área não encontrada.' })
   updateStatus(

@@ -2,6 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AreasRepository } from './areas.repository';
 import { PrismaService } from '../shared/prisma/prisma.service';
 import { AreaRequestDto } from './dto/area-request.dto';
+import { UpdateAreaDto } from './dto/update-area.dto';
+import { Area } from 'generated/prisma';
 
 // Type definitions for test data
 interface MockAreaFromDatabase {
@@ -437,6 +439,223 @@ describe('AreasRepository', () => {
       expect(updatedAt).toBeInstanceOf(Date);
       expect(updatedAt.getTime()).toBeGreaterThanOrEqual(beforeCall.getTime());
       expect(updatedAt.getTime()).toBeLessThanOrEqual(afterCall.getTime());
+    });
+  });
+
+  describe('update', () => {
+    it('should update area successfully with all fields', async () => {
+      const areaId = 1;
+      const updateDto: UpdateAreaDto = {
+        name: 'Área Atualizada',
+        soilTypeId: 2,
+        irrigationTypeId: 3,
+        isActive: false,
+      };
+      const updatedArea = {
+        ...mockAreaFromDatabase,
+        name: 'Área Atualizada',
+        soilTypeId: 2,
+        irrigationTypeId: 3,
+        isActive: false,
+        updatedAt: new Date('2023-01-02'),
+      };
+
+      mockPrismaService.area.update.mockResolvedValue(updatedArea);
+
+      const result = await repository.update(areaId, updateDto);
+
+      expect(mockPrismaService.area.update).toHaveBeenCalledWith({
+        where: { id: areaId },
+        data: {
+          name: updateDto.name,
+          soilTypeId: updateDto.soilTypeId,
+          irrigationTypeId: updateDto.irrigationTypeId,
+          isActive: updateDto.isActive,
+          updatedAt: expect.any(Date),
+        },
+      });
+      expect(result).toEqual(updatedArea);
+    });
+
+    it('should update area with only name field', async () => {
+      const areaId = 1;
+      const updateDto: UpdateAreaDto = {
+        name: 'Apenas Nome Atualizado',
+      };
+      const updatedArea = {
+        ...mockAreaFromDatabase,
+        name: 'Apenas Nome Atualizado',
+        updatedAt: new Date('2023-01-02'),
+      };
+
+      mockPrismaService.area.update.mockResolvedValue(updatedArea);
+
+      const result = await repository.update(areaId, updateDto);
+
+      expect(mockPrismaService.area.update).toHaveBeenCalledWith({
+        where: { id: areaId },
+        data: {
+          name: updateDto.name,
+          updatedAt: expect.any(Date),
+        },
+      });
+      expect(result).toEqual(updatedArea);
+    });
+
+    it('should update area with only isActive field', async () => {
+      const areaId = 1;
+      const updateDto: UpdateAreaDto = {
+        isActive: false,
+      };
+      const updatedArea = {
+        ...mockAreaFromDatabase,
+        isActive: false,
+        updatedAt: new Date('2023-01-02'),
+      };
+
+      mockPrismaService.area.update.mockResolvedValue(updatedArea);
+
+      const result = await repository.update(areaId, updateDto);
+
+      expect(mockPrismaService.area.update).toHaveBeenCalledWith({
+        where: { id: areaId },
+        data: {
+          isActive: updateDto.isActive,
+          updatedAt: expect.any(Date),
+        },
+      });
+      expect(result).toEqual(updatedArea);
+    });
+
+    it('should update area with only soilTypeId and irrigationTypeId', async () => {
+      const areaId = 1;
+      const updateDto: UpdateAreaDto = {
+        soilTypeId: 5,
+        irrigationTypeId: 6,
+      };
+      const updatedArea = {
+        ...mockAreaFromDatabase,
+        soilTypeId: 5,
+        irrigationTypeId: 6,
+        updatedAt: new Date('2023-01-02'),
+      };
+
+      mockPrismaService.area.update.mockResolvedValue(updatedArea);
+
+      const result = await repository.update(areaId, updateDto);
+
+      expect(mockPrismaService.area.update).toHaveBeenCalledWith({
+        where: { id: areaId },
+        data: {
+          soilTypeId: updateDto.soilTypeId,
+          irrigationTypeId: updateDto.irrigationTypeId,
+          updatedAt: expect.any(Date),
+        },
+      });
+      expect(result).toEqual(updatedArea);
+    });
+
+    it('should not include undefined fields in update data', async () => {
+      const areaId = 1;
+      const updateDto: UpdateAreaDto = {
+        name: 'Novo Nome',
+        // soilTypeId, irrigationTypeId e isActive ficam undefined
+      };
+      const updatedArea = {
+        ...mockAreaFromDatabase,
+        name: 'Novo Nome',
+        updatedAt: new Date('2023-01-02'),
+      };
+
+      mockPrismaService.area.update.mockResolvedValue(updatedArea);
+
+      const result = await repository.update(areaId, updateDto);
+
+      const expectedData = {
+        name: updateDto.name,
+        updatedAt: expect.any(Date),
+      };
+
+      expect(mockPrismaService.area.update).toHaveBeenCalledWith({
+        where: { id: areaId },
+        data: expectedData,
+      });
+      expect(result).toEqual(updatedArea);
+      
+      // Verifica que campos undefined não foram incluídos
+      const actualCall = mockPrismaService.area.update.mock.calls[0][0];
+      expect(actualCall.data).not.toHaveProperty('soilTypeId');
+      expect(actualCall.data).not.toHaveProperty('irrigationTypeId');
+      expect(actualCall.data).not.toHaveProperty('isActive');
+    });
+
+    it('should include fields with value 0 or false', async () => {
+      const areaId = 1;
+      const updateDto: UpdateAreaDto = {
+        soilTypeId: 0,
+        isActive: false,
+      };
+      const updatedArea = {
+        ...mockAreaFromDatabase,
+        soilTypeId: 0,
+        isActive: false,
+        updatedAt: new Date('2023-01-02'),
+      };
+
+      mockPrismaService.area.update.mockResolvedValue(updatedArea);
+
+      const result = await repository.update(areaId, updateDto);
+
+      expect(mockPrismaService.area.update).toHaveBeenCalledWith({
+        where: { id: areaId },
+        data: {
+          soilTypeId: 0,
+          isActive: false,
+          updatedAt: expect.any(Date),
+        },
+      });
+      expect(result).toEqual(updatedArea);
+    });
+
+    it('should update the area with proper timestamp', async () => {
+      const areaId = 1;
+      const updateDto: UpdateAreaDto = {
+        name: 'Test',
+      };
+      mockPrismaService.area.update.mockResolvedValue(mockAreaFromDatabase);
+
+      const beforeCall = new Date();
+      await repository.update(areaId, updateDto);
+      const afterCall = new Date();
+
+      const mockCalls = mockPrismaService.area.update.mock.calls;
+      const updateCall = mockCalls[0]?.[0] as { data: { updatedAt: Date } };
+      const updatedAt = updateCall?.data?.updatedAt;
+
+      expect(updatedAt).toBeInstanceOf(Date);
+      expect(updatedAt.getTime()).toBeGreaterThanOrEqual(beforeCall.getTime());
+      expect(updatedAt.getTime()).toBeLessThanOrEqual(afterCall.getTime());
+    });
+
+    it('should handle Prisma errors when updating', async () => {
+      const areaId = 1;
+      const updateDto: UpdateAreaDto = {
+        name: 'Test Error',
+      };
+      const error = new Error('Database connection failed');
+      mockPrismaService.area.update.mockRejectedValue(error);
+
+      await expect(repository.update(areaId, updateDto)).rejects.toThrow(
+        'Database connection failed',
+      );
+
+      expect(mockPrismaService.area.update).toHaveBeenCalledWith({
+        where: { id: areaId },
+        data: {
+          name: updateDto.name,
+          updatedAt: expect.any(Date),
+        },
+      });
     });
   });
 });
