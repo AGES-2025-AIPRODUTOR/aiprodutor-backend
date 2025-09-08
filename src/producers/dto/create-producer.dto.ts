@@ -4,8 +4,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  Matches
-  
+  Matches,
 } from 'class-validator';
 
 export class CreateProducerDto {
@@ -18,27 +17,23 @@ export class CreateProducerDto {
   name: string;
 
   @ApiProperty({
-    description: 'O CPF ou CNPJ do produtor (somente números, sem formatação).',
+    description: 'O CPF ou CNPJ do produtor (apenas números).',
     example: '12345678901',
   })
   @IsString()
   @IsNotEmpty()
   @Matches(/^(\d{11}|\d{14})$/, {
     message:
-      'document deve ser um CPF (11 dígitos) ou CNPJ (14 dígitos) válido, somente números.',
+      'O campo document deve ser um CPF (11 dígitos) ou CNPJ (14 dígitos) válido, somente números.',
   })
   document: string;
 
   @ApiProperty({
-    description: 'Telefone de contato do produtor (somente números).',
+    description: 'Telefone de contato do produtor.',
     example: '51999998888',
   })
-
   @IsString()
   @IsNotEmpty()
-  @Matches(/^\d{10,11}$/, {
-    message: 'phone deve conter 10 ou 11 dígitos, somente números.',
-  })
   phone: string;
 
   @ApiProperty({
@@ -50,14 +45,11 @@ export class CreateProducerDto {
   email: string;
 
   @ApiProperty({
-    description: 'CEP do endereço do produtor (8 dígitos, somente números).',
+    description: 'CEP do endereço do produtor.',
     example: '90619900',
   })
   @IsString()
   @IsNotEmpty()
-  @Matches(/^\d{8}$/, {
-    message: 'zipCode deve conter exatamente 8 dígitos, somente números.',
-  })
   zipCode: string;
 
   @ApiProperty({
@@ -82,7 +74,7 @@ export class CreateProducerDto {
   })
   @IsString()
   @IsNotEmpty()
-  @Matches(/^\d+$/, { message: 'number deve conter apenas dígitos.' })
+  @Matches(/^\d+$/, { message: 'O campo number deve conter apenas dígitos.' })
   number: string;
 
   @ApiProperty({
