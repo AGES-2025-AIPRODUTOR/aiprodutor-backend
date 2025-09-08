@@ -22,7 +22,6 @@ export class Area {
     },
     type: 'object',
     additionalProperties: true,
-
   })
   polygon: Record<string, any>;
 
@@ -33,7 +32,7 @@ export class Area {
   createdAt: Date;
 
   @ApiProperty({ description: 'Área está ativa?', example: true })
-  ativo: boolean;
+  isActive: boolean;
 
   @ApiProperty({
     description: 'Data de atualização',

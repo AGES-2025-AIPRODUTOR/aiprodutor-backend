@@ -3,11 +3,58 @@ import { AreasRepository } from './areas.repository';
 import { PrismaService } from '../shared/prisma/prisma.service';
 import { AreaRequestDto } from './dto/area-request.dto';
 
+// Type definitions for test data
+interface MockAreaFromDatabase {
+  id: number;
+  name: string;
+  producerId: number;
+  soilTypeId: number;
+  irrigationTypeId: number;
+  ativo: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  polygon: string;
+}
+
+interface MockAreaResult {
+  id: number;
+  name: string;
+  ativo: boolean;
+  producerId: number;
+  soilTypeId: number;
+  irrigationTypeId: number;
+  createdAt: Date;
+  polygon: string;
+}
+
+interface MockPrismaService {
+  $queryRawUnsafe: jest.MockedFunction<
+    (query: string, ...params: any[]) => Promise<any>
+  >;
+  area: {
+    findUnique: jest.MockedFunction<
+      (args: any) => Promise<MockAreaFromDatabase | null>
+    >;
+    update: jest.MockedFunction<(args: any) => Promise<MockAreaFromDatabase>>;
+  };
+}
+
+// Return type for repository create method
+interface AreaCreateResult {
+  id: number;
+  name: string;
+  ativo: boolean;
+  producerId: number;
+  soilTypeId: number;
+  irrigationTypeId: number;
+  createdAt: Date;
+  polygon?: any;
+}
+
 describe('AreasRepository', () => {
   let repository: AreasRepository;
-  let prismaService: PrismaService;
 
-  const mockPrismaService = {
+  const mockPrismaService: MockPrismaService = {
     $queryRawUnsafe: jest.fn(),
     area: {
       findUnique: jest.fn(),
@@ -34,7 +81,7 @@ describe('AreasRepository', () => {
     },
   };
 
-  const mockAreaFromDatabase = {
+  const mockAreaFromDatabase: MockAreaFromDatabase = {
     id: 1,
     name: 'Área de Teste',
     producerId: 1,
@@ -46,7 +93,7 @@ describe('AreasRepository', () => {
     polygon: JSON.stringify(mockAreaRequestDto.polygon),
   };
 
-  const mockAreaResult = {
+  const mockAreaResult: MockAreaResult = {
     id: 1,
     name: 'Área de Teste',
     ativo: true,
@@ -69,7 +116,6 @@ describe('AreasRepository', () => {
     }).compile();
 
     repository = module.get<AreasRepository>(AreasRepository);
-    prismaService = module.get<PrismaService>(PrismaService);
   });
 
   afterEach(() => {
@@ -80,9 +126,11 @@ describe('AreasRepository', () => {
     it('should create a new area successfully', async () => {
       mockPrismaService.$queryRawUnsafe.mockResolvedValue([mockAreaResult]);
 
-      const result = await repository.create(mockAreaRequestDto);
+      const result = (await repository.create(
+        mockAreaRequestDto,
+      )) as AreaCreateResult;
 
-      expect(prismaService.$queryRawUnsafe).toHaveBeenCalledWith(
+      expect(mockPrismaService.$queryRawUnsafe).toHaveBeenCalledWith(
         expect.stringContaining('INSERT INTO areas'),
         mockAreaRequestDto.name,
         JSON.stringify(mockAreaRequestDto.polygon),
@@ -100,9 +148,11 @@ describe('AreasRepository', () => {
     it('should handle result as single object instead of array', async () => {
       mockPrismaService.$queryRawUnsafe.mockResolvedValue(mockAreaResult);
 
-      const result = await repository.create(mockAreaRequestDto);
+      const result = (await repository.create(
+        mockAreaRequestDto,
+      )) as AreaCreateResult;
 
-      expect(prismaService.$queryRawUnsafe).toHaveBeenCalledWith(
+      expect(mockPrismaService.$queryRawUnsafe).toHaveBeenCalledWith(
         expect.stringContaining('INSERT INTO areas'),
         mockAreaRequestDto.name,
         JSON.stringify(mockAreaRequestDto.polygon),
@@ -123,7 +173,9 @@ describe('AreasRepository', () => {
         resultWithoutPolygon,
       ]);
 
-      const result = await repository.create(mockAreaRequestDto);
+      const result = (await repository.create(
+        mockAreaRequestDto,
+      )) as AreaCreateResult;
 
       expect(result).toEqual({
         ...resultWithoutPolygon,
@@ -137,7 +189,9 @@ describe('AreasRepository', () => {
         resultWithNullPolygon,
       ]);
 
-      const result = await repository.create(mockAreaRequestDto);
+      const result = (await repository.create(
+        mockAreaRequestDto,
+      )) as AreaCreateResult;
 
       expect(result).toEqual({
         ...resultWithNullPolygon,
@@ -150,19 +204,19 @@ describe('AreasRepository', () => {
 
       await repository.create(mockAreaRequestDto);
 
-      const [query, ...params] =
-        mockPrismaService.$queryRawUnsafe.mock.calls[0];
+      const mockCalls = mockPrismaService.$queryRawUnsafe.mock.calls;
+      const [query, ...params] = mockCalls[0] as [string, ...any[]];
 
       expect(query).toContain('INSERT INTO areas');
       expect(query).toContain(
-        '(name, polygon, ativo, "producerId", "soilTypeId", "irrigationTypeId", "createdAt", "updatedAt")',
+        '(name, polygon, "isActive", "producerId", "soilTypeId", "irrigationTypeId", "createdAt", "updatedAt")',
       );
       expect(query).toContain('VALUES');
       expect(query).toContain(
         '($1, ST_GeomFromGeoJSON($2), $3, $4, $5, $6, NOW(), NOW())',
       );
       expect(query).toContain(
-        'RETURNING id, name, ativo, "producerId", "soilTypeId", "irrigationTypeId", "createdAt", ST_AsGeoJSON(polygon) AS polygon',
+        'RETURNING id, name, "isActive", "producerId", "soilTypeId", "irrigationTypeId", "createdAt", ST_AsGeoJSON(polygon) AS polygon',
       );
 
       expect(params).toEqual([
@@ -179,79 +233,206 @@ describe('AreasRepository', () => {
   describe('findById', () => {
     it('should find area by id successfully', async () => {
       const areaId = 1;
-      mockPrismaService.area.findUnique.mockResolvedValue(mockAreaFromDatabase);
+      const mockRawResult = [
+        {
+          id: 1,
+          name: 'Área Teste',
+          isActive: true,
+          producerId: 1,
+          soilTypeId: 1,
+          irrigationTypeId: 1,
+          createdAt: new Date('2023-01-01'),
+          updatedAt: new Date('2023-01-01'),
+          polygon:
+            '{"type":"Polygon","coordinates":[[[-46.6,-23.5],[-46.6,-23.4],[-46.5,-23.4],[-46.5,-23.5],[-46.6,-23.5]]]}',
+          soilTypeName: 'Solo Argiloso',
+          irrigationTypeName: 'Gotejamento',
+        },
+      ];
+
+      mockPrismaService.$queryRawUnsafe.mockResolvedValue(mockRawResult);
 
       const result = await repository.findById(areaId);
 
-      expect(prismaService.area.findUnique).toHaveBeenCalledWith({
-        where: { id: areaId },
+      expect(mockPrismaService.$queryRawUnsafe).toHaveBeenCalledWith(
+        expect.stringContaining('SELECT'),
+        areaId,
+      );
+      expect(result).toEqual({
+        id: 1,
+        name: 'Área Teste',
+        isActive: true,
+        producerId: 1,
+        soilTypeId: 1,
+        irrigationTypeId: 1,
+        createdAt: new Date('2023-01-01'),
+        updatedAt: new Date('2023-01-01'),
+        polygon: {
+          type: 'Polygon',
+          coordinates: [
+            [
+              [-46.6, -23.5],
+              [-46.6, -23.4],
+              [-46.5, -23.4],
+              [-46.5, -23.5],
+              [-46.6, -23.5],
+            ],
+          ],
+        },
+        soilType: { id: 1, name: 'Solo Argiloso' },
+        irrigationType: { id: 1, name: 'Gotejamento' },
       });
-      expect(result).toEqual(mockAreaFromDatabase);
     });
 
     it('should return null when area is not found', async () => {
       const areaId = 999;
-      mockPrismaService.area.findUnique.mockResolvedValue(null);
+      mockPrismaService.$queryRawUnsafe.mockResolvedValue([]);
 
       const result = await repository.findById(areaId);
 
-      expect(prismaService.area.findUnique).toHaveBeenCalledWith({
-        where: { id: areaId },
-      });
+      expect(mockPrismaService.$queryRawUnsafe).toHaveBeenCalledWith(
+        expect.stringContaining('SELECT'),
+        areaId,
+      );
       expect(result).toBeNull();
     });
   });
 
+  describe('findByProducerId', () => {
+    it('should find areas by producer id successfully', async () => {
+      const producerId = 1;
+      const mockRawResult = [
+        {
+          id: 1,
+          name: 'Área Teste 1',
+          isActive: true,
+          producerId: 1,
+          soilTypeId: 1,
+          irrigationTypeId: 1,
+          createdAt: new Date('2023-01-01'),
+          updatedAt: new Date('2023-01-01'),
+          polygon:
+            '{"type":"Polygon","coordinates":[[[-46.6,-23.5],[-46.6,-23.4],[-46.5,-23.4],[-46.5,-23.5],[-46.6,-23.5]]]}',
+          soilTypeName: 'Solo Argiloso',
+          irrigationTypeName: 'Gotejamento',
+        },
+        {
+          id: 2,
+          name: 'Área Teste 2',
+          isActive: false,
+          producerId: 1,
+          soilTypeId: 2,
+          irrigationTypeId: 2,
+          createdAt: new Date('2023-01-02'),
+          updatedAt: new Date('2023-01-02'),
+          polygon:
+            '{"type":"Polygon","coordinates":[[[-46.7,-23.6],[-46.7,-23.5],[-46.6,-23.5],[-46.6,-23.6],[-46.7,-23.6]]]}',
+          soilTypeName: 'Solo Arenoso',
+          irrigationTypeName: 'Aspersão',
+        },
+      ];
+
+      mockPrismaService.$queryRawUnsafe.mockResolvedValue(mockRawResult);
+
+      const result = await repository.findByProducerId(producerId);
+
+      expect(mockPrismaService.$queryRawUnsafe).toHaveBeenCalledWith(
+        expect.stringContaining('WHERE a."producerId" = $1'),
+        producerId,
+      );
+      expect(result).toHaveLength(2);
+      expect(result[0]).toEqual({
+        id: 1,
+        name: 'Área Teste 1',
+        isActive: true,
+        producerId: 1,
+        soilTypeId: 1,
+        irrigationTypeId: 1,
+        createdAt: new Date('2023-01-01'),
+        updatedAt: new Date('2023-01-01'),
+        polygon: {
+          type: 'Polygon',
+          coordinates: [
+            [
+              [-46.6, -23.5],
+              [-46.6, -23.4],
+              [-46.5, -23.4],
+              [-46.5, -23.5],
+              [-46.6, -23.5],
+            ],
+          ],
+        },
+        soilType: { id: 1, name: 'Solo Argiloso' },
+        irrigationType: { id: 1, name: 'Gotejamento' },
+      });
+    });
+
+    it('should return empty array when no areas are found for producer', async () => {
+      const producerId = 999;
+      mockPrismaService.$queryRawUnsafe.mockResolvedValue([]);
+
+      const result = await repository.findByProducerId(producerId);
+
+      expect(mockPrismaService.$queryRawUnsafe).toHaveBeenCalledWith(
+        expect.stringContaining('WHERE a."producerId" = $1'),
+        producerId,
+      );
+      expect(result).toEqual([]);
+    });
+  });
+
   describe('updateStatus', () => {
-    it('should update area status to inactive successfully', async () => {
+    it('should update area status successfully', async () => {
       const areaId = 1;
-      const ativo = false;
-      const updatedArea = {
-        ...mockAreaFromDatabase,
-        ativo: false,
-        updatedAt: new Date('2023-01-02'),
-      };
-      mockPrismaService.area.update.mockResolvedValue(updatedArea);
-
-      const result = await repository.updateStatus(areaId, ativo);
-
-      expect(prismaService.area.update).toHaveBeenCalledWith({
-        where: { id: areaId },
-        data: { ativo: ativo, updatedAt: expect.any(Date) },
-      });
-      expect(result).toEqual(updatedArea);
-    });
-
-    it('should update area status to active successfully', async () => {
-      const areaId = 1;
-      const ativo = true;
-      const updatedArea = {
-        ...mockAreaFromDatabase,
-        ativo: true,
-        updatedAt: new Date('2023-01-02'),
-      };
-      mockPrismaService.area.update.mockResolvedValue(updatedArea);
-
-      const result = await repository.updateStatus(areaId, ativo);
-
-      expect(prismaService.area.update).toHaveBeenCalledWith({
-        where: { id: areaId },
-        data: { ativo: ativo, updatedAt: expect.any(Date) },
-      });
-      expect(result).toEqual(updatedArea);
-    });
-
-    it('should call update with current timestamp', async () => {
-      const areaId = 1;
-      const ativo = false;
-      const beforeCall = new Date();
+      const isActive = true;
       mockPrismaService.area.update.mockResolvedValue(mockAreaFromDatabase);
 
-      await repository.updateStatus(areaId, ativo);
+      const result = (await repository.updateStatus(
+        areaId,
+        isActive,
+      )) as MockAreaFromDatabase;
+
+      expect(mockPrismaService.area.update).toHaveBeenCalledWith({
+        where: { id: areaId },
+        data: {
+          isActive: isActive,
+          updatedAt: expect.any(Date) as unknown as Date,
+        },
+      });
+      expect(result).toEqual(mockAreaFromDatabase);
+    });
+
+    it('should handle Prisma errors when updating status', async () => {
+      const areaId = 1;
+      const isActive = false;
+      const error = new Error('Database error');
+      mockPrismaService.area.update.mockRejectedValue(error);
+
+      await expect(repository.updateStatus(areaId, isActive)).rejects.toThrow(
+        'Database error',
+      );
+
+      expect(mockPrismaService.area.update).toHaveBeenCalledWith({
+        where: { id: areaId },
+        data: {
+          isActive: isActive,
+          updatedAt: expect.any(Date) as unknown as Date,
+        },
+      });
+    });
+
+    it('should update the area status with proper timestamp', async () => {
+      const areaId = 1;
+      const isActive = true;
+      mockPrismaService.area.update.mockResolvedValue(mockAreaFromDatabase);
+
+      const beforeCall = new Date();
+      await repository.updateStatus(areaId, isActive);
       const afterCall = new Date();
 
-      const updateCall = mockPrismaService.area.update.mock.calls[0][0];
-      const updatedAt = updateCall.data.updatedAt;
+      const mockCalls = mockPrismaService.area.update.mock.calls;
+      const updateCall = mockCalls[0]?.[0] as { data: { updatedAt: Date } };
+      const updatedAt = updateCall?.data?.updatedAt;
 
       expect(updatedAt).toBeInstanceOf(Date);
       expect(updatedAt.getTime()).toBeGreaterThanOrEqual(beforeCall.getTime());

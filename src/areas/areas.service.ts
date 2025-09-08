@@ -17,8 +17,7 @@ export class AreasService {
   ) {}
 
   async create(areaRequestDto: AreaRequestDto): Promise<any> {
-    const { producerId, soilTypeId, irrigationTypeId } =
-      areaRequestDto;
+    const { producerId, soilTypeId, irrigationTypeId } = areaRequestDto;
     // Verifica se o produtor existe
     const producer = await this.producersRepository.findById(producerId);
     if (!producer) {
@@ -40,19 +39,17 @@ export class AreasService {
   }
 
   async updateStatus(id: number, dto: UpdateAreaStatusDto): Promise<any> {
-    // Busca área
     const area = await this.repository.findById(id);
     if (!area) {
       throw new NotFoundException('Área não encontrada');
     }
-    // status atual
-    const ativoAtual = area.ativo === true;
-    // idempotência: se já está no status desejado, retorna sem alterar
-    if (ativoAtual === dto.ativo) {
+
+    const isActiveCurrent = area.isActive === true;
+    if (isActiveCurrent === dto.isActive) {
       return area;
     }
-    // Atualiza ativo
-    return this.repository.updateStatus(id, dto.ativo);
+
+    return this.repository.updateStatus(id, dto.isActive);
   }
 
   async update(id: number, dto: UpdateAreaDto): Promise<any> {
@@ -65,39 +62,24 @@ export class AreasService {
     // 2. Atualiza a área no banco de dados usando o repositório
     return this.repository.update(id, dto);
   }
-  
-  async getAreaById(id: number) {
+
+  async getAreaById(id: number): Promise<any> {
     const area = await this.repository.findById(id);
     if (!area) {
       throw new NotFoundException('Área não encontrada');
     }
 
-    return {
-      id: area.id,
-      nome: area.nome,
-      tipo_solo: area.soilType?.name,
-      tipo_irrigacao: area.irrigationType?.name,
-      ativo: area.ativo,
-      criado_em: area.criado_em,
-      poligono_geo: area.poligono_geo,
-    };
+    return area;
   }
 
-  async getAreasByProducerId(producerId: number) {
+  async getAreasByProducerId(producerId: number): Promise<any[]> {
     const areas = await this.repository.findByProducerId(producerId);
-    if (!areas || areas.length === 0) { // Uma verificação mais robusta
-      // É melhor verificar a existência do produtor antes, mas por hora isso funciona.
-      throw new NotFoundException('Produtor não encontrado ou não possui áreas');
+    if (!areas || areas.length === 0) {
+      throw new NotFoundException(
+        'Produtor não encontrado ou não possui áreas',
+      );
     }
 
-    return areas.map((area) => ({
-      id: area.id,
-      nome: area.nome,
-      tipo_solo: area.soilType?.name,
-      tipo_irrigacao: area.irrigationType?.name,
-      ativo: area.ativo,
-      criado_em: area.criado_em,
-      poligono_geo: area.poligono_geo,
-    }));
+    return areas;
   }
 }

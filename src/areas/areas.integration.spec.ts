@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
@@ -18,10 +19,15 @@ import geojsonValidation from 'geojson-validation';
 
 describe('AreasController (e2e)', () => {
   let app: INestApplication;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let areasService: AreasService;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let areasRepository: AreasRepository;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let producersRepository: ProducersRepository;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let soilTypesRepository: SoilTypesRepository;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let irrigationTypesRepository: IrrigationTypesRepository;
 
   const mockAreasRepository = {
@@ -92,7 +98,7 @@ describe('AreasController (e2e)', () => {
     producerId: 1,
     soilTypeId: 1,
     irrigationTypeId: 1,
-    ativo: true,
+    isActive: true,
     createdAt: '2023-01-01T00:00:00.000Z',
     updatedAt: '2023-01-01T00:00:00.000Z',
     polygon: mockValidAreaRequestDto.polygon,
@@ -284,10 +290,10 @@ describe('AreasController (e2e)', () => {
   describe('PATCH /areas/:id/status', () => {
     it('should update area status successfully', async () => {
       const areaId = 1;
-      const updateDto = { ativo: false };
+      const updateDto = { isActive: false };
       const updatedArea = {
         ...mockArea,
-        ativo: false,
+        isActive: false,
         updatedAt: '2023-01-02T00:00:00.000Z',
       };
 
@@ -309,7 +315,7 @@ describe('AreasController (e2e)', () => {
 
     it('should return 404 when area is not found', async () => {
       const areaId = 999;
-      const updateDto = { ativo: false };
+      const updateDto = { isActive: false };
 
       mockAreasRepository.findById.mockResolvedValue(null);
 
@@ -325,7 +331,7 @@ describe('AreasController (e2e)', () => {
 
     it('should return area when status is already the desired one (idempotence)', async () => {
       const areaId = 1;
-      const updateDto = { ativo: true }; // área já está ativa
+      const updateDto = { isActive: true }; // área já está ativa
 
       mockAreasRepository.findById.mockResolvedValue(mockArea);
 
@@ -339,20 +345,22 @@ describe('AreasController (e2e)', () => {
       expect(mockAreasRepository.updateStatus).not.toHaveBeenCalled();
     });
 
-    it('should return 400 when ativo is not a boolean', async () => {
+    it('should return 400 when isActive is not a boolean', async () => {
       const areaId = 1;
-      const invalidDto = { ativo: 'true' };
+      const invalidDto = { isActive: 'true' };
 
       const response = await request(app.getHttpServer())
         .patch(`/areas/${areaId}/status`)
         .send(invalidDto)
         .expect(400);
 
-      expect(response.body.message).toContain('ativo must be a boolean value');
+      expect(response.body.message).toContain(
+        'isActive must be a boolean value',
+      );
       expect(mockAreasRepository.findById).not.toHaveBeenCalled();
     });
 
-    it('should return 400 when ativo is missing', async () => {
+    it('should return 400 when isActive is missing', async () => {
       const areaId = 1;
       const invalidDto = {};
 
@@ -361,13 +369,15 @@ describe('AreasController (e2e)', () => {
         .send(invalidDto)
         .expect(400);
 
-      expect(response.body.message).toContain('ativo must be a boolean value');
+      expect(response.body.message).toContain(
+        'isActive must be a boolean value',
+      );
       expect(mockAreasRepository.findById).not.toHaveBeenCalled();
     });
 
     it('should return 400 when id is not a number', async () => {
       const invalidId = 'invalid';
-      const updateDto = { ativo: false };
+      const updateDto = { isActive: false };
 
       await request(app.getHttpServer())
         .patch(`/areas/${invalidId}/status`)
