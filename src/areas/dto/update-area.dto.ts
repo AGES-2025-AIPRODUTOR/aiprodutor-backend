@@ -9,7 +9,7 @@ export class UpdateAreaDto {
   })
   @IsOptional()
   @IsString()
-  nome?: string;
+  name?: string;
 
   @ApiProperty({
     example: 1,
@@ -18,7 +18,7 @@ export class UpdateAreaDto {
   })
   @IsOptional()
   @IsNumber()
-  tipo_solo?: number;
+  soilTypeId?: number;
 
   @ApiProperty({
     example: 1,
@@ -27,7 +27,7 @@ export class UpdateAreaDto {
   })
   @IsOptional()
   @IsNumber()
-  tipo_irrigacao?: number;
+  irrigationTypeId?: number;
 
   @ApiProperty({
     example: true,
@@ -36,5 +36,5 @@ export class UpdateAreaDto {
   })
   @IsOptional()
   @IsBoolean()
-  ativo?: boolean;
+  isActive?: boolean;
 }

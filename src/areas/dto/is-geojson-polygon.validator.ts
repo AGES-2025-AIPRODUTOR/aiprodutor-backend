@@ -42,7 +42,7 @@ function isValidLinearRing(ring: any): boolean {
 }
 
 export function IsGeoJSONPolygon(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'isGeoJSONPolygon',
       target: object.constructor,

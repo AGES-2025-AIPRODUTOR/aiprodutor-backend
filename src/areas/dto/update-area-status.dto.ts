@@ -7,5 +7,5 @@ export class UpdateAreaStatusDto {
     description: 'Define se a área está ativa (true) ou inativa (false)',
   })
   @IsBoolean()
-  ativo: boolean;
+  isActive: boolean;
 }
