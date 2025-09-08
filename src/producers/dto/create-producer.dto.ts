@@ -5,10 +5,6 @@ import {
   IsOptional,
   IsString,
   Matches,
-  Length,
-  IsInt,
-  Min,
-  IsNumberString,
 } from 'class-validator';
 
 export class CreateProducerDto {
@@ -21,11 +17,15 @@ export class CreateProducerDto {
   name: string;
 
   @ApiProperty({
-    description: 'O CPF ou CNPJ do produtor.',
+    description: 'O CPF ou CNPJ do produtor (apenas números).',
     example: '12345678901',
   })
   @IsString()
   @IsNotEmpty()
+  @Matches(/^(\d{11}|\d{14})$/, {
+    message:
+      'O campo document deve ser um CPF (11 dígitos) ou CNPJ (14 dígitos) válido, somente números.',
+  })
   document: string;
 
   @ApiProperty({
@@ -74,7 +74,7 @@ export class CreateProducerDto {
   })
   @IsString()
   @IsNotEmpty()
-  @Matches(/^\d+$/, { message: 'number deve conter apenas dígitos.' })
+  @Matches(/^\d+$/, { message: 'O campo number deve conter apenas dígitos.' })
   number: string;
 
   @ApiProperty({

@@ -69,10 +69,27 @@ export class ProducersService {
     return this.repository.findAll();
   }
 
+  async findAllOrByDocument(cpfCnpj?: string) {
+    if (cpfCnpj) {
+      return this.findDocument(cpfCnpj);
+    }
+    return this.findAll();
+  }
+
   async findOne(id: number) {
     const producer = await this.repository.findById(id);
     if (!producer) {
       throw new NotFoundException(`Produtor com o ID #${id} não encontrado.`);
+    }
+    return producer;
+  }
+
+  async findDocument(document: string) {
+    const producer = await this.repository.findByDocument(document);
+    if (!producer) {
+      throw new NotFoundException(
+        `Produtor com o CPF/CNPJ #${document} não encontrado.`,
+      );
     }
     return producer;
   }
