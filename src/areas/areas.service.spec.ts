@@ -2,10 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { AreasService } from './areas.service';
 import { AreasRepository } from './areas.repository';
-import { ProducersRepository } from '../producers/producers.repository';
-import { SoilTypesRepository } from '../soil-types/soil-types.repository';
-import { IrrigationTypesRepository } from '../irrigation-types/irrigation-types.repository';
+import { ProducersService } from '../producers/producers.service';
+import { SoilTypesService } from '../soil-types/soil-types.service';
+import { IrrigationTypesService } from '../irrigation-types/irrigation-types.service';
 import { AreaRequestDto } from './dto/area-request.dto';
+import { UpdateAreaDto } from './dto/update-area.dto';
 import { UpdateAreaStatusDto } from './dto/update-area-status.dto';
 
 // Type interfaces for type safety
@@ -41,20 +42,22 @@ interface MockIrrigationType {
 interface MockAreasRepository {
   create: jest.MockedFunction<(dto: AreaRequestDto) => Promise<MockArea>>;
   findById: jest.MockedFunction<(id: number) => Promise<MockArea | null>>;
+  findOne: jest.MockedFunction<(id: number) => Promise<MockArea | null>>;
+  update: jest.MockedFunction<(id: number, dto: UpdateAreaDto) => Promise<MockArea>>;
   updateStatus: jest.MockedFunction<
     (id: number, isActive: boolean) => Promise<MockArea>
   >;
 }
 
-interface MockProducersRepository {
-  findById: jest.MockedFunction<(id: number) => Promise<MockProducer | null>>;
+interface MockProducersService {
+  findOne: jest.MockedFunction<(id: number) => Promise<MockProducer | null>>;
 }
 
-interface MockSoilTypesRepository {
+interface MockSoilTypesService {
   findById: jest.MockedFunction<(id: number) => Promise<MockSoilType | null>>;
 }
 
-interface MockIrrigationTypesRepository {
+interface MockIrrigationTypesService {
   findById: jest.MockedFunction<
     (id: number) => Promise<MockIrrigationType | null>
   >;
@@ -66,18 +69,20 @@ describe('AreasService', () => {
   const mockAreasRepository: MockAreasRepository = {
     create: jest.fn(),
     findById: jest.fn(),
+    findOne: jest.fn(),
+    update: jest.fn(),
     updateStatus: jest.fn(),
   };
 
-  const mockProducersRepository: MockProducersRepository = {
+  const mockProducersService: MockProducersService = {
+    findOne: jest.fn(),
+  };
+
+  const mockSoilTypesService: MockSoilTypesService = {
     findById: jest.fn(),
   };
 
-  const mockSoilTypesRepository: MockSoilTypesRepository = {
-    findById: jest.fn(),
-  };
-
-  const mockIrrigationTypesRepository: MockIrrigationTypesRepository = {
+  const mockIrrigationTypesService: MockIrrigationTypesService = {
     findById: jest.fn(),
   };
 
@@ -138,16 +143,16 @@ describe('AreasService', () => {
           useValue: mockAreasRepository,
         },
         {
-          provide: ProducersRepository,
-          useValue: mockProducersRepository,
+          provide: ProducersService,
+          useValue: mockProducersService,
         },
         {
-          provide: SoilTypesRepository,
-          useValue: mockSoilTypesRepository,
+          provide: SoilTypesService,
+          useValue: mockSoilTypesService,
         },
         {
-          provide: IrrigationTypesRepository,
-          useValue: mockIrrigationTypesRepository,
+          provide: IrrigationTypesService,
+          useValue: mockIrrigationTypesService,
         },
       ],
     }).compile();
@@ -161,22 +166,22 @@ describe('AreasService', () => {
 
   describe('create', () => {
     it('should create a new area successfully when all dependencies exist', async () => {
-      mockProducersRepository.findById.mockResolvedValue(mockProducer);
-      mockSoilTypesRepository.findById.mockResolvedValue(mockSoilType);
-      mockIrrigationTypesRepository.findById.mockResolvedValue(
+      mockProducersService.findOne.mockResolvedValue(mockProducer);
+      mockSoilTypesService.findById.mockResolvedValue(mockSoilType);
+      mockIrrigationTypesService.findById.mockResolvedValue(
         mockIrrigationType,
       );
       mockAreasRepository.create.mockResolvedValue(mockArea);
 
       const result = (await service.create(mockAreaRequestDto)) as MockArea;
 
-      expect(mockProducersRepository.findById).toHaveBeenCalledWith(
+      expect(mockProducersService.findOne).toHaveBeenCalledWith(
         mockAreaRequestDto.producerId,
       );
-      expect(mockSoilTypesRepository.findById).toHaveBeenCalledWith(
+      expect(mockSoilTypesService.findById).toHaveBeenCalledWith(
         mockAreaRequestDto.soilTypeId,
       );
-      expect(mockIrrigationTypesRepository.findById).toHaveBeenCalledWith(
+      expect(mockIrrigationTypesService.findById).toHaveBeenCalledWith(
         mockAreaRequestDto.irrigationTypeId,
       );
       expect(mockAreasRepository.create).toHaveBeenCalledWith(
@@ -186,51 +191,57 @@ describe('AreasService', () => {
     });
 
     it('should throw NotFoundException when producer is not found', async () => {
-      mockProducersRepository.findById.mockResolvedValue(null);
+      mockProducersService.findOne.mockRejectedValue(
+        new NotFoundException('Produtor não encontrado')
+      );
 
       await expect(service.create(mockAreaRequestDto)).rejects.toThrow(
         new NotFoundException('Produtor não encontrado'),
       );
-      expect(mockProducersRepository.findById).toHaveBeenCalledWith(
+      expect(mockProducersService.findOne).toHaveBeenCalledWith(
         mockAreaRequestDto.producerId,
       );
-      expect(mockSoilTypesRepository.findById).not.toHaveBeenCalled();
-      expect(mockIrrigationTypesRepository.findById).not.toHaveBeenCalled();
+      expect(mockSoilTypesService.findById).not.toHaveBeenCalled();
+      expect(mockIrrigationTypesService.findById).not.toHaveBeenCalled();
       expect(mockAreasRepository.create).not.toHaveBeenCalled();
     });
 
     it('should throw NotFoundException when soil type is not found', async () => {
-      mockProducersRepository.findById.mockResolvedValue(mockProducer);
-      mockSoilTypesRepository.findById.mockResolvedValue(null);
+      mockProducersService.findOne.mockResolvedValue(mockProducer);
+      mockSoilTypesService.findById.mockRejectedValue(
+        new NotFoundException('Tipo de solo não encontrado')
+      );
 
       await expect(service.create(mockAreaRequestDto)).rejects.toThrow(
         new NotFoundException('Tipo de solo não encontrado'),
       );
-      expect(mockProducersRepository.findById).toHaveBeenCalledWith(
+      expect(mockProducersService.findOne).toHaveBeenCalledWith(
         mockAreaRequestDto.producerId,
       );
-      expect(mockSoilTypesRepository.findById).toHaveBeenCalledWith(
+      expect(mockSoilTypesService.findById).toHaveBeenCalledWith(
         mockAreaRequestDto.soilTypeId,
       );
-      expect(mockIrrigationTypesRepository.findById).not.toHaveBeenCalled();
+      expect(mockIrrigationTypesService.findById).not.toHaveBeenCalled();
       expect(mockAreasRepository.create).not.toHaveBeenCalled();
     });
 
     it('should throw NotFoundException when irrigation type is not found', async () => {
-      mockProducersRepository.findById.mockResolvedValue(mockProducer);
-      mockSoilTypesRepository.findById.mockResolvedValue(mockSoilType);
-      mockIrrigationTypesRepository.findById.mockResolvedValue(null);
+      mockProducersService.findOne.mockResolvedValue(mockProducer);
+      mockSoilTypesService.findById.mockResolvedValue(mockSoilType);
+      mockIrrigationTypesService.findById.mockRejectedValue(
+        new NotFoundException('Tipo de irrigação não encontrado')
+      );
 
       await expect(service.create(mockAreaRequestDto)).rejects.toThrow(
         new NotFoundException('Tipo de irrigação não encontrado'),
       );
-      expect(mockProducersRepository.findById).toHaveBeenCalledWith(
+      expect(mockProducersService.findOne).toHaveBeenCalledWith(
         mockAreaRequestDto.producerId,
       );
-      expect(mockSoilTypesRepository.findById).toHaveBeenCalledWith(
+      expect(mockSoilTypesService.findById).toHaveBeenCalledWith(
         mockAreaRequestDto.soilTypeId,
       );
-      expect(mockIrrigationTypesRepository.findById).toHaveBeenCalledWith(
+      expect(mockIrrigationTypesService.findById).toHaveBeenCalledWith(
         mockAreaRequestDto.irrigationTypeId,
       );
       expect(mockAreasRepository.create).not.toHaveBeenCalled();
@@ -341,6 +352,142 @@ describe('AreasService', () => {
         true,
       );
       expect(result).toEqual(activatedArea);
+    });
+  });
+
+  describe('update', () => {
+    it('should update area successfully when area exists', async () => {
+      const areaId = 1;
+      const updateDto: UpdateAreaDto = {
+        name: 'Área Atualizada',
+        soilTypeId: 2,
+        irrigationTypeId: 3,
+        isActive: false,
+      };
+      const updatedArea: MockArea = {
+        ...mockArea,
+        name: 'Área Atualizada',
+        soilTypeId: 2,
+        irrigationTypeId: 3,
+        isActive: false,
+        updatedAt: new Date('2023-01-02'),
+      };
+
+      mockAreasRepository.findById.mockResolvedValue(mockArea);
+      mockAreasRepository.update.mockResolvedValue(updatedArea);
+
+      const result = await service.update(areaId, updateDto);
+
+      expect(mockAreasRepository.findById).toHaveBeenCalledWith(areaId);
+      expect(mockAreasRepository.update).toHaveBeenCalledWith(areaId, updateDto);
+      expect(result).toEqual(updatedArea);
+    });
+
+    it('should throw NotFoundException when area does not exist', async () => {
+      const areaId = 999;
+      const updateDto: UpdateAreaDto = {
+        name: 'Área Atualizada',
+      };
+
+      mockAreasRepository.findById.mockResolvedValue(null);
+
+      await expect(service.update(areaId, updateDto)).rejects.toThrow(
+        new NotFoundException(`Área com o ID ${areaId} não encontrada.`),
+      );
+      expect(mockAreasRepository.findById).toHaveBeenCalledWith(areaId);
+      expect(mockAreasRepository.update).not.toHaveBeenCalled();
+    });
+
+    it('should update area with partial data', async () => {
+      const areaId = 1;
+      const updateDto: UpdateAreaDto = {
+        name: 'Apenas Nome Atualizado',
+      };
+      const updatedArea: MockArea = {
+        ...mockArea,
+        name: 'Apenas Nome Atualizado',
+        updatedAt: new Date('2023-01-02'),
+      };
+
+      mockAreasRepository.findById.mockResolvedValue(mockArea);
+      mockAreasRepository.update.mockResolvedValue(updatedArea);
+
+      const result = await service.update(areaId, updateDto);
+
+      expect(mockAreasRepository.findById).toHaveBeenCalledWith(areaId);
+      expect(mockAreasRepository.update).toHaveBeenCalledWith(areaId, updateDto);
+      expect(result).toEqual(updatedArea);
+    });
+
+    it('should update only isActive field', async () => {
+      const areaId = 1;
+      const updateDto: UpdateAreaDto = {
+        isActive: false,
+      };
+      const updatedArea: MockArea = {
+        ...mockArea,
+        isActive: false,
+        updatedAt: new Date('2023-01-02'),
+      };
+
+      mockAreasRepository.findById.mockResolvedValue(mockArea);
+      mockAreasRepository.update.mockResolvedValue(updatedArea);
+
+      const result = await service.update(areaId, updateDto);
+
+      expect(mockAreasRepository.findById).toHaveBeenCalledWith(areaId);
+      expect(mockAreasRepository.update).toHaveBeenCalledWith(areaId, updateDto);
+      expect(result).toEqual(updatedArea);
+    });
+
+    it('should update only soilTypeId and irrigationTypeId', async () => {
+      const areaId = 1;
+      const updateDto: UpdateAreaDto = {
+        soilTypeId: 5,
+        irrigationTypeId: 6,
+      };
+      const updatedArea: MockArea = {
+        ...mockArea,
+        soilTypeId: 5,
+        irrigationTypeId: 6,
+        updatedAt: new Date('2023-01-02'),
+      };
+
+      mockAreasRepository.findById.mockResolvedValue(mockArea);
+      mockAreasRepository.update.mockResolvedValue(updatedArea);
+
+      const result = await service.update(areaId, updateDto);
+
+      expect(mockAreasRepository.findById).toHaveBeenCalledWith(areaId);
+      expect(mockAreasRepository.update).toHaveBeenCalledWith(areaId, updateDto);
+      expect(result).toEqual(updatedArea);
+    });
+
+    it('should update all fields at once', async () => {
+      const areaId = 1;
+      const updateDto: UpdateAreaDto = {
+        name: 'Completamente Atualizada',
+        soilTypeId: 10,
+        irrigationTypeId: 11,
+        isActive: false,
+      };
+      const updatedArea: MockArea = {
+        ...mockArea,
+        name: 'Completamente Atualizada',
+        soilTypeId: 10,
+        irrigationTypeId: 11,
+        isActive: false,
+        updatedAt: new Date('2023-01-02'),
+      };
+
+      mockAreasRepository.findById.mockResolvedValue(mockArea);
+      mockAreasRepository.update.mockResolvedValue(updatedArea);
+
+      const result = await service.update(areaId, updateDto);
+
+      expect(mockAreasRepository.findById).toHaveBeenCalledWith(areaId);
+      expect(mockAreasRepository.update).toHaveBeenCalledWith(areaId, updateDto);
+      expect(result).toEqual(updatedArea);
     });
   });
 });
