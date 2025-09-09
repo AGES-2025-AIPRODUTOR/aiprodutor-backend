@@ -20,4 +20,13 @@ export class SoilTypesRepository {
   async findAll(): Promise<SoilTypes[]> {
     return this.prisma.soilType.findMany();
   }
+
+  async update(id: number, data: { name?: string; description?: string }): Promise<SoilTypes> {
+    return this.prisma.soilType.update({
+      where: { id },
+      data,
+    });
+  }
+
+  
 }

@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
 } from '@nestjs/common';
 import {
@@ -18,6 +19,7 @@ import {
 import { SoilTypesDto } from './dto/soil-types.dto';
 import { SoilTypesService } from './soil-types.service';
 import { SoilTypes } from './entities/soil-types.entity';
+import { UpdateSoilTypeDto } from './update-soil-type.dto';
 
 @ApiTags('Tipos de Solo')
 @Controller('soil-types')
@@ -55,4 +57,18 @@ export class SoilTypesController {
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<SoilTypes> {
     return await this.soilTypesService.findById(id);
   }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Atualiza um tipo de solo existente' })
+  @ApiParam({ name: 'id', type: Number, description: 'ID do tipo de solo' })
+  @ApiBody({ type: UpdateSoilTypeDto })
+  @ApiResponse({ status: 200, description: 'Tipo de solo atualizado com sucesso.' })
+  @ApiResponse({ status: 404, description: 'Tipo de solo não encontrado.' })
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateSoilTypeDto: UpdateSoilTypeDto,
+  ): Promise<SoilTypes> {
+    return await this.soilTypesService.update(id, updateSoilTypeDto);
+  }
+
 }
