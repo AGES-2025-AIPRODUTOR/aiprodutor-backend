@@ -26,8 +26,15 @@ export class AreaResponseDto {
   polygon: Record<string, any>;
 
   @ApiProperty({
+    description: 'Tamanho da área em hectares',
+    example: 15.7,
+    required: false,
+  })
+  areaSize?: number;
+
+  @ApiProperty({
     description: 'Data de criação',
-    example: '2025-08-25T12:00:00Z',
+    example: '2025-09-09T10:38:21Z',
   })
   createdAt: Date;
 
@@ -36,7 +43,7 @@ export class AreaResponseDto {
 
   @ApiProperty({
     description: 'Data de atualização',
-    example: '2025-08-25T12:00:00Z',
+    example: '2025-09-09T10:38:21Z',
   })
   updatedAt: Date;
 
@@ -61,7 +68,13 @@ export class AreaResponseDto {
   })
   irrigationType?: { id: number; name: string };
 
-  constructor(partial: Partial<AreaResponseDto>) {
+  constructor(partial: Partial<AreaResponseDto & { areaSize: number }>) {
     Object.assign(this, partial);
+
+    // Converte a área de metros quadrados (vindo do DB) para hectares,
+    // arredondando para 2 casas decimais.
+    if (this.areaSize) {
+      this.areaSize = parseFloat((this.areaSize / 10000).toFixed(2));
+    }
   }
 }
