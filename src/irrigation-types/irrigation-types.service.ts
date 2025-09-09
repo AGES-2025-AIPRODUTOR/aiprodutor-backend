@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { IrrigationTypesDto } from './dto/irrigation-types.dto';
 import { IrrigationTypesRepository } from './irrigation-types.repository';
 import { IrrigationTypes } from './entities/irrigation-types.entity';
+import { UpdateIrrigationTypeDto } from './update-irrigation-type.dto';
 
 @Injectable()
 export class IrrigationTypesService {
@@ -29,5 +30,13 @@ export class IrrigationTypesService {
       );
     }
     return irrigationType;
+  }
+
+  async update(id: number, updateIrrigationTypeDto: UpdateIrrigationTypeDto): Promise<IrrigationTypes> {
+    // Garante que o registro existe antes de tentar atualizar
+    await this.findById(id);
+
+    // Executa a atualização
+    return await this.repository.update(id, updateIrrigationTypeDto);
   }
 }

@@ -20,4 +20,12 @@ export class IrrigationTypesRepository {
   async findAll(): Promise<IrrigationTypes[]> {
     return this.prisma.irrigationType.findMany();
   }
+
+  async update(id: number, data: { name?: string; description?: string }): Promise<IrrigationTypes> {
+    return this.prisma.irrigationType.update({
+      where: { id },
+      data,
+    });
+  }
+  
 }
