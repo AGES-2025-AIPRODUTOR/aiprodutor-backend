@@ -39,9 +39,6 @@ export class AreasService {
    * @returns Um AreaResponseDto.
    */
   private mapToResponseDto(areaData: AreaFromRepository): AreaResponseDto {
-    // A CORREÇÃO FINAL ESTÁ AQUI 👇
-    // Convertemos `null` para `undefined` para todos os campos que podem ser nulos
-    // para alinhar com o tipo esperado pelo construtor do DTO.
     const mappedData = {
       ...areaData,
       polygon: areaData.polygon ?? undefined,
