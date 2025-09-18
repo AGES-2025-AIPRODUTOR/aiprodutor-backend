@@ -7,7 +7,22 @@ import { AreaResponseDto } from './dto/area-response.dto';
 import { ProducersService } from '../producers/producers.service';
 import { SoilTypesService } from '../soil-types/soil-types.service';
 import { IrrigationTypesService } from '../irrigation-types/irrigation-types.service';
-import { Area } from './entities/area.entity';
+
+// Interface para o tipo de dado que vem do repositório
+interface AreaFromRepository {
+  id: number;
+  name: string;
+  isActive: boolean;
+  producerId: number;
+  soilTypeId: number;
+  irrigationTypeId: number;
+  createdAt: Date;
+  updatedAt: Date;
+  polygon: Record<string, any> | null;
+  areaSize: number;
+  soilType: { id: number; name: string } | null;
+  irrigationType: { id: number; name: string } | null;
+}
 
 @Injectable()
 export class AreasService {
@@ -18,76 +33,75 @@ export class AreasService {
     private readonly irrigationTypesService: IrrigationTypesService,
   ) {}
 
-private mapToArea(rawArea: any): Area {
-  // Se o polígono for nulo, trate isso como um erro, pois sua lógica exige que ele exista.
-  if (rawArea.polygon === null || rawArea.polygon === undefined) {
-    throw new NotFoundException('O polígono para esta área não foi encontrado.');
+  /**
+   * Mapeia os dados do repositório para o DTO de resposta.
+   * @param areaData - Os dados da área vindos do repositório (não pode ser nulo).
+   * @returns Um AreaResponseDto.
+   */
+  private mapToResponseDto(areaData: AreaFromRepository): AreaResponseDto {
+    const mappedData = {
+      ...areaData,
+      polygon: areaData.polygon ?? undefined,
+      soilType: areaData.soilType ?? undefined,
+      irrigationType: areaData.irrigationType ?? undefined,
+    };
+    return new AreaResponseDto(mappedData);
   }
 
-  return new Area({
-    id: rawArea.id,
-    name: rawArea.name,
-    isActive: rawArea.isActive ?? true,
-    producerId: rawArea.producerId,
-    soilTypeId: rawArea.soilTypeId,
-    irrigationTypeId: rawArea.irrigationTypeId,
-    createdAt: rawArea.createdAt,
-    updatedAt: rawArea.updatedAt,
-    polygon: rawArea.polygon,
-  });
-}
-
-  async create(areaRequestDto: AreaRequestDto): Promise<Area> {
+  async create(areaRequestDto: AreaRequestDto): Promise<AreaResponseDto> {
     const { producerId, soilTypeId, irrigationTypeId } = areaRequestDto;
 
     await this.producersService.findOne(producerId);
     await this.soilTypesService.findById(soilTypeId);
     await this.irrigationTypesService.findById(irrigationTypeId);
-
-    return this.repository.create(areaRequestDto);
+    const fullNewArea = await this.repository.create(areaRequestDto);
+    return this.mapToResponseDto(fullNewArea!);
   }
 
-  async updateStatus(id: number, dto: UpdateAreaStatusDto): Promise<Area> {
-    const area = await this.repository.findById(id);
-    if (!area) {
-      throw new NotFoundException('Área não encontrada');
-    }
-
-    const isActiveCurrent = area.isActive === true;
-    if (isActiveCurrent === dto.isActive) {
-      return this.mapToArea(area);
-    }
-
-    const updatedArea = await this.repository.updateStatus(id, dto.isActive);
-    return this.mapToArea(updatedArea);
-  }
-
-  async update(id: number, dto: UpdateAreaDto): Promise<Area> {
-    await this.findOne(id); // Reutiliza o método findOne para verificar a existência
-    const updatedArea = await this.repository.update(id, dto);
-    return this.mapToArea(updatedArea);
-  }
-
-  async findOne(id: number): Promise<Area> {
+  async updateStatus(
+    id: number,
+    dto: UpdateAreaStatusDto,
+  ): Promise<AreaResponseDto> {
     const area = await this.repository.findById(id);
     if (!area) {
       throw new NotFoundException(`Área com o ID ${id} não encontrada.`);
     }
-    return this.mapToArea(area);
+
+    if (area.isActive === dto.isActive) {
+      return this.mapToResponseDto(area);
+    }
+
+    const updatedArea = await this.repository.updateStatus(id, dto.isActive);
+    return this.mapToResponseDto(updatedArea!);
   }
 
-  async findByProducerId(producerId: number): Promise<Area[]> {
-    // Primeiro, verifica se o produtor existe para dar uma mensagem de erro clara
+  async update(id: number, dto: UpdateAreaDto): Promise<AreaResponseDto> {
+    const areaExists = await this.repository.findById(id);
+    if (!areaExists) {
+      throw new NotFoundException(`Área com o ID ${id} não encontrada.`);
+    }
+    
+    const updatedArea = await this.repository.update(id, dto);
+    return this.mapToResponseDto(updatedArea!);
+  }
+
+  async findOne(id: number): Promise<AreaResponseDto> {
+    const area = await this.repository.findById(id);
+    if (!area) {
+      throw new NotFoundException(`Área com o ID ${id} não encontrada.`);
+    }
+    return this.mapToResponseDto(area);
+  }
+
+  async findByProducerId(producerId: number): Promise<AreaResponseDto[]> {
     await this.producersService.findOne(producerId);
-    
+
     const areas = await this.repository.findByProducerId(producerId);
-    
-    // A verificação de 'areas.length === 0' pode ser feita no controller se necessário
-    return areas.map(area => this.mapToArea(area));
+    return areas.map((area) => this.mapToResponseDto(area));
   }
 
-  async findAll(): Promise<Area[]> {
+  async findAll(): Promise<AreaResponseDto[]> {
     const areas = await this.repository.findAll();
-    return areas.map(area => this.mapToArea(area));
+    return areas.map((area) => this.mapToResponseDto(area));
   }
 }

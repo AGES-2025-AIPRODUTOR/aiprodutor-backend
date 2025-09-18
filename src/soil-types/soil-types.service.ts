@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { SoilTypesDto } from './dto/soil-types.dto';
 import { SoilTypesRepository } from './soil-types.repository';
 import { SoilTypes } from './entities/soil-types.entity';
+import { UpdateSoilTypeDto } from './update-soil-type.dto';
 
 @Injectable()
 export class SoilTypesService {
@@ -27,5 +28,9 @@ export class SoilTypesService {
       );
     }
     return soilType;
+  }
+  async update(id: number, updateSoilTypeDto: UpdateSoilTypeDto): Promise<SoilTypes> {
+    await this.findById(id);
+    return await this.repository.update(id, updateSoilTypeDto);
   }
 }

@@ -24,6 +24,8 @@ interface RawAreaQueryResult {
   createdAt: Date;
   updatedAt: Date;
   polygon: string;
+  areaSize: number;
+
   soilTypeName: string;
   irrigationTypeName: string;
 }
@@ -38,6 +40,7 @@ interface AreaWithRelations {
   createdAt: Date;
   updatedAt: Date;
   polygon: Record<string, any> | null;
+  areaSize: number; // Adicione este campo
   soilType: { id: number; name: string } | null;
   irrigationType: { id: number; name: string } | null;
 }
@@ -67,6 +70,7 @@ export class AreasRepository {
       irrigationType: row.irrigationTypeName
         ? { id: row.irrigationTypeId, name: row.irrigationTypeName }
         : null,
+      areaSize: row.areaSize,
     };
   }
 
@@ -75,30 +79,36 @@ export class AreasRepository {
       areaRequestDto;
     const geojsonString = JSON.stringify(polygon);
 
+    // Query modificada para retornar todos os dados necessários de uma vez
     const result = await this.prisma.$queryRawUnsafe(
       `
-      INSERT INTO areas
-        (name, polygon, "isActive", "producerId", "soilTypeId", "irrigationTypeId", "createdAt", "updatedAt")
-      VALUES
-        ($1, ST_GeomFromGeoJSON($2), $3, $4, $5, $6, NOW(), NOW())
-      RETURNING id, name, "isActive", "producerId", "soilTypeId", "irrigationTypeId", "createdAt", ST_AsGeoJSON(polygon) AS polygon;
+      WITH new_area AS (
+        INSERT INTO areas
+          (name, polygon, "isActive", "producerId", "soilTypeId", "irrigationTypeId", "createdAt", "updatedAt")
+        VALUES
+          ($1, ST_GeomFromGeoJSON($2), true, $3, $4, $5, NOW(), NOW())
+        RETURNING id, name, "isActive", "producerId", "soilTypeId", "irrigationTypeId", "createdAt", "updatedAt", polygon
+      )
+      SELECT 
+        na.id, na.name, na."isActive", na."producerId", na."soilTypeId", na."irrigationTypeId", 
+        na."createdAt", na."updatedAt", ST_AsGeoJSON(na.polygon) AS polygon,
+        st.name as "soilTypeName",
+        it.name as "irrigationTypeName",
+        ST_Area(na.polygon::geography) as "areaSize"
+      FROM new_area na
+      LEFT JOIN soil_types st ON na."soilTypeId" = st.id
+      LEFT JOIN irrigation_types it ON na."irrigationTypeId" = it.id;
       `,
       name,
       geojsonString,
-      true,
       producerId,
       soilTypeId,
       irrigationTypeId,
     );
 
-    const row = (Array.isArray(result) ? result[0] : result) as RawAreaResult;
-    return {
-      ...row,
-      polygon:
-        row && row.polygon
-          ? (JSON.parse(row.polygon) as Record<string, any>)
-          : undefined,
-    };
+    const row = (Array.isArray(result) ? result[0] : result) as any;
+    
+    return this.mapRawAreaToAreaWithRelations(row);
   }
 
   async findById(id: number): Promise<AreaWithRelations | null> {
@@ -108,7 +118,8 @@ export class AreasRepository {
         a.id, a.name, a."isActive", a."producerId", a."soilTypeId", a."irrigationTypeId", 
         a."createdAt", a."updatedAt", ST_AsGeoJSON(a.polygon) AS polygon,
         st.name as "soilTypeName",
-        it.name as "irrigationTypeName"
+        it.name as "irrigationTypeName",
+        ST_Area(a.polygon::geography) as "areaSize" -- ADICIONE ESTA LINHA
       FROM areas a
       LEFT JOIN soil_types st ON a."soilTypeId" = st.id
       LEFT JOIN irrigation_types it ON a."irrigationTypeId" = it.id
@@ -133,11 +144,12 @@ export class AreasRepository {
         a.id, a.name, a."isActive", a."producerId", a."soilTypeId", a."irrigationTypeId", 
         a."createdAt", a."updatedAt", ST_AsGeoJSON(a.polygon) AS polygon,
         st.name as "soilTypeName",
-        it.name as "irrigationTypeName"
+        it.name as "irrigationTypeName",
+        ST_Area(a.polygon::geography) as "areaSize" -- ADICIONE ESTA LINHA
       FROM areas a
       LEFT JOIN soil_types st ON a."soilTypeId" = st.id
       LEFT JOIN irrigation_types it ON a."irrigationTypeId" = it.id
-      WHERE a."producerId" = $1
+      WHERE a."producerId" = $1 AND a."isActive" = true
       ORDER BY a."createdAt" DESC
       `,
       producerId,
@@ -148,14 +160,16 @@ export class AreasRepository {
     return rows.map((row) => this.mapRawAreaToAreaWithRelations(row));
   }
 
-  async updateStatus(id: number, isActive: boolean): Promise<any> {
-    return this.prisma.area.update({
+  async updateStatus(id: number, isActive: boolean): Promise<AreaWithRelations | null> {
+    await this.prisma.area.update({
       where: { id },
       data: { isActive: isActive, updatedAt: new Date() },
     });
+
+    return this.findById(id);
   }
 
-  async update(id: number, dto: UpdateAreaDto): Promise<any> {
+  async update(id: number, dto: UpdateAreaDto): Promise<AreaWithRelations | null> {
     const mappedData: {
       name?: string;
       isActive?: boolean;
@@ -180,27 +194,31 @@ export class AreasRepository {
       mappedData.irrigationTypeId = dto.irrigationTypeId;
     }
 
-    return this.prisma.area.update({
+    await this.prisma.area.update({
       where: { id },
       data: mappedData,
     });
+    
+    return this.findById(id);
   }
 
-    async findAll(): Promise<AreaWithRelations[]> {
+async findAll(): Promise<AreaWithRelations[]> {
     const result = await this.prisma.$queryRawUnsafe(
       `
       SELECT 
         a.id, a.name, a."isActive", a."producerId", a."soilTypeId", a."irrigationTypeId", 
         a."createdAt", a."updatedAt", ST_AsGeoJSON(a.polygon) AS polygon,
         st.name as "soilTypeName",
-        it.name as "irrigationTypeName"
+        it.name as "irrigationTypeName",
+        ST_Area(a.polygon::geography) as "areaSize" -- ADICIONE ESTA LINHA
       FROM areas a
       LEFT JOIN soil_types st ON a."soilTypeId" = st.id
       LEFT JOIN irrigation_types it ON a."irrigationTypeId" = it.id
+      WHERE a."isActive" = true
       ORDER BY a."createdAt" DESC
       `,
     );
-
+    
     const rows = result as RawAreaQueryResult[];
     return rows.map((row) => this.mapRawAreaToAreaWithRelations(row));
   }

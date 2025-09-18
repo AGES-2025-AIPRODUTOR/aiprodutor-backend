@@ -1,3 +1,5 @@
+// Em src/areas/entities/area.entity.ts
+
 import { ApiProperty } from '@nestjs/swagger';
 
 export class Area {
@@ -26,8 +28,14 @@ export class Area {
   polygon: Record<string, any>;
 
   @ApiProperty({
+    description: 'Tamanho da área em metros quadrados',
+    example: 157000,
+  })
+  areaSize: number; // Adicionada a propriedade areaSize
+
+  @ApiProperty({
     description: 'Data de criação',
-    example: '2025-08-25T12:00:00Z',
+    example: '2025-09-09T10:40:00Z',
   })
   createdAt: Date;
 
@@ -36,7 +44,7 @@ export class Area {
 
   @ApiProperty({
     description: 'Data de atualização',
-    example: '2025-08-25T12:00:00Z',
+    example: '2025-09-09T10:40:00Z',
   })
   updatedAt: Date;
 

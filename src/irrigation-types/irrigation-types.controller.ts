@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
 } from '@nestjs/common';
 import {
@@ -18,6 +19,7 @@ import {
 import { IrrigationTypesDto } from './dto/irrigation-types.dto';
 import { IrrigationTypesService } from './irrigation-types.service';
 import { IrrigationTypes } from './entities/irrigation-types.entity';
+import { UpdateIrrigationTypeDto } from './update-irrigation-type.dto';
 
 @ApiTags('Tipos de Irrigação')
 @Controller('irrigation-types')
@@ -64,4 +66,18 @@ export class IrrigationTypesController {
   ): Promise<IrrigationTypes> {
     return this.irrigationTypesService.findById(id);
   }
+  
+  @Patch(':id')
+  @ApiOperation({ summary: 'Atualiza um tipo de irrigação existente' })
+  @ApiParam({ name: 'id', type: Number, description: 'ID do tipo de irrigação' })
+  @ApiBody({ type: UpdateIrrigationTypeDto })
+  @ApiResponse({ status: 200, description: 'Tipo de irrigação atualizado com sucesso.' })
+  @ApiResponse({ status: 404, description: 'Tipo de irrigação não encontrado.' })
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateIrrigationTypeDto: UpdateIrrigationTypeDto,
+  ): Promise<IrrigationTypes> {
+    return await this.irrigationTypesService.update(id, updateIrrigationTypeDto);
+  }
+
 }

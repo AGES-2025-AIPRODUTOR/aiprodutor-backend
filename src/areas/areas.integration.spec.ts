@@ -324,7 +324,7 @@ describe('AreasController (e2e)', () => {
         .send(updateDto)
         .expect(404);
 
-      expect(response.body.message).toBe('Área não encontrada');
+      expect(response.body.message).toBe(`Área com o ID ${areaId} não encontrada.`);
       expect(mockAreasRepository.findById).toHaveBeenCalledWith(areaId);
       expect(mockAreasRepository.updateStatus).not.toHaveBeenCalled();
     });
