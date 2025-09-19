@@ -100,6 +100,65 @@ Se você deseja desenvolver com atualização automática do código (hot-reload
 
 ---
 
+## 🌱 Populando o Banco de Dados (Seed)
+
+O projeto contém um script para popular o banco com dados de exemplo (produtores, áreas, safras, etc).
+
+### Execução Automática
+O seed é executado automaticamente na primeira vez que o ambiente é criado com:
+
+    docker compose up --build
+
+ou após:
+
+    npx prisma migrate reset
+
+### Execução Manual
+Para executar o seed a qualquer momento, garanta que o banco de dados esteja rodando e execute:
+
+    npx prisma db seed
+
+### Para visualizar o banco de dados de forma visual, rode o comando
+
+    npx prisma studio
+
+E acesse a página 
+
+    http://localhost:5555/
+
+* O container de banco de dados deve estar rodando.
+
+---
+
+## 🔄 Resetando o Banco de Dados
+
+Para limpar completamente o banco de dados, recriar todas as tabelas e repopular com os dados do seed, use o comando:
+
+    npx prisma migrate reset
+
+
+---
+
+## 🖥️ Configuração para Desenvolvedores Windows
+
+O PowerShell no Windows possui uma política de segurança que pode bloquear a execução de comandos como `npm` e `npx`.  
+Para uma experiência de desenvolvimento fluida, recomendamos a seguinte solução:
+
+
+
+###  Alterar a Política de Execução
+No mesmo terminal do PowerShell onde você viu o erro, execute o seguinte comando:
+
+    Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+
+Após executar o comando acima, tente rodar seu script novamente:
+
+    npm run start:dev
+
+Isso deve resolver o problema imediatamente e é o método mais seguro, pois não altera as configurações de segurança do seu sistema permanentemente.
+
+---
+
 ### ⚠️ Corrigindo o erro de "Collation Version Mismatch" no PostgreSQL
 
 Se ao acessar o banco de dados via Docker você encontrar uma mensagem semelhante a:
