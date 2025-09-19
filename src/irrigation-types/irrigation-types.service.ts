@@ -6,7 +6,7 @@ import { UpdateIrrigationTypeDto } from './update-irrigation-type.dto';
 
 @Injectable()
 export class IrrigationTypesService {
-  constructor(private readonly repository: IrrigationTypesRepository) {}
+  constructor(private readonly repository: IrrigationTypesRepository) { }
 
   async create(
     irrigationTypesDto: IrrigationTypesDto,
@@ -38,5 +38,13 @@ export class IrrigationTypesService {
 
     // Executa a atualização
     return await this.repository.update(id, updateIrrigationTypeDto);
+  }
+
+  async remove(id: number) {
+    const irrigationType = await this.repository.findById(id);
+    if (!irrigationType) {
+      throw new NotFoundException(`Tipo de irrigação com o ID #${id} não encontrado.`);
+    }
+    return this.repository.remove(id);
   }
 }

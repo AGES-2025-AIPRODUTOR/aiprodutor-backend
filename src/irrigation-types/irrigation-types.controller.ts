@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -26,7 +27,7 @@ import { UpdateIrrigationTypeDto } from './update-irrigation-type.dto';
 export class IrrigationTypesController {
   constructor(
     private readonly irrigationTypesService: IrrigationTypesService,
-  ) {}
+  ) { }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -66,7 +67,7 @@ export class IrrigationTypesController {
   ): Promise<IrrigationTypes> {
     return this.irrigationTypesService.findById(id);
   }
-  
+
   @Patch(':id')
   @ApiOperation({ summary: 'Atualiza um tipo de irrigação existente' })
   @ApiParam({ name: 'id', type: Number, description: 'ID do tipo de irrigação' })
@@ -80,4 +81,11 @@ export class IrrigationTypesController {
     return await this.irrigationTypesService.update(id, updateIrrigationTypeDto);
   }
 
+  @Delete(':id')
+  @ApiOperation({ summary: 'Remove um tipo de irrigação' })
+  @ApiResponse({ status: 200, description: 'Tipo de irrigação removido com sucesso.', type: ProducerResponseDto })
+  @ApiResponse({ status: 404, description: 'Tipo de irrigação não encontrado.' })
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.irrigationTypesService.remove(id);
+  }
 }
