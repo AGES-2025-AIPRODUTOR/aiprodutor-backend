@@ -83,7 +83,7 @@ export class IrrigationTypesController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Remove um tipo de irrigação' })
-  @ApiResponse({ status: 200, description: 'Tipo de irrigação removido com sucesso.', type: ProducerResponseDto })
+  @ApiResponse({ status: 200, description: 'Tipo de irrigação removido com sucesso.'})
   @ApiResponse({ status: 404, description: 'Tipo de irrigação não encontrado.' })
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.irrigationTypesService.remove(id);
