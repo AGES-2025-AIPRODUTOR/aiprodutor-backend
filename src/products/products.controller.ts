@@ -80,6 +80,7 @@ export class ProductsController {
     type: Product,
   })
   @ApiResponse({ status: 404, description: 'Produto não encontrado.' })
+  @ApiResponse({ status: 409, description: 'Conflito: o produto está em uso e não pode ser removido.' })
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.productsService.remove(id);
   }
