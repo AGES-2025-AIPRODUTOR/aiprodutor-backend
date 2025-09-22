@@ -3,7 +3,7 @@ import { VarietiesRepository } from './varieties.repository';
 import { VarietyRequestDto } from './dto/variety-request.dto';
 import { VarietyResponseDto } from './dto/variety-response.dto';
 import { ProductsService } from '../products/products.service';
-import { PlantingsRepository } from '../plantings/plantings.repository';
+// import { PlantingsRepository } from '../plantings/plantings.repository';
 
 interface VarietyFromRepository {
     id: number;
@@ -16,7 +16,7 @@ export class VarietiesService {
     constructor(
         private readonly repository: VarietiesRepository,
         private readonly productsService: ProductsService,
-        private readonly plantingsRepository: PlantingsRepository,
+        // private readonly plantingsRepository: PlantingsRepository,
     ) { }
 
     private mapToResponseDto(varietyData: VarietyFromRepository): VarietyResponseDto {
@@ -71,10 +71,10 @@ export class VarietiesService {
             throw new NotFoundException(`Variedade com o ID ${id} não encontrada.`);
         }
 
-        const varietyInUse = await this.plantingsRepository.existsByVarietyId(id);
-        if (varietyInUse) {
-            throw new BadRequestException('Não é possível remover a variedade, pois ela está em uso.');
-        }
+        // const varietyInUse = await this.plantingsRepository.existsByVarietyId(id);
+        // if (varietyInUse) {
+        //     throw new BadRequestException('Não é possível remover a variedade, pois ela está em uso.');
+        // }
 
         const deletedVariety = await this.repository.remove(id);
         return this.mapToResponseDto(deletedVariety!);

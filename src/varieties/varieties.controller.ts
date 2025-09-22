@@ -20,6 +20,7 @@ import {
 import { VarietiesService } from './varieties.service';
 import { VarietyRequestDto } from './dto/variety-request.dto';
 import { VarietyResponseDto } from './dto/variety-response.dto';
+import { UpdatedVarietyDto } from './dto/update-variety.dto';
 
 @ApiTags('Varieties')
 @Controller('varieties')
@@ -65,14 +66,14 @@ export class VarietiesController {
     @Patch(':id')
     @ApiOperation({ summary: 'Edita uma variedade' })
     @ApiParam({ name: 'id', type: Number, description: 'ID da variedade' })
-    @ApiBody({ type: VarietyRequestDto })
+    @ApiBody({ type: UpdatedVarietyDto })
     @ApiResponse({ status: 200, description: 'Variedade atualizada com sucesso.', type: VarietyResponseDto })
     @ApiResponse({ status: 404, description: 'Variedade não encontrada.' })
     update(
         @Param('id', ParseIntPipe) id: number,
-        @Body() varietyRequestDto: VarietyRequestDto,
+        @Body() updatedVarietyDto: UpdatedVarietyDto,
     ) {
-        return this.varietiesService.update(id, varietyRequestDto);
+        return this.varietiesService.update(id, updatedVarietyDto);
     }
 
     @Get()
