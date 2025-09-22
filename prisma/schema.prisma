@@ -104,6 +104,8 @@ model IrrigationType {
 model Product {
   id        Int        @id @default(autoincrement())
   name      String     @unique
+  createdAt DateTime   @default(now()) // Campo adicionado
+  updatedAt DateTime @default(now()) @updatedAt
   plantings Planting[]
   varieties Variety[]
 
@@ -113,6 +115,8 @@ model Product {
 model Variety {
   id        Int        @id @default(autoincrement())
   name      String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
   productId Int
   plantings Planting[]
   product   Product    @relation(fields: [productId], references: [id])
