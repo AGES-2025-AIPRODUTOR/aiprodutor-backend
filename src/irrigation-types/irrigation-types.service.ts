@@ -1,12 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { IrrigationTypesDto } from './dto/irrigation-types.dto';
 import { IrrigationTypesRepository } from './irrigation-types.repository';
 import { IrrigationTypes } from './entities/irrigation-types.entity';
 import { UpdateIrrigationTypeDto } from './update-irrigation-type.dto';
+import { AreasRepository } from 'src/areas/areas.repository';
 
 @Injectable()
 export class IrrigationTypesService {
-  constructor(private readonly repository: IrrigationTypesRepository) { }
+  constructor(
+    private readonly repository: IrrigationTypesRepository,
+    private readonly areasRepository: AreasRepository
+  ) { }
 
   async create(
     irrigationTypesDto: IrrigationTypesDto,
@@ -45,6 +49,12 @@ export class IrrigationTypesService {
     if (!irrigationType) {
       throw new NotFoundException(`Tipo de irrigação com o ID #${id} não encontrado.`);
     }
+
+    const irrigationTypeInUse = await this.areasRepository.existsByIrrigationTypeId(id);
+    if (irrigationTypeInUse) {
+      throw new BadRequestException('Não é possível remover! tipo de irrigação está em uso por uma ou mais áreas.');
+    }
+
     return this.repository.remove(id);
   }
 }

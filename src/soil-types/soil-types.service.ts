@@ -44,8 +44,8 @@ export class SoilTypesService {
       throw new NotFoundException(`Tipo de solo com o ID #${id} não encontrado.`);
     }
 
-    const areaInUse = await this.areasRepository.existsBySoilTypeId(id);
-    if (areaInUse) {
+    const soilTypeInUse = await this.areasRepository.existsBySoilTypeId(id);
+    if (soilTypeInUse) {
       throw new BadRequestException('Não é possível remover! tipo de solo está em uso por uma ou mais áreas.');
     }
 

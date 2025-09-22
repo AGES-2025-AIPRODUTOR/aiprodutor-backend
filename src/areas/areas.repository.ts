@@ -227,4 +227,9 @@ export class AreasRepository {
     const area = await this.prisma.area.findFirst({ where: { soilTypeId } });
     return !!area;
   }
+
+  async existsByIrrigationTypeId(irrigationTypeId: number): Promise<boolean> {
+    const area = await this.prisma.area.findFirst({ where: { irrigationTypeId } });
+    return !!area;
+  }
 }
