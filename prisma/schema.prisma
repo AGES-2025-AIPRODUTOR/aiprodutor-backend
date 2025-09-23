@@ -106,6 +106,8 @@ model Product {
   name      String     @unique
   plantings Planting[]
   varieties Variety[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   @@map("products")
 }
@@ -116,6 +118,8 @@ model Variety {
   productId Int
   plantings Planting[]
   product   Product    @relation(fields: [productId], references: [id])
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   @@map("varieties")
 }
