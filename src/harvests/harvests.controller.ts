@@ -7,8 +7,8 @@ import { HarvestResponseDto } from './dto/harvest-response.dto';
 import { HarvestPanelResponseDto } from './dto/harvest-panel.dto';
 import { HarvestEntity } from './entities/harvest.entity';
 
-@ApiTags('harvests') // ← Tag para Swagger
-@Controller('api/v1/harvests') // ← Prefixo correto (sem duplicação)
+@ApiTags('Harvests') // ← Tag para Swagger
+@Controller('harvests') 
 export class HarvestsController {
   constructor(private readonly harvestsService: HarvestsService) {}
 
