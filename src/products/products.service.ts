@@ -4,7 +4,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product';
+import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductsRepository } from './products.repository';
 import { Prisma, Product } from '@prisma/client';
 
