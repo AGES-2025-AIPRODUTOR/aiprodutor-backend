@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -24,7 +25,7 @@ import { UpdateSoilTypeDto } from './update-soil-type.dto';
 @ApiTags('Tipos de Solo')
 @Controller('soil-types')
 export class SoilTypesController {
-  constructor(private readonly soilTypesService: SoilTypesService) {}
+  constructor(private readonly soilTypesService: SoilTypesService) { }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -71,4 +72,11 @@ export class SoilTypesController {
     return await this.soilTypesService.update(id, updateSoilTypeDto);
   }
 
+  @Delete(':id')
+  @ApiOperation({ summary: 'Remove um tipo de solo' })
+  @ApiResponse({ status: 200, description: 'Tipo de solo removido com sucesso.' })
+  @ApiResponse({ status: 404, description: 'Tipo de solo não encontrado.' })
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.soilTypesService.remove(id);
+  }
 }

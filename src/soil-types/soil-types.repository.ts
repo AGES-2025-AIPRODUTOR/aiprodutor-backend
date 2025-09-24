@@ -4,7 +4,7 @@ import { SoilTypes } from './entities/soil-types.entity';
 
 @Injectable()
 export class SoilTypesRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async create(data: {
     name: string;
@@ -28,5 +28,9 @@ export class SoilTypesRepository {
     });
   }
 
-  
+  async remove(id: number) {
+    return this.prisma.soilType.delete({
+      where: { id },
+    });
+  }
 }

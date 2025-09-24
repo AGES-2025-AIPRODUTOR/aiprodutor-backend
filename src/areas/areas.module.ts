@@ -1,9 +1,8 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { AreasController } from './areas.controller';
 import { AreasService } from './areas.service';
 import { AreasRepository } from './areas.repository';
 import { PrismaModule } from '../shared/prisma/prisma.module';
-
 import { ProducersModule } from '../producers/producers.module';
 import { SoilTypesModule } from '../soil-types/soil-types.module';
 import { IrrigationTypesModule } from '../irrigation-types/irrigation-types.module';
@@ -12,10 +11,11 @@ import { IrrigationTypesModule } from '../irrigation-types/irrigation-types.modu
   imports: [
     PrismaModule,
     ProducersModule,
-    SoilTypesModule,
-    IrrigationTypesModule,
+    forwardRef(() => SoilTypesModule),
+    forwardRef(() => IrrigationTypesModule),
   ],
   controllers: [AreasController],
   providers: [AreasService, AreasRepository],
+  exports: [AreasRepository],
 })
 export class AreasModule {}
