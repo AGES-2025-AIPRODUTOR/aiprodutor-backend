@@ -26,4 +26,4 @@ test_sync_to_github:
     - echo "TESTE DE SINCRONIZAÇÃO CONCLUÍDO!"
     - echo "Verifique a branch 'developer' no GitHub para confirmar as alterações."
   rules:
-    - if: '$CI_COMMIT_BRANCH == "test/shell-pipeline"'
+    - if: '$CI_COMMIT_BRANCH == "developer"'
