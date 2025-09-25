@@ -72,8 +72,7 @@ Siga os passos abaixo para configurar e rodar o projeto. A aplicação inteira (
 1.  **Inicie os containers:**
     Na raiz do projeto, execute:
     ```bash
-    docker  up
-    
+    docker compose up
     ```
     *Este comando irá iniciar o container do banco de dados e o da API. Você verá os logs de ambos os serviços neste terminal. As alterações no código-fonte na sua máquina serão refletidas automaticamente dentro do container.*
 
