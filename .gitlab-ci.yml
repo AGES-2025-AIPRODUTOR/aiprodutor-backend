@@ -11,7 +11,7 @@ test_sync_to_github:
     # Garante que não estamos em um clone superficial
     - git fetch --unshallow || true
 
-    # Garante que estamos em uma branch local para o push
+    # Garante que estamos em uma branch local para o checkout
     - git checkout -B "${CI_COMMIT_REF_NAME}"
 
     # Configura o remote do GitHub
