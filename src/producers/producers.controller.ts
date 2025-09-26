@@ -9,16 +9,23 @@ import {
   ParseIntPipe,
   Query,
 } from '@nestjs/common';
+import {
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ProducersService } from './producers.service';
 import { CreateProducerDto } from './dto/create-producer.dto';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { FindDocumentoProducerDto } from './dto/findDocument-producer.dto';
-import { find } from 'rxjs';
+import { UpdateProducerDto } from './dto/update-producer.dto';
+import { ProducerResponseDto } from './dto/producer-response.dto';
 
 @ApiTags('Producers') // Agrupa os endpoints no Swagger
 @Controller('producers')
 export class ProducersController {
-  constructor(private readonly producersService: ProducersService) {}
+  constructor(private readonly producersService: ProducersService) { }
 
   @Post()
   @ApiOperation({ summary: 'Cria um novo produtor' })
@@ -48,16 +55,22 @@ export class ProducersController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Atualiza os dados de um produtor' })
+  @ApiOperation({ summary: 'Edita os dados de um produtor' })
+  @ApiParam({ name: 'id', type: Number, description: 'ID da área' })
+  @ApiBody({ type: UpdateProducerDto })
+  @ApiResponse({ status: 200, description: 'Área atualizada com sucesso.', type: ProducerResponseDto })
+  @ApiResponse({ status: 404, description: 'Área não encontrada.' })
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateProducerDto: Partial<CreateProducerDto>,
+    @Body() updateProducerDto: Partial<UpdateProducerDto>,
   ) {
     return this.producersService.update(id, updateProducerDto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Remove um produtor' })
+  @ApiResponse({ status: 200, description: 'Produtor removido com sucesso.', type: ProducerResponseDto })
+  @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.producersService.remove(id);
   }

@@ -47,7 +47,7 @@ interface AreaWithRelations {
 
 @Injectable()
 export class AreasRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   private mapRawAreaToAreaWithRelations(
     row: RawAreaQueryResult,
@@ -107,7 +107,7 @@ export class AreasRepository {
     );
 
     const row = (Array.isArray(result) ? result[0] : result) as any;
-    
+
     return this.mapRawAreaToAreaWithRelations(row);
   }
 
@@ -198,11 +198,11 @@ export class AreasRepository {
       where: { id },
       data: mappedData,
     });
-    
+
     return this.findById(id);
   }
 
-async findAll(): Promise<AreaWithRelations[]> {
+  async findAll(): Promise<AreaWithRelations[]> {
     const result = await this.prisma.$queryRawUnsafe(
       `
       SELECT 
@@ -218,8 +218,18 @@ async findAll(): Promise<AreaWithRelations[]> {
       ORDER BY a."createdAt" DESC
       `,
     );
-    
+
     const rows = result as RawAreaQueryResult[];
     return rows.map((row) => this.mapRawAreaToAreaWithRelations(row));
+  }
+
+  async existsBySoilTypeId(soilTypeId: number): Promise<boolean> {
+    const area = await this.prisma.area.findFirst({ where: { soilTypeId } });
+    return !!area;
+  }
+
+  async existsByIrrigationTypeId(irrigationTypeId: number): Promise<boolean> {
+    const area = await this.prisma.area.findFirst({ where: { irrigationTypeId } });
+    return !!area;
   }
 }

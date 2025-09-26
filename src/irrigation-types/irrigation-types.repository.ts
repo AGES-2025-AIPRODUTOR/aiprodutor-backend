@@ -4,7 +4,7 @@ import { IrrigationTypes } from './entities/irrigation-types.entity';
 
 @Injectable()
 export class IrrigationTypesRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async create(data: {
     name: string;
@@ -27,5 +27,10 @@ export class IrrigationTypesRepository {
       data,
     });
   }
-  
+
+  async remove(id: number) {
+    return this.prisma.irrigationType.delete({
+      where: { id },
+    });
+  }
 }
