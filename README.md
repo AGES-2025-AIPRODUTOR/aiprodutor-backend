@@ -29,6 +29,7 @@ Siga os passos abaixo para configurar e rodar o projeto. A aplicação inteira (
 
 ### Pré-requisitos
 
+
 - [Git](https://git-scm.com/)
 - [Docker](https://www.docker.com/products/docker-desktop/) e Docker Compose
 - [Node.js](https://nodejs.org/) e [npm](https://www.npmjs.com/) → Fortemente recomendados para executar comandos do Prisma localmente e para a integração com o VS Code (TypeScript/ESLint).
