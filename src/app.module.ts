@@ -10,6 +10,7 @@ import { IrrigationTypesModule } from './irrigation-types/irrigation-types.modul
 import { SoilTypesModule } from './soil-types/soil-types.module';
 import { VarietiesModule } from './varieties/varieties.module';
 import { ProductsModule } from './products/products.module';
+import { PlantingsModule } from './plantings/plantings.module';
 
 
 @Module({
@@ -22,6 +23,7 @@ import { ProductsModule } from './products/products.module';
     SoilTypesModule,
     ProductsModule,
     VarietiesModule,
+    PlantingsModule,
   ],
   controllers: [AppController],
   providers: [],

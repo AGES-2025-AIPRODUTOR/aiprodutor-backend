@@ -13,14 +13,20 @@ export class Planting {
     @ApiProperty({ description: 'ID da variedade do produto', example: 1 })
     varietyId: number;
 
+    @ApiProperty({ description: 'Nome do plantio', example: 'Plantio de Milho' })
+    name: string;
+
+    @ApiProperty({ description: 'Cor do plantio', example: 'Verde' })
+    color: string;
+
     @ApiProperty({ description: 'Data do plantio', example: '2025-09-09T10:40:00Z' })
     plantingDate: Date;
 
+    @ApiProperty({ description: 'Data final do plantio', example: '2025-09-09T10:40:00Z' })
+    plantingEndDate: Date;
+
     @ApiProperty({ description: 'Data prevista para a colheita', example: '2026-09-09T10:40:00Z' })
     expectedHarvestDate: Date;
-
-    // @ApiProperty({ description: 'Data da colheita', example: '2026-09-09T10:40:00Z' })
-    // harvestDate: Date | null;
 
     @ApiProperty({ description: 'Quantidade plantada em kg', example: 1000 })
     plantedQuantity: number;
