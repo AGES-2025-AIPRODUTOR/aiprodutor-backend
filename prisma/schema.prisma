@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -10,18 +11,18 @@ datasource db {
 }
 
 model Producer {
-  id         Int       @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   name       String
-  document   String    @unique
+  document   String   @unique
   phone      String
-  email      String    @unique
+  email      String   @unique
   zipCode    String
   city       String
   street     String
   number     String
   complement String?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
   areas      Area[]
   harvests   Harvest[]
 
@@ -29,63 +30,64 @@ model Producer {
 }
 
 model Area {
-  id               Int                     @id @default(autoincrement())
+  id               Int                @id @default(autoincrement())
   name             String
   polygon          Unsupported("geometry")
-  createdAt        DateTime                @default(now())
-  updatedAt        DateTime                @updatedAt
+  areaM2           Decimal            
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
   producerId       Int
   soilTypeId       Int
   irrigationTypeId Int
-  isActive         Boolean                 @default(true)
-  irrigationType   IrrigationType          @relation(fields: [irrigationTypeId], references: [id])
-  producer         Producer                @relation(fields: [producerId], references: [id])
-  soilType         SoilType                @relation(fields: [soilTypeId], references: [id])
+  isActive         Boolean            @default(true)
+  irrigationType   IrrigationType     @relation(fields: [irrigationTypeId], references: [id])
+  producer         Producer           @relation(fields: [producerId], references: [id])
+  soilType         SoilType           @relation(fields: [soilTypeId], references: [id])
   plantings        Planting[]
 
   @@map("areas")
 }
 
 model Harvest {
-  id         Int        @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   name       String
   startDate  DateTime
   endDate    DateTime
   status     String
   cycle      String
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
   producerId Int
-  producer   Producer   @relation(fields: [producerId], references: [id])
+  producer   Producer @relation(fields: [producerId], references: [id])
   plantings  Planting[]
 
   @@map("harvests")
 }
 
 model Planting {
-  id                Int       @id @default(autoincrement())
-  plantingDate      DateTime
-  harvestForecast   DateTime
-  harvestDate       DateTime?
-  quantityPlanted   Decimal
+  id               Int            @id @default(autoincrement())
+  plantingDate     DateTime
+  harvestForecast  DateTime
+  harvestDate      DateTime?
+  quantityPlanted  Decimal
   quantityHarvested Decimal?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  areaId            Int
-  harvestId         Int
-  productId         Int
-  varietyId         Int
-  area              Area      @relation(fields: [areaId], references: [id])
-  harvest           Harvest   @relation(fields: [harvestId], references: [id])
-  product           Product   @relation(fields: [productId], references: [id])
-  variety           Variety   @relation(fields: [varietyId], references: [id])
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  areaId           Int
+  harvestId        Int
+  productId        Int
+  varietyId        Int
+  area             Area           @relation(fields: [areaId], references: [id])
+  harvest          Harvest        @relation(fields: [harvestId], references: [id])
+  product          Product        @relation(fields: [productId], references: [id])
+  variety          Variety        @relation(fields: [varietyId], references: [id])
 
   @@map("plantings")
 }
 
 model SoilType {
-  id          Int     @id @default(autoincrement())
-  name        String  @unique
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
   description String?
   areas       Area[]
 
@@ -93,8 +95,8 @@ model SoilType {
 }
 
 model IrrigationType {
-  id          Int     @id @default(autoincrement())
-  name        String  @unique
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
   description String?
   areas       Area[]
 
@@ -102,24 +104,24 @@ model IrrigationType {
 }
 
 model Product {
-  id        Int        @id @default(autoincrement())
-  name      String     @unique
-  createdAt DateTime   @default(now()) // Campo adicionado
-  updatedAt DateTime @default(now()) @updatedAt
-  plantings Planting[]
-  varieties Variety[]
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+  plantings   Planting[]
+  varieties   Variety[]
 
   @@map("products")
 }
 
 model Variety {
-  id        Int        @id @default(autoincrement())
-  name      String
-  createdAt DateTime   @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-  productId Int
-  plantings Planting[]
-  product   Product    @relation(fields: [productId], references: [id])
+  id          Int      @id @default(autoincrement())
+  name        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+  productId   Int
+  plantings   Planting[]
+  product     Product  @relation(fields: [productId], references: [id])
 
   @@map("varieties")
 }

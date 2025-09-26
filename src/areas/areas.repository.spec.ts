@@ -17,7 +17,8 @@ describe('AreasRepository', () => {
     producerId: 1,
     soilTypeId: 1,
     irrigationTypeId: 1,
-    polygon: { type: 'Polygon', coordinates: [[[-51, -14], [-51, -15], [-52, -15], [-52, -14], [-51, -14]]]},
+    polygon: { type: 'Polygon', coordinates: [[[-51, -14], [-51, -15], [-52, -15], [-52, -14], [-51, -14]]] },
+    areaM2: 0
   };
   
   // Objeto completo retornado pela query (com polygon como STRING)

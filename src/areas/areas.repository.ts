@@ -24,13 +24,12 @@ interface RawAreaQueryResult {
   createdAt: Date;
   updatedAt: Date;
   polygon: string;
-  areaSize: number;
-
+  areaM2: number;
   soilTypeName: string;
   irrigationTypeName: string;
 }
 
-interface AreaWithRelations {
+export interface AreaFromRepository {
   id: number;
   name: string;
   isActive: boolean;
@@ -40,18 +39,36 @@ interface AreaWithRelations {
   createdAt: Date;
   updatedAt: Date;
   polygon: Record<string, any> | null;
-  areaSize: number; // Adicione este campo
+  areaM2: number;
   soilType: { id: number; name: string } | null;
   irrigationType: { id: number; name: string } | null;
 }
 
 @Injectable()
 export class AreasRepository {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
+
+  async existsByIrrigationTypeId(id: number): Promise<boolean> {
+    const count = await this.prisma.area.count({
+      where: {
+        irrigationTypeId: id,
+      },
+    });
+    return count > 0;
+  }
+
+  async existsBySoilTypeId(id: number): Promise<boolean> {
+    const count = await this.prisma.area.count({
+      where: {
+        soilTypeId: id,
+      },
+    });
+    return count > 0;
+  }
 
   private mapRawAreaToAreaWithRelations(
     row: RawAreaQueryResult,
-  ): AreaWithRelations {
+  ): AreaFromRepository {
     return {
       id: row.id,
       name: row.name,
@@ -70,56 +87,53 @@ export class AreasRepository {
       irrigationType: row.irrigationTypeName
         ? { id: row.irrigationTypeId, name: row.irrigationTypeName }
         : null,
-      areaSize: row.areaSize,
+      areaM2: row.areaM2,
     };
   }
 
   async create(areaRequestDto: AreaRequestDto): Promise<any> {
-    const { name, producerId, soilTypeId, irrigationTypeId, polygon } =
+    const { name, producerId, soilTypeId, irrigationTypeId, polygon, areaM2 } =
       areaRequestDto;
     const geojsonString = JSON.stringify(polygon);
 
-    // Query modificada para retornar todos os dados necessários de uma vez
     const result = await this.prisma.$queryRawUnsafe(
       `
       WITH new_area AS (
         INSERT INTO areas
-          (name, polygon, "isActive", "producerId", "soilTypeId", "irrigationTypeId", "createdAt", "updatedAt")
+          (name, polygon, "areaM2", "isActive", "producerId", "soilTypeId", "irrigationTypeId", "createdAt", "updatedAt")
         VALUES
-          ($1, ST_GeomFromGeoJSON($2), true, $3, $4, $5, NOW(), NOW())
-        RETURNING id, name, "isActive", "producerId", "soilTypeId", "irrigationTypeId", "createdAt", "updatedAt", polygon
+          ($1, ST_GeomFromGeoJSON($2), $3, true, $4, $5, $6, NOW(), NOW())
+        RETURNING id, name, "areaM2", "isActive", "producerId", "soilTypeId", "irrigationTypeId", "createdAt", "updatedAt", polygon
       )
       SELECT 
-        na.id, na.name, na."isActive", na."producerId", na."soilTypeId", na."irrigationTypeId", 
+        na.id, na.name, na."areaM2", na."isActive", na."producerId", na."soilTypeId", na."irrigationTypeId", 
         na."createdAt", na."updatedAt", ST_AsGeoJSON(na.polygon) AS polygon,
         st.name as "soilTypeName",
-        it.name as "irrigationTypeName",
-        ST_Area(na.polygon::geography) as "areaSize"
+        it.name as "irrigationTypeName"
       FROM new_area na
       LEFT JOIN soil_types st ON na."soilTypeId" = st.id
       LEFT JOIN irrigation_types it ON na."irrigationTypeId" = it.id;
       `,
       name,
       geojsonString,
+      areaM2,
       producerId,
       soilTypeId,
       irrigationTypeId,
     );
 
     const row = (Array.isArray(result) ? result[0] : result) as any;
-
     return this.mapRawAreaToAreaWithRelations(row);
   }
 
-  async findById(id: number): Promise<AreaWithRelations | null> {
+  async findById(id: number): Promise<AreaFromRepository | null> {
     const result = await this.prisma.$queryRawUnsafe(
       `
       SELECT 
-        a.id, a.name, a."isActive", a."producerId", a."soilTypeId", a."irrigationTypeId", 
+        a.id, a.name, a."areaM2", a."isActive", a."producerId", a."soilTypeId", a."irrigationTypeId", 
         a."createdAt", a."updatedAt", ST_AsGeoJSON(a.polygon) AS polygon,
         st.name as "soilTypeName",
-        it.name as "irrigationTypeName",
-        ST_Area(a.polygon::geography) as "areaSize" -- ADICIONE ESTA LINHA
+        it.name as "irrigationTypeName"
       FROM areas a
       LEFT JOIN soil_types st ON a."soilTypeId" = st.id
       LEFT JOIN irrigation_types it ON a."irrigationTypeId" = it.id
@@ -137,15 +151,14 @@ export class AreasRepository {
     return this.mapRawAreaToAreaWithRelations(rows[0]);
   }
 
-  async findByProducerId(producerId: number): Promise<AreaWithRelations[]> {
+  async findByProducerId(producerId: number): Promise<AreaFromRepository[]> {
     const result = await this.prisma.$queryRawUnsafe(
       `
       SELECT 
-        a.id, a.name, a."isActive", a."producerId", a."soilTypeId", a."irrigationTypeId", 
+        a.id, a.name, a."areaM2", a."isActive", a."producerId", a."soilTypeId", a."irrigationTypeId", 
         a."createdAt", a."updatedAt", ST_AsGeoJSON(a.polygon) AS polygon,
         st.name as "soilTypeName",
-        it.name as "irrigationTypeName",
-        ST_Area(a.polygon::geography) as "areaSize" -- ADICIONE ESTA LINHA
+        it.name as "irrigationTypeName"
       FROM areas a
       LEFT JOIN soil_types st ON a."soilTypeId" = st.id
       LEFT JOIN irrigation_types it ON a."irrigationTypeId" = it.id
@@ -156,11 +169,10 @@ export class AreasRepository {
     );
 
     const rows = result as RawAreaQueryResult[];
-
     return rows.map((row) => this.mapRawAreaToAreaWithRelations(row));
   }
 
-  async updateStatus(id: number, isActive: boolean): Promise<AreaWithRelations | null> {
+  async updateStatus(id: number, isActive: boolean): Promise<AreaFromRepository | null> {
     await this.prisma.area.update({
       where: { id },
       data: { isActive: isActive, updatedAt: new Date() },
@@ -169,48 +181,50 @@ export class AreasRepository {
     return this.findById(id);
   }
 
-  async update(id: number, dto: UpdateAreaDto): Promise<AreaWithRelations | null> {
-    const mappedData: {
+  async update(id: number, dto: any): Promise<AreaFromRepository | null> {
+    const dataToUpdate: {
       name?: string;
       isActive?: boolean;
       soilTypeId?: number;
       irrigationTypeId?: number;
+      areaM2?: number;
       updatedAt: Date;
     } = {
       updatedAt: new Date(),
     };
 
-    // Somente adiciona os campos que estão definidos no DTO
     if (dto.name !== undefined) {
-      mappedData.name = dto.name;
+      dataToUpdate.name = dto.name;
     }
     if (dto.isActive !== undefined) {
-      mappedData.isActive = dto.isActive;
+      dataToUpdate.isActive = dto.isActive;
     }
     if (dto.soilTypeId !== undefined) {
-      mappedData.soilTypeId = dto.soilTypeId;
+      dataToUpdate.soilTypeId = dto.soilTypeId;
     }
     if (dto.irrigationTypeId !== undefined) {
-      mappedData.irrigationTypeId = dto.irrigationTypeId;
+      dataToUpdate.irrigationTypeId = dto.irrigationTypeId;
+    }
+    if (dto.areaM2 !== undefined) {
+      dataToUpdate.areaM2 = dto.areaM2;
     }
 
     await this.prisma.area.update({
       where: { id },
-      data: mappedData,
+      data: dataToUpdate,
     });
 
     return this.findById(id);
   }
 
-  async findAll(): Promise<AreaWithRelations[]> {
+  async findAll(): Promise<AreaFromRepository[]> {
     const result = await this.prisma.$queryRawUnsafe(
       `
       SELECT 
-        a.id, a.name, a."isActive", a."producerId", a."soilTypeId", a."irrigationTypeId", 
+        a.id, a.name, a."areaM2", a."isActive", a."producerId", a."soilTypeId", a."irrigationTypeId", 
         a."createdAt", a."updatedAt", ST_AsGeoJSON(a.polygon) AS polygon,
         st.name as "soilTypeName",
-        it.name as "irrigationTypeName",
-        ST_Area(a.polygon::geography) as "areaSize" -- ADICIONE ESTA LINHA
+        it.name as "irrigationTypeName"
       FROM areas a
       LEFT JOIN soil_types st ON a."soilTypeId" = st.id
       LEFT JOIN irrigation_types it ON a."irrigationTypeId" = it.id
@@ -221,15 +235,5 @@ export class AreasRepository {
 
     const rows = result as RawAreaQueryResult[];
     return rows.map((row) => this.mapRawAreaToAreaWithRelations(row));
-  }
-
-  async existsBySoilTypeId(soilTypeId: number): Promise<boolean> {
-    const area = await this.prisma.area.findFirst({ where: { soilTypeId } });
-    return !!area;
-  }
-
-  async existsByIrrigationTypeId(irrigationTypeId: number): Promise<boolean> {
-    const area = await this.prisma.area.findFirst({ where: { irrigationTypeId } });
-    return !!area;
   }
 }

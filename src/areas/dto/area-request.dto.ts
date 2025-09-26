@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsString, IsNumber } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsGeoJSONPolygon } from './is-geojson-polygon.validator';
 
@@ -25,6 +25,13 @@ export class AreaRequestDto {
   @IsInt()
   @IsNotEmpty()
   irrigationTypeId: number;
+
+  @ApiProperty({
+    description: 'Tamanho da área em metros quadrados (m²)',
+  })
+  @IsNumber()
+  @IsNotEmpty()
+  areaM2: number;
 
   @ApiProperty({
     example: {
