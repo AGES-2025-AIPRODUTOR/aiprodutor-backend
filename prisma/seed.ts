@@ -11,9 +11,15 @@ async function main() {
   //================================================================================
   await prisma.soilType.createMany({
     data: [
-      { name: 'Argiloso', description: 'Solo com alta capacidade de retenção de água.' },
+      {
+        name: 'Argiloso',
+        description: 'Solo com alta capacidade de retenção de água.',
+      },
       { name: 'Arenoso', description: 'Solo com boa drenagem e aeração.' },
-      { name: 'Humífero', description: 'Solo rico em matéria orgânica, muito fértil.' },
+      {
+        name: 'Humífero',
+        description: 'Solo rico em matéria orgânica, muito fértil.',
+      },
     ],
     skipDuplicates: true,
   });
@@ -21,9 +27,19 @@ async function main() {
 
   await prisma.irrigationType.createMany({
     data: [
-      { name: 'Aspersão', description: 'Simula chuva artificial sobre a cultura.' },
-      { name: 'Gotejamento', description: 'Aplica água diretamente na raiz das plantas.' },
-      { name: 'Pivô Central', description: 'Estrutura suspensa que gira em torno de um ponto central.' },
+      {
+        name: 'Aspersão',
+        description: 'Simula chuva artificial sobre a cultura.',
+      },
+      {
+        name: 'Gotejamento',
+        description: 'Aplica água diretamente na raiz das plantas.',
+      },
+      {
+        name: 'Pivô Central',
+        description:
+          'Estrutura suspensa que gira em torno de um ponto central.',
+      },
     ],
     skipDuplicates: true,
   });
@@ -38,7 +54,11 @@ async function main() {
     create: {
       name: 'Tomate',
       varieties: {
-        create: [{ name: 'Tomate Cereja' }, { name: 'Tomate Italiano' }, { name: 'Tomate Débora' }],
+        create: [
+          { name: 'Tomate Cereja' },
+          { name: 'Tomate Italiano' },
+          { name: 'Tomate Débora' },
+        ],
       },
     },
     include: { varieties: true },
@@ -50,7 +70,11 @@ async function main() {
     create: {
       name: 'Alface',
       varieties: {
-        create: [{ name: 'Alface Crespa' }, { name: 'Alface Americana' }, { name: 'Alface Roxa' }],
+        create: [
+          { name: 'Alface Crespa' },
+          { name: 'Alface Americana' },
+          { name: 'Alface Roxa' },
+        ],
       },
     },
     include: { varieties: true },
@@ -68,17 +92,6 @@ async function main() {
     include: { varieties: true },
   });
 
-  const batata = await prisma.product.upsert({
-    where: { name: 'Batata' },
-    update: {},
-    create: {
-      name: 'Batata',
-      varieties: {
-        create: [{ name: 'Batata Inglesa' }, { name: 'Batata Doce' }],
-      },
-    },
-    include: { varieties: true },
-  });
   console.log('Produtos de hortifrúti e suas variedades inseridos.');
 
   //================================================================================
@@ -88,9 +101,14 @@ async function main() {
     where: { document: '123.456.789-01' },
     update: {},
     create: {
-      name: 'João da Silva', document: '123.456.789-01', phone: '(51) 99999-1111',
-      email: 'joao.silva@email.com', zipCode: '90000-000', city: 'Porto Alegre',
-      street: 'Rua das Flores', number: '123',
+      name: 'João da Silva',
+      document: '123.456.789-01',
+      phone: '(51) 99999-1111',
+      email: 'joao.silva@email.com',
+      zipCode: '90000-000',
+      city: 'Porto Alegre',
+      street: 'Rua das Flores',
+      number: '123',
     },
   });
 
@@ -98,9 +116,14 @@ async function main() {
     where: { document: '987.654.321-09' },
     update: {},
     create: {
-      name: 'Maria Oliveira', document: '987.654.321-09', phone: '(51) 98888-2222',
-      email: 'maria.oliveira@email.com', zipCode: '92000-000', city: 'Canoas',
-      street: 'Avenida das Árvores', number: '456',
+      name: 'Maria Oliveira',
+      document: '987.654.321-09',
+      phone: '(51) 98888-2222',
+      email: 'maria.oliveira@email.com',
+      zipCode: '92000-000',
+      city: 'Canoas',
+      street: 'Avenida das Árvores',
+      number: '456',
     },
   });
 
@@ -108,9 +131,14 @@ async function main() {
     where: { document: '111.222.333-44' },
     update: {},
     create: {
-      name: 'Carlos Pereira', document: '111.222.333-44', phone: '(51) 97777-3333',
-      email: 'carlos.pereira@email.com', zipCode: '93000-000', city: 'São Leopoldo',
-      street: 'Travessa dos Pinheiros', number: '789',
+      name: 'Carlos Pereira',
+      document: '111.222.333-44',
+      phone: '(51) 97777-3333',
+      email: 'carlos.pereira@email.com',
+      zipCode: '93000-000',
+      city: 'São Leopoldo',
+      street: 'Travessa dos Pinheiros',
+      number: '789',
     },
   });
   console.log('Produtores inseridos.');
@@ -118,73 +146,154 @@ async function main() {
   //================================================================================
   // 4. ÁREAS DOS PRODUTORES (com Geometria)
   //================================================================================
-  const humiferoId = (await prisma.soilType.findFirst({ where: { name: 'Humífero' } }))!.id;
-  const argilosoId = (await prisma.soilType.findFirst({ where: { name: 'Argiloso' } }))!.id;
-  const gotejamentoId = (await prisma.irrigationType.findFirst({ where: { name: 'Gotejamento' } }))!.id;
-  const aspersaoId = (await prisma.irrigationType.findFirst({ where: { name: 'Aspersão' } }))!.id;
-  
-  const polygon1WKT = 'POLYGON((-51.22 -30.05, -51.22 -30.02, -51.19 -30.02, -51.19 -30.05, -51.22 -30.05))';
-  const polygon2WKT = 'POLYGON((-51.18 -30.01, -51.18 -29.98, -51.15 -29.98, -51.15 -30.01, -51.18 -30.01))';
+  const humiferoId = (await prisma.soilType.findFirst({
+    where: { name: 'Humífero' },
+  }))!.id;
+  const argilosoId = (await prisma.soilType.findFirst({
+    where: { name: 'Argiloso' },
+  }))!.id;
+  const gotejamentoId = (await prisma.irrigationType.findFirst({
+    where: { name: 'Gotejamento' },
+  }))!.id;
+  const aspersaoId = (await prisma.irrigationType.findFirst({
+    where: { name: 'Aspersão' },
+  }))!.id;
 
-  await prisma.$executeRawUnsafe(`INSERT INTO "public"."areas" (name, polygon, "producerId", "soilTypeId", "irrigationTypeId", "updatedAt") VALUES ('Horta Principal', ST_GeomFromText($1, 4326), $2, $3, $4, NOW()) ON CONFLICT DO NOTHING;`, polygon1WKT, producer1.id, humiferoId, gotejamentoId);
-  await prisma.$executeRawUnsafe(`INSERT INTO "public"."areas" (name, polygon, "producerId", "soilTypeId", "irrigationTypeId", "updatedAt") VALUES ('Campo Leste', ST_GeomFromText($1, 4326), $2, $3, $4, NOW()) ON CONFLICT DO NOTHING;`, polygon2WKT, producer1.id, argilosoId, aspersaoId);
-  await prisma.$executeRawUnsafe(`INSERT INTO "public"."areas" (name, polygon, "producerId", "soilTypeId", "irrigationTypeId", "updatedAt") VALUES ('Pomar Norte', ST_GeomFromText($1, 4326), $2, $3, $4, NOW()) ON CONFLICT DO NOTHING;`, polygon1WKT, producer2.id, humiferoId, gotejamentoId);
-  await prisma.$executeRawUnsafe(`INSERT INTO "public"."areas" (name, polygon, "producerId", "soilTypeId", "irrigationTypeId", "updatedAt") VALUES ('Estufa de Hortaliças', ST_GeomFromText($1, 4326), $2, $3, $4, NOW()) ON CONFLICT DO NOTHING;`, polygon2WKT, producer3.id, humiferoId, gotejamentoId);
-  
+  const polygon1WKT =
+    'POLYGON((-51.22 -30.05, -51.22 -30.02, -51.19 -30.02, -51.19 -30.05, -51.22 -30.05))';
+  const polygon2WKT =
+    'POLYGON((-51.18 -30.01, -51.18 -29.98, -51.15 -29.98, -51.15 -30.01, -51.18 -30.01))';
+
+  await prisma.$executeRawUnsafe(
+    `INSERT INTO "public"."areas" (name, polygon, "producerId", "soilTypeId", "irrigationTypeId", "updatedAt") VALUES ('Horta Principal', ST_GeomFromText($1, 4326), $2, $3, $4, NOW()) ON CONFLICT DO NOTHING;`,
+    polygon1WKT,
+    producer1.id,
+    humiferoId,
+    gotejamentoId,
+  );
+  await prisma.$executeRawUnsafe(
+    `INSERT INTO "public"."areas" (name, polygon, "producerId", "soilTypeId", "irrigationTypeId", "updatedAt") VALUES ('Campo Leste', ST_GeomFromText($1, 4326), $2, $3, $4, NOW()) ON CONFLICT DO NOTHING;`,
+    polygon2WKT,
+    producer1.id,
+    argilosoId,
+    aspersaoId,
+  );
+  await prisma.$executeRawUnsafe(
+    `INSERT INTO "public"."areas" (name, polygon, "producerId", "soilTypeId", "irrigationTypeId", "updatedAt") VALUES ('Pomar Norte', ST_GeomFromText($1, 4326), $2, $3, $4, NOW()) ON CONFLICT DO NOTHING;`,
+    polygon1WKT,
+    producer2.id,
+    humiferoId,
+    gotejamentoId,
+  );
+  await prisma.$executeRawUnsafe(
+    `INSERT INTO "public"."areas" (name, polygon, "producerId", "soilTypeId", "irrigationTypeId", "updatedAt") VALUES ('Estufa de Hortaliças', ST_GeomFromText($1, 4326), $2, $3, $4, NOW()) ON CONFLICT DO NOTHING;`,
+    polygon2WKT,
+    producer3.id,
+    humiferoId,
+    gotejamentoId,
+  );
+
   console.log('Áreas dos produtores inseridas.');
 
   //================================================================================
-  // 5. SAFRAS
+  // 5. PLANTIOS (Conectando tudo)
+  //================================================================================
+  const areaHorta = await prisma.area.findFirst({
+    where: { name: 'Horta Principal' },
+  });
+  const areaPomar = await prisma.area.findFirst({
+    where: { name: 'Pomar Norte' },
+  });
+
+  // Planting 1: Tomate Cereja na Horta Principal
+  const planting1 = await prisma.planting.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      name: 'Plantio de Tomate Cereja - Verão 2025',
+      color: '#FF6B6B',
+      plantingDate: new Date('2025-09-25T00:00:00Z'),
+      plantingEndDate: new Date('2025-10-05T00:00:00Z'),
+      expectedHarvestDate: new Date('2025-12-15T00:00:00Z'),
+      quantityPlanted: 500.0,
+      quantityHarvested: 480.5,
+      areaId: areaHorta!.id,
+      productId: tomate.id,
+      varietyId: tomate.varieties[0].id,
+    },
+  });
+
+  // Planting 2: Alface Crespa na Horta Principal
+  const planting2 = await prisma.planting.upsert({
+    where: { id: 2 },
+    update: {},
+    create: {
+      name: 'Plantio de Alface Crespa - Verão 2025',
+      color: '#4ECDC4',
+      plantingDate: new Date('2025-10-01T00:00:00Z'),
+      plantingEndDate: new Date('2025-10-10T00:00:00Z'),
+      expectedHarvestDate: new Date('2025-11-20T00:00:00Z'),
+      quantityPlanted: 1200.0,
+      quantityHarvested: 1150.0,
+      areaId: areaHorta!.id,
+      productId: alface.id,
+      varietyId: alface.varieties[0].id,
+    },
+  });
+
+  // Planting 3: Maçã Gala no Pomar Norte
+  const planting3 = await prisma.planting.upsert({
+    where: { id: 3 },
+    update: {},
+    create: {
+      name: 'Plantio de Maçã Gala - Outono 2025',
+      color: '#FFE66D',
+      plantingDate: new Date('2025-03-25T00:00:00Z'),
+      plantingEndDate: new Date('2025-04-05T00:00:00Z'),
+      expectedHarvestDate: new Date('2025-06-10T00:00:00Z'),
+      quantityPlanted: 150.0,
+      areaId: areaPomar!.id,
+      productId: maca.id,
+      varietyId: maca.varieties[0].id,
+    },
+  });
+
+  console.log('Plantios inseridos.');
+
+  //================================================================================
+  // 6. SAFRAS
   //================================================================================
   await prisma.harvest.createMany({
     data: [
-      { name: 'Safra de Verão 2025', startDate: new Date('2025-09-22T00:00:00Z'), endDate: new Date('2025-12-20T23:59:59Z'), status: 'Finalizada', cycle: 'Verão', producerId: producer1.id },
-      { name: 'Safra de Outono 2025', startDate: new Date('2025-03-20T00:00:00Z'), endDate: new Date('2025-06-21T23:59:59Z'), status: 'Ativa', cycle: 'Outono', producerId: producer2.id },
-      { name: 'Safra de Inverno 2025', startDate: new Date('2025-06-21T00:00:00Z'), endDate: new Date('2025-09-22T23:59:59Z'), status: 'Planejada', cycle: 'Inverno', producerId: producer3.id },
+      {
+        name: 'Safra de Verão 2025',
+        startDate: new Date('2025-09-22T00:00:00Z'),
+        endDate: new Date('2025-12-20T23:59:59Z'),
+        status: 'Finalizada',
+        cycle: 'Verão',
+        plantingId: planting1.id,
+      },
+      {
+        name: 'Safra de Outono 2025',
+        startDate: new Date('2025-03-20T00:00:00Z'),
+        endDate: new Date('2025-06-21T23:59:59Z'),
+        status: 'Ativa',
+        cycle: 'Outono',
+        plantingId: planting2.id,
+      },
+      {
+        name: 'Safra de Inverno 2025',
+        startDate: new Date('2025-06-21T00:00:00Z'),
+        endDate: new Date('2025-09-22T23:59:59Z'),
+        status: 'Planejada',
+        cycle: 'Inverno',
+        plantingId: planting3.id,
+      },
     ],
     skipDuplicates: true,
   });
+
   console.log('Safras inseridas.');
-
-  //================================================================================
-  // 6. PLANTIOS (Conectando tudo)
-  //================================================================================
-  const areaHorta = await prisma.area.findFirst({ where: { name: 'Horta Principal' } });
-  const areaPomar = await prisma.area.findFirst({ where: { name: 'Pomar Norte' } });
-  const areaEstufa = await prisma.area.findFirst({ where: { name: 'Estufa de Hortaliças' } });
-  
-  const safraVerao = await prisma.harvest.findFirst({ where: { name: 'Safra de Verão 2025' } });
-  const safraOutono = await prisma.harvest.findFirst({ where: { name: 'Safra de Outono 2025' } });
-
-  if (areaHorta && safraVerao) {
-    await prisma.planting.createMany({
-      data: [
-        { plantingDate: new Date('2025-09-25T00:00:00Z'), harvestForecast: new Date('2025-12-15T00:00:00Z'), harvestDate: new Date('2025-12-10T00:00:00Z'), quantityPlanted: 500.0, quantityHarvested: 480.5, areaId: areaHorta.id, harvestId: safraVerao.id, productId: tomate.id, varietyId: tomate.varieties[0].id }, // Tomate Cereja
-        { plantingDate: new Date('2025-10-01T00:00:00Z'), harvestForecast: new Date('2025-11-20T00:00:00Z'), harvestDate: new Date('2025-11-18T00:00:00Z'), quantityPlanted: 1200.0, quantityHarvested: 1150.0, areaId: areaHorta.id, harvestId: safraVerao.id, productId: alface.id, varietyId: alface.varieties[0].id }, // Alface Crespa
-      ],
-      skipDuplicates: true,
-    });
-  }
-
-  if (areaPomar && safraOutono) {
-    await prisma.planting.createMany({
-      data: [
-        { plantingDate: new Date('2025-03-25T00:00:00Z'), harvestForecast: new Date('2025-06-10T00:00:00Z'), quantityPlanted: 150.0, areaId: areaPomar.id, harvestId: safraOutono.id, productId: maca.id, varietyId: maca.varieties[0].id }, // Maçã Gala
-      ],
-      skipDuplicates: true,
-    });
-  }
-
-  if (areaEstufa && safraOutono) {
-    await prisma.planting.createMany({
-      data: [
-        { plantingDate: new Date('2025-04-05T00:00:00Z'), harvestForecast: new Date('2025-06-20T00:00:00Z'), quantityPlanted: 2000.0, areaId: areaEstufa.id, harvestId: safraOutono.id, productId: batata.id, varietyId: batata.varieties[1].id }, // Batata Doce
-      ],
-      skipDuplicates: true,
-    });
-  }
-
-  console.log('Plantios inseridos.');
   console.log('Seeding concluído com sucesso!');
 }
 

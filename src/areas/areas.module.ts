@@ -16,6 +16,6 @@ import { IrrigationTypesModule } from '../irrigation-types/irrigation-types.modu
   ],
   controllers: [AreasController],
   providers: [AreasService, AreasRepository],
-  exports: [AreasRepository],
+  exports: [AreasService, AreasRepository],
 })
 export class AreasModule {}
