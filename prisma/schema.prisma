@@ -14,7 +14,11 @@ model Producer {
   document  String   @unique
   phone     String?
   email     String   @unique
-  address   String?
+  zipCode   String
+  city      String
+  street    String
+  number    String
+  complement String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   areas     Area[]
@@ -23,23 +27,19 @@ model Producer {
 }
 
 model Area {
-  id               Int      @id @default(autoincrement())
+  id               Int                     @id @default(autoincrement())
   name             String
-  size             Float
-  cropType         String
-  polygon          String?
-  isActive         Boolean  @default(true)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-
+  polygon          Unsupported("geometry")
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
   producerId       Int
   soilTypeId       Int
   irrigationTypeId Int
-
-  irrigationType IrrigationType @relation(fields: [irrigationTypeId], references: [id])
-  producer       Producer       @relation(fields: [producerId], references: [id])
-  soilType       SoilType       @relation(fields: [soilTypeId], references: [id])
-  plantings      Planting[]
+  isActive         Boolean                 @default(true)
+  irrigationType   IrrigationType          @relation(fields: [irrigationTypeId], references: [id])
+  producer         Producer                @relation(fields: [producerId], references: [id])
+  soilType         SoilType                @relation(fields: [soilTypeId], references: [id])
+  plantings        Planting[]
 
   @@map("areas")
 }

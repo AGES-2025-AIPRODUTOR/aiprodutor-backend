@@ -30,10 +30,15 @@ export class PlantingsController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Cria um novo plantio' })
   @ApiBody({ type: PlantingRequestDto })
-  @ApiResponse({ status: 201, description: 'Plantio criado com sucesso.', type: PlantingResponseDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Plantio criado com sucesso.',
+    type: PlantingResponseDto,
+  })
   @ApiResponse({
     status: 404,
-    description: 'Recurso relacionado (produto, área, variedade) não encontrado.',
+    description:
+      'Recurso relacionado (produto, área, variedade) não encontrado.',
   })
   @ApiResponse({ status: 400, description: 'Payload inválido.' })
   create(@Body() plantingRequestDto: PlantingRequestDto) {
@@ -56,7 +61,11 @@ export class PlantingsController {
   @Get(':id')
   @ApiOperation({ summary: 'Busca um plantio específico pelo seu ID' })
   @ApiParam({ name: 'id', type: Number, description: 'ID do plantio' })
-  @ApiResponse({ status: 200, description: 'Plantio encontrada com sucesso.', type: PlantingResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Plantio encontrada com sucesso.',
+    type: PlantingResponseDto,
+  })
   @ApiResponse({ status: 404, description: 'Plantio não encontrado.' })
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.plantingsService.findOne(id);
@@ -66,7 +75,11 @@ export class PlantingsController {
   @ApiOperation({ summary: 'Edita um plantio' })
   @ApiParam({ name: 'id', type: Number, description: 'ID do plantio' })
   @ApiBody({ type: UpdatePlantingDto })
-  @ApiResponse({ status: 200, description: 'Plantio atualizado com sucesso.', type: PlantingResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Plantio atualizado com sucesso.',
+    type: PlantingResponseDto,
+  })
   @ApiResponse({ status: 404, description: 'Plantio não encontrado.' })
   update(
     @Param('id', ParseIntPipe) id: number,

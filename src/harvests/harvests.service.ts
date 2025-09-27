@@ -16,7 +16,7 @@ export class HarvestsService {
 
   async findAll(): Promise<HarvestEntity[]> {
     const harvests = await this.repository.findAll();
-    return harvests.map(harvest => new HarvestEntity(harvest));
+    return harvests.map((harvest) => new HarvestEntity(harvest));
   }
 
   async findOne(id: number): Promise<HarvestEntity> {
@@ -27,7 +27,10 @@ export class HarvestsService {
     return new HarvestEntity(harvest);
   }
 
-  async update(id: number, updateHarvestDto: UpdateHarvestDto): Promise<HarvestEntity> {
+  async update(
+    id: number,
+    updateHarvestDto: UpdateHarvestDto,
+  ): Promise<HarvestEntity> {
     await this.findOne(id);
     const harvest = await this.repository.update(id, updateHarvestDto);
     return new HarvestEntity(harvest);
@@ -39,40 +42,40 @@ export class HarvestsService {
     return new HarvestEntity(harvest);
   }
 
-async getHarvestPanel(id: number): Promise<HarvestPanelResponseDto> {
-  const harvest = await this.repository.findHarvestWithRelations(id);
-  
-  if (!harvest) {
-    throw new NotFoundException(`Safra com o ID #${id} não encontrada.`);
+  async getHarvestPanel(id: number): Promise<HarvestPanelResponseDto> {
+    const harvest = await this.repository.findHarvestWithRelations(id);
+
+    if (!harvest) {
+      throw new NotFoundException(`Safra com o ID #${id} não encontrada.`);
+    }
+
+    // Dados mock temporários
+    const mockData = {
+      area_count: 2,
+      total_area: 7.5,
+      cultivar: 'Tomate Cereja',
+      expected_yield: 8000,
+      linked_plantings: [
+        {
+          planting_name: 'Plantio de Tomate Mock',
+          planting_area: 'Área Mock A',
+          expected_yield: 5000,
+          planting_date: harvest.startDate,
+          estimated_harvest_date: harvest.endDate || new Date('2025-12-15'),
+        },
+      ],
+    };
+
+    return {
+      generalInfo: {
+        area_count: mockData.area_count,
+        total_area: mockData.total_area,
+        cultivar: mockData.cultivar,
+        expected_yield: mockData.expected_yield,
+        harvest_start_date: harvest.startDate,
+        harvest_end_date: harvest.endDate,
+        linked_plantings: mockData.linked_plantings,
+      },
+    };
   }
-
-  // Dados mock temporários
-  const mockData = {
-    area_count: harvest.plantings?.length || 2,
-    total_area: 7.5,
-    cultivar: 'Tomate Cereja',
-    expected_yield: 8000,
-    linked_plantings: [
-      {
-        planting_name: 'Plantio de Tomate Mock',
-        planting_area: 'Área Mock A',
-        expected_yield: 5000,
-        planting_date: harvest.startDate,
-        estimated_harvest_date: harvest.endDate || new Date('2025-12-15'),
-      }
-    ]
-  };
-
-  return {
-    generalInfo: {
-      area_count: mockData.area_count,
-      total_area: mockData.total_area,
-      cultivar: mockData.cultivar,
-      expected_yield: mockData.expected_yield,
-      harvest_start_date: harvest.startDate,
-      harvest_end_date: harvest.endDate, // ← Agora aceita null
-      linked_plantings: mockData.linked_plantings,
-    },
-  };
-}
 }
