@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { CreateProducerDto } from './dto/create-producer.dto';
 import { ProducersRepository } from './producers.repository';
+import { PlantingHistoryResponseDto } from './dto/planting-history-response.dto';
 
 @Injectable()
 export class ProducersService {
@@ -102,5 +103,32 @@ export class ProducersService {
     // Garante que o produtor existe antes de tentar remover
     await this.findOne(id);
     return this.repository.remove(id);
+  }
+
+  async getPlantingHistory(
+    producerId: number,
+  ): Promise<PlantingHistoryResponseDto[]> {
+    // 1. Garante que o produtor existe (reaproveita a lógica de findOne)
+    await this.findOne(producerId);
+
+    // 2. Chama o repositório para buscar os dados brutos
+    const historyRecords = await this.repository.findPlantingHistory(
+      producerId,
+    );
+
+    // 3. Mapeia e formata os dados para o DTO de resposta
+    return historyRecords.map((record) => ({
+      areaName: record.areaName,
+      plantingName: record.plantingName,
+      varietyName: record.varietyName,
+      safraName: record.safraName,
+      areaStatus: record.areaStatus,
+      plantingDate: record.plantingDate,
+      harvestDate: record.harvestDate,
+      quantityPlanted: record.quantityPlanted,
+      quantityHarvested: record.quantityHarvested,
+      // Formata o tamanho da área para duas casas decimais e adiciona " ha"
+      areaSize: `${Number(record.areaSize).toFixed(2)} ha`,
+    }));
   }
 }

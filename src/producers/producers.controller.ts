@@ -21,6 +21,8 @@ import { CreateProducerDto } from './dto/create-producer.dto';
 import { FindDocumentoProducerDto } from './dto/findDocument-producer.dto';
 import { UpdateProducerDto } from './dto/update-producer.dto';
 import { ProducerResponseDto } from './dto/producer-response.dto';
+import { PlantingHistoryResponseDto } from './dto/planting-history-response.dto';
+
 
 @ApiTags('Producers') // Agrupa os endpoints no Swagger
 @Controller('producers')
@@ -73,5 +75,20 @@ export class ProducersController {
   @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.producersService.remove(id);
+  }
+
+  @Get(':id/planting-history')
+  @ApiOperation({ summary: 'Lista o histórico de plantios de um produtor' })
+  @ApiParam({ name: 'id', description: 'ID do Produtor' })
+  @ApiResponse({
+    status: 200,
+    description: 'Relatório de histórico de plantios retornado com sucesso.',
+    type: [PlantingHistoryResponseDto],
+  })
+  @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
+  getPlantingHistory(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<PlantingHistoryResponseDto[]> {
+    return this.producersService.getPlantingHistory(id);
   }
 }
