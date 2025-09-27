@@ -7,20 +7,9 @@ import { UpdatePlantingDto } from './dto/update-planting.dto';
 export class PlantingsRepository {
   constructor(private readonly prisma: PrismaService) { }
 
-  async create(plantingRequestDto: PlantingRequestDto) {
+  create(plantingRequestDto: PlantingRequestDto) {
     return this.prisma.planting.create({
-      data: {
-        areaId: plantingRequestDto.areaId,
-        productId: plantingRequestDto.productId,
-        varietyId: plantingRequestDto.varietyId,
-        name: plantingRequestDto.name,
-        color: plantingRequestDto.color,
-        plantingDate: plantingRequestDto.plantingDate,
-        plantingEndDate: plantingRequestDto.plantingEndDate,
-        expectedHarvestDate: plantingRequestDto.expectedHarvestDate,
-        quantityPlanted: plantingRequestDto.quantityPlanted,
-        quantityHarvested: plantingRequestDto.quantityHarvested,
-      },
+      data: plantingRequestDto, 
     });
   }
 
@@ -34,7 +23,7 @@ export class PlantingsRepository {
     });
   }
 
-  async update(id: number, updatePlantingDto: Partial<UpdatePlantingDto>) {
+  update(id: number, updatePlantingDto: UpdatePlantingDto) {
     return this.prisma.planting.update({
       where: { id },
       data: updatePlantingDto,

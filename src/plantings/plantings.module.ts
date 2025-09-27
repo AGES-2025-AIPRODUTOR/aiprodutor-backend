@@ -7,6 +7,8 @@ import { PrismaModule } from '../shared/prisma/prisma.module';
 import { ProductsModule } from '../products/products.module';
 import { VarietiesModule } from '../varieties/varieties.module';
 import { AreasModule } from '../areas/areas.module';
+import { HarvestsModule } from '../harvests/harvests.module';
+
 
 @Module({
   imports: [
@@ -14,6 +16,7 @@ import { AreasModule } from '../areas/areas.module';
     ProductsModule,
     VarietiesModule,
     AreasModule,
+    HarvestsModule,
   ],
   controllers: [PlantingsController],
   providers: [PlantingsService, PlantingsRepository],
