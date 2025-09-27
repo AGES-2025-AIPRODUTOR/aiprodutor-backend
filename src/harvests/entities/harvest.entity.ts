@@ -1,4 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Planting } from '@prisma/client';
+
+class PlantingEntity implements Partial<Planting> {
+  @ApiProperty({ description: 'ID do plantio' })
+  id: number;
+
+  @ApiProperty({ description: 'Nome do plantio' })
+  name: string;
+
+  @ApiProperty({ description: 'Data do plantio' })
+  plantingDate: Date;
+  
+  constructor(partial: Partial<PlantingEntity>) {
+    Object.assign(this, partial);
+  }
+}
 
 export class HarvestEntity {
   @ApiProperty({ description: 'ID único da safra', example: 1 })
@@ -34,8 +50,11 @@ export class HarvestEntity {
   })
   status?: string | null;
 
-  @ApiProperty({ description: 'ID do plantio', example: 1 })
-  plantingId: number;
+  @ApiProperty({
+    description: 'Lista de plantios que pertencem a esta safra.',
+    type: () => [PlantingEntity],
+  })
+  plantings: PlantingEntity[];
 
   @ApiProperty({
     description: 'Data de criação',
@@ -51,5 +70,8 @@ export class HarvestEntity {
 
   constructor(partial: Partial<HarvestEntity>) {
     Object.assign(this, partial);
+    if (partial.plantings) {
+      this.plantings = partial.plantings.map(p => new PlantingEntity(p));
+    }
   }
 }
