@@ -6,6 +6,8 @@ import { PlantingResponseDto } from './dto/planting-response.dto';
 import { ProductsService } from '../products/products.service';
 import { VarietiesService } from '../varieties/varieties.service';
 import { AreasService } from '../areas/areas.service';
+import { HarvestsService } from '../harvests/harvests.service';
+
 
 @Injectable()
 export class PlantingsService {
@@ -14,11 +16,13 @@ export class PlantingsService {
     private readonly productsService: ProductsService,
     private readonly varietiesService: VarietiesService,
     private readonly areasService: AreasService,
-  ) { }
+    private readonly harvestsService: HarvestsService,
+  ) {}
 
   private mapToResponseDto(plantingData: any): PlantingResponseDto {
     return {
       id: plantingData.id,
+      harvestId: plantingData.harvestId, // <-- ADICIONAR
       name: plantingData.name,
       color: plantingData.color,
       areaId: plantingData.areaId,
@@ -33,23 +37,32 @@ export class PlantingsService {
   }
 
   async create(plantingRequestDto: PlantingRequestDto): Promise<PlantingResponseDto> {
-    const { productId, varietyId, areaId } = plantingRequestDto;
+    const { productId, varietyId, areaId, harvestId } = plantingRequestDto;
 
-    await this.productsService.findOne(productId);
-    await this.varietiesService.findOne(varietyId);
-    await this.areasService.findOne(areaId);
+    // Valida a existência de todas as entidades relacionadas
+    await Promise.all([
+      this.productsService.findOne(productId),
+      this.varietiesService.findOne(varietyId),
+      this.areasService.findOne(areaId),
+      this.harvestsService.findOne(harvestId), // <-- VALIDAR SAFRA
+    ]);
+
     const planting = await this.repository.create(plantingRequestDto);
-    return this.mapToResponseDto(planting!);
+    return this.mapToResponseDto(planting);
   }
 
   async update(id: number, dto: UpdatePlantingDto): Promise<PlantingResponseDto> {
-    const plantingExists = await this.repository.findById(id);
-    if (!plantingExists) {
-      throw new NotFoundException(`Plantio com o ID ${id} não encontrado.`);
+    await this.findOne(id); // Valida se o plantio existe
+
+    // Se um novo harvestId for informado, valida se ele existe
+    if (dto.harvestId) {
+      await this.harvestsService.findOne(dto.harvestId);
     }
+    
+    // Valide outros IDs (areaId, productId) se eles puderem ser alterados também
 
     const updatedPlanting = await this.repository.update(id, dto);
-    return this.mapToResponseDto(updatedPlanting!);
+    return this.mapToResponseDto(updatedPlanting);
   }
 
   // // muda status para "Excluido"

@@ -1,5 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+
+class PlantingInHarvestResponseDto {
+  @ApiProperty({ example: 1, description: 'ID do plantio' })
+  id: number;
+
+  @ApiProperty({ example: 'Plantio de Tomate Cereja', description: 'Nome do plantio' })
+  name: string;
+}
+
+
 export class HarvestResponseDto {
   @ApiProperty({ description: 'ID único da safra', example: 1 })
   id: number;
@@ -25,7 +35,7 @@ export class HarvestResponseDto {
     example: '2025-12-20T23:59:59.000Z',
     required: false,
   })
-  endDate: Date | null; // ← Aceita null
+  endDate: Date | null;
 
   @ApiProperty({
     description: 'Status da safra',
@@ -34,6 +44,9 @@ export class HarvestResponseDto {
   })
   status?: string;
 
-  @ApiProperty({ description: 'ID do plantio', example: 1 })
-  plantingId: number;
+  @ApiProperty({ 
+    description: 'Lista de plantios associados a esta safra.',
+    type: [PlantingInHarvestResponseDto] 
+  })
+  plantings: PlantingInHarvestResponseDto[];
 }

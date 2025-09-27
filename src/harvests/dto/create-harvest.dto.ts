@@ -1,5 +1,7 @@
+import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsDate,
   IsDateString,
   IsNotEmpty,
   IsOptional,
@@ -24,18 +26,20 @@ export class CreateHarvestDto {
 
   @ApiProperty({
     description: 'Data de início da safra',
-    example: '2025-09-22',
+    example: '2025-09-22T00:00:00.000Z',
   })
-  @IsDateString()
+  @Type(() => Date)
+  @IsDate()
   @IsNotEmpty()
   startDate: Date;
 
   @ApiProperty({
     description: 'Data final da safra',
-    example: '2025-12-20',
+    example: '2025-12-20T00:00:00.000Z',
     required: false,
   })
-  @IsDateString()
+  @Type(() => Date)
+  @IsDate()
   @IsOptional()
   endDate?: Date;
 
@@ -47,9 +51,4 @@ export class CreateHarvestDto {
   @IsString()
   @IsOptional()
   status?: string;
-
-  @ApiProperty({ description: 'ID do plantio', example: 1 })
-  @IsNumber()
-  @IsNotEmpty()
-  plantingId: number;
 }

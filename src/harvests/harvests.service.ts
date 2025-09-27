@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { HarvestsRepository } from './harvests.repository';
 import { CreateHarvestDto } from './dto/create-harvest.dto';
 import { UpdateHarvestDto } from './dto/update-harvest.dto';
@@ -10,8 +10,13 @@ export class HarvestsService {
   constructor(private readonly repository: HarvestsRepository) {}
 
   async create(createHarvestDto: CreateHarvestDto): Promise<HarvestEntity> {
-    const harvest = await this.repository.create(createHarvestDto);
-    return new HarvestEntity(harvest);
+    const newHarvest = await this.repository.create(createHarvestDto);
+    const harvestWithEmptyPlantings = {
+      ...newHarvest,
+      plantings: [], 
+    };
+    
+    return new HarvestEntity(harvestWithEmptyPlantings);
   }
 
   async findAll(): Promise<HarvestEntity[]> {
@@ -27,23 +32,27 @@ export class HarvestsService {
     return new HarvestEntity(harvest);
   }
 
-  async update(
-    id: number,
-    updateHarvestDto: UpdateHarvestDto,
-  ): Promise<HarvestEntity> {
-    await this.findOne(id);
+  // Update está mais simples
+  async update(id: number, updateHarvestDto: UpdateHarvestDto): Promise<HarvestEntity> {
+    await this.findOne(id); // findOne já valida a existência
     const harvest = await this.repository.update(id, updateHarvestDto);
     return new HarvestEntity(harvest);
   }
-
+  
   async remove(id: number): Promise<HarvestEntity> {
-    await this.findOne(id);
-    const harvest = await this.repository.remove(id);
-    return new HarvestEntity(harvest);
+    const harvest = await this.findOne(id);
+    if (harvest.plantings && harvest.plantings.length > 0) {
+      throw new ConflictException(
+        `Não é possível excluir esta safra, pois ela possui ${harvest.plantings.length} plantios associados.`,
+      );
+    }
+
+    const removedHarvest = await this.repository.remove(id);
+    return new HarvestEntity(removedHarvest);
   }
 
   async getHarvestPanel(id: number): Promise<HarvestPanelResponseDto> {
-    const harvest = await this.repository.findHarvestWithRelations(id);
+    const harvest = await this.repository.findById(id);
 
     if (!harvest) {
       throw new NotFoundException(`Safra com o ID #${id} não encontrada.`);

@@ -45,18 +45,16 @@ model Area {
 }
 
 model Harvest {
-  id        Int       @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   name      String
   cycle     String?
   startDate DateTime
   endDate   DateTime?
   status    String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  plantingId Int
-
-  planting Planting @relation(fields: [plantingId], references: [id])
+  plantings Planting[]
 
   @@map("harvests")
 }
@@ -76,11 +74,13 @@ model Planting {
   areaId    Int
   productId Int
   varietyId Int
+  
+  harvestId Int
+  harvest   Harvest @relation(fields: [harvestId], references: [id])
 
-  area      Area     @relation(fields: [areaId], references: [id])
-  product   Product  @relation(fields: [productId], references: [id])
-  variety   Variety  @relation(fields: [varietyId], references: [id])
-  harvests  Harvest[]
+  area    Area    @relation(fields: [areaId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+  variety Variety @relation(fields: [varietyId], references: [id])
 
   @@map("plantings")
 }
