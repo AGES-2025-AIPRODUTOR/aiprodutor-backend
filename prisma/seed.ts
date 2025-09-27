@@ -204,7 +204,6 @@ async function main() {
     where: { id: 1 },
     update: {},
     create: {
-      id: 1,
       name: 'Safra de Verão 2025',
       startDate: new Date('2025-09-22T00:00:00Z'),
       endDate: new Date('2025-12-20T23:59:59Z'),
@@ -217,7 +216,6 @@ async function main() {
     where: { id: 2 },
     update: {},
     create: {
-      id: 2,
       name: 'Safra de Outono 2025',
       startDate: new Date('2025-03-20T00:00:00Z'),
       endDate: new Date('2025-06-21T23:59:59Z'),
@@ -230,7 +228,6 @@ async function main() {
     where: { id: 3 },
     update: {},
     create: {
-      id: 3,
       name: 'Safra de Inverno 2025',
       startDate: new Date('2025-06-21T00:00:00Z'),
       endDate: new Date('2025-09-22T23:59:59Z'),
@@ -257,7 +254,6 @@ async function main() {
     where: { id: 1 },
     update: {},
     create: {
-      id: 1,
       name: 'Plantio de Tomate Cereja - Verão 2025',
       color: '#FF6B6B',
       plantingDate: new Date('2025-09-25T00:00:00Z'),
@@ -277,7 +273,6 @@ async function main() {
     where: { id: 2 },
     update: {},
     create: {
-      id: 2,
       name: 'Plantio de Alface Crespa - Verão 2025',
       color: '#4ECDC4',
       plantingDate: new Date('2025-10-01T00:00:00Z'),
@@ -297,7 +292,6 @@ async function main() {
     where: { id: 3 },
     update: {},
     create: {
-      id: 3,
       name: 'Plantio de Maçã Gala - Outono 2025',
       color: '#FFE66D',
       plantingDate: new Date('2025-03-25T00:00:00Z'),
