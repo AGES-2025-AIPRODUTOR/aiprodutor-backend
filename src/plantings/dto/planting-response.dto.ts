@@ -4,6 +4,9 @@ export class PlantingResponseDto {
     @ApiProperty({ description: 'ID único do plantio', example: 1 })
     id: number;
 
+    @ApiProperty({ description: 'ID da safra associada', example: 1 })
+    harvestId: number;
+
     @ApiProperty({ description: 'Nome do plantio', example: 'Plantio de Milho' })
     name: string;
 
