@@ -196,7 +196,54 @@ async function main() {
   console.log('Áreas dos produtores inseridas.');
 
   //================================================================================
-  // 5. PLANTIOS (Conectando tudo)
+  // 5. SAFRAS
+  //================================================================================
+  console.log('Criando as safras...');
+
+  const safraVerao = await prisma.harvest.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      id: 1,
+      name: 'Safra de Verão 2025',
+      startDate: new Date('2025-09-22T00:00:00Z'),
+      endDate: new Date('2025-12-20T23:59:59Z'),
+      status: 'Finalizada',
+      cycle: 'Verão',
+    },
+  });
+
+  const safraOutono = await prisma.harvest.upsert({
+    where: { id: 2 },
+    update: {},
+    create: {
+      id: 2,
+      name: 'Safra de Outono 2025',
+      startDate: new Date('2025-03-20T00:00:00Z'),
+      endDate: new Date('2025-06-21T23:59:59Z'),
+      status: 'Ativa',
+      cycle: 'Outono',
+    },
+  });
+
+  const safraInverno = await prisma.harvest.upsert({
+    where: { id: 3 },
+    update: {},
+    create: {
+      id: 3,
+      name: 'Safra de Inverno 2025',
+      startDate: new Date('2025-06-21T00:00:00Z'),
+      endDate: new Date('2025-09-22T23:59:59Z'),
+      status: 'Planejada',
+      cycle: 'Inverno',
+    },
+  });
+
+  console.log('Safras inseridas.');
+
+
+  //================================================================================
+  // 6. PLANTIOS (ORDEM INVERTIDA - AGORA ASSOCIADOS ÀS SAFRAS)
   //================================================================================
   const areaHorta = await prisma.area.findFirst({
     where: { name: 'Horta Principal' },
@@ -205,11 +252,12 @@ async function main() {
     where: { name: 'Pomar Norte' },
   });
 
-  // Planting 1: Tomate Cereja na Horta Principal
-  const planting1 = await prisma.planting.upsert({
+  // Planting 1: Tomate Cereja na Horta Principal (associado à Safra de Verão)
+  await prisma.planting.upsert({
     where: { id: 1 },
     update: {},
     create: {
+      id: 1,
       name: 'Plantio de Tomate Cereja - Verão 2025',
       color: '#FF6B6B',
       plantingDate: new Date('2025-09-25T00:00:00Z'),
@@ -220,14 +268,16 @@ async function main() {
       areaId: areaHorta!.id,
       productId: tomate.id,
       varietyId: tomate.varieties[0].id,
+      harvestId: safraVerao.id, // <-- ADICIONADO: Link para a safra
     },
   });
 
-  // Planting 2: Alface Crespa na Horta Principal
-  const planting2 = await prisma.planting.upsert({
+  // Planting 2: Alface Crespa na Horta Principal (associado à Safra de Verão)
+  await prisma.planting.upsert({
     where: { id: 2 },
     update: {},
     create: {
+      id: 2,
       name: 'Plantio de Alface Crespa - Verão 2025',
       color: '#4ECDC4',
       plantingDate: new Date('2025-10-01T00:00:00Z'),
@@ -238,14 +288,16 @@ async function main() {
       areaId: areaHorta!.id,
       productId: alface.id,
       varietyId: alface.varieties[0].id,
+      harvestId: safraVerao.id, // <-- ADICIONADO: Link para a safra
     },
   });
 
-  // Planting 3: Maçã Gala no Pomar Norte
-  const planting3 = await prisma.planting.upsert({
+  // Planting 3: Maçã Gala no Pomar Norte (associado à Safra de Outono)
+  await prisma.planting.upsert({
     where: { id: 3 },
     update: {},
     create: {
+      id: 3,
       name: 'Plantio de Maçã Gala - Outono 2025',
       color: '#FFE66D',
       plantingDate: new Date('2025-03-25T00:00:00Z'),
@@ -255,45 +307,13 @@ async function main() {
       areaId: areaPomar!.id,
       productId: maca.id,
       varietyId: maca.varieties[0].id,
+      harvestId: safraOutono.id, // <-- ADICIONADO: Link para a safra
     },
   });
 
   console.log('Plantios inseridos.');
 
-  //================================================================================
-  // 6. SAFRAS
-  //================================================================================
-  await prisma.harvest.createMany({
-    data: [
-      {
-        name: 'Safra de Verão 2025',
-        startDate: new Date('2025-09-22T00:00:00Z'),
-        endDate: new Date('2025-12-20T23:59:59Z'),
-        status: 'Finalizada',
-        cycle: 'Verão',
-        plantingId: planting1.id,
-      },
-      {
-        name: 'Safra de Outono 2025',
-        startDate: new Date('2025-03-20T00:00:00Z'),
-        endDate: new Date('2025-06-21T23:59:59Z'),
-        status: 'Ativa',
-        cycle: 'Outono',
-        plantingId: planting2.id,
-      },
-      {
-        name: 'Safra de Inverno 2025',
-        startDate: new Date('2025-06-21T00:00:00Z'),
-        endDate: new Date('2025-09-22T23:59:59Z'),
-        status: 'Planejada',
-        cycle: 'Inverno',
-        plantingId: planting3.id,
-      },
-    ],
-    skipDuplicates: true,
-  });
 
-  console.log('Safras inseridas.');
   console.log('Seeding concluído com sucesso!');
 }
 
