@@ -3,27 +3,25 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
-
 }
 
 model Producer {
-  id         Int       @id @default(autoincrement())
-  name       String
-  document   String    @unique
-  phone      String
-  email      String    @unique
-  zipCode    String
-  city       String
-  street     String
-  number     String
+  id        Int      @id @default(autoincrement())
+  name      String
+  document  String   @unique
+  phone     String?
+  email     String   @unique
+  zipCode   String
+  city      String
+  street    String
+  number    String
   complement String?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  areas      Area[]
-  harvests   Harvest[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  areas     Area[]
 
   @@map("producers")
 }
@@ -47,38 +45,42 @@ model Area {
 }
 
 model Harvest {
-  id         Int        @id @default(autoincrement())
-  name       String
-  startDate  DateTime
-  endDate    DateTime?
-  status     String
-  cycle      String
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  producerId Int
-  producer   Producer   @relation(fields: [producerId], references: [id])
-  plantings  Planting[]
+  id        Int       @id @default(autoincrement())
+  name      String
+  cycle     String?
+  startDate DateTime
+  endDate   DateTime?
+  status    String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  plantingId Int
+
+  planting Planting @relation(fields: [plantingId], references: [id])
 
   @@map("harvests")
 }
 
 model Planting {
-  id                Int       @id @default(autoincrement())
-  plantingDate      DateTime
-  harvestForecast   DateTime
-  harvestDate       DateTime?
-  quantityPlanted   Decimal
-  quantityHarvested Decimal?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  areaId            Int
-  harvestId         Int
-  productId         Int
-  varietyId         Int
-  area              Area      @relation(fields: [areaId], references: [id])
-  harvest           Harvest   @relation(fields: [harvestId], references: [id])
-  product           Product   @relation(fields: [productId], references: [id])
-  variety           Variety   @relation(fields: [varietyId], references: [id])
+  id                  Int       @id @default(autoincrement())
+  name                String
+  color               String
+  plantingDate        DateTime
+  plantingEndDate     DateTime?
+  expectedHarvestDate DateTime?
+  quantityPlanted     Float
+  quantityHarvested   Float?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  areaId    Int
+  productId Int
+  varietyId Int
+
+  area      Area     @relation(fields: [areaId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+  variety   Variety  @relation(fields: [varietyId], references: [id])
+  harvests  Harvest[]
 
   @@map("plantings")
 }
@@ -102,10 +104,11 @@ model IrrigationType {
 }
 
 model Product {
-  id        Int        @id @default(autoincrement())
-  name      String     @unique
-  createdAt DateTime   @default(now()) // Campo adicionado
-  updatedAt DateTime @default(now()) @updatedAt
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   plantings Planting[]
   varieties Variety[]
 
@@ -113,13 +116,15 @@ model Product {
 }
 
 model Variety {
-  id        Int        @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   name      String
-  createdAt DateTime   @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+
   plantings Planting[]
-  product   Product    @relation(fields: [productId], references: [id])
 
   @@map("varieties")
 }

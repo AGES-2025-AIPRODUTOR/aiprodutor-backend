@@ -10,7 +10,9 @@ import { IrrigationTypesModule } from './irrigation-types/irrigation-types.modul
 import { SoilTypesModule } from './soil-types/soil-types.module';
 import { VarietiesModule } from './varieties/varieties.module';
 import { ProductsModule } from './products/products.module';
+import { PlantingsModule } from './plantings/plantings.module';
 import {HarvestsModule }from './harvests/harvests.module'
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -22,9 +24,9 @@ import {HarvestsModule }from './harvests/harvests.module'
     SoilTypesModule,
     ProductsModule,
     VarietiesModule,
+    PlantingsModule,
   ],
   controllers: [AppController],
   providers: [],
 })
 export class AppModule {}
-''

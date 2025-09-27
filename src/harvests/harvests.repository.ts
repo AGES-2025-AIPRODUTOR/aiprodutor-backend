@@ -7,20 +7,20 @@ export class HarvestsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createHarvestDto: CreateHarvestDto) {
-  // Prepare os dados com valores padrão
-  const harvestData = {
-    name: createHarvestDto.name,
-    startDate: createHarvestDto.startDate,
-    endDate: createHarvestDto.endDate || createHarvestDto.startDate, // Valor padrão
-    status: createHarvestDto.status || 'Ativa',
-    cycle: createHarvestDto.cycle || 'Verão',
-    producerId: createHarvestDto.producerId,
-  };
+    // Prepare os dados com valores padrão
+    const harvestData = {
+      name: createHarvestDto.name,
+      startDate: createHarvestDto.startDate,
+      endDate: createHarvestDto.endDate || createHarvestDto.startDate, // Valor padrão
+      status: createHarvestDto.status || 'Ativa',
+      cycle: createHarvestDto.cycle || 'Verão',
+      plantingId: createHarvestDto.plantingId,
+    };
 
-  return this.prisma.harvest.create({
-    data: harvestData,
-  });
-}
+    return this.prisma.harvest.create({
+      data: harvestData,
+    });
+  }
 
   async findAll() {
     return this.prisma.harvest.findMany();
@@ -49,13 +49,12 @@ export class HarvestsRepository {
     return this.prisma.harvest.findUnique({
       where: { id },
       include: {
-        plantings: {
+        planting: {
           include: {
             area: true,
             variety: true,
-          }
+          },
         },
-        producer: true,
       },
     });
   }
