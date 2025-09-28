@@ -5,27 +5,27 @@ export class UpdateHarvestDto {
   @ApiProperty({ description: 'Nome da safra', example: 'Safra de Verão 2025', required: false })
   @IsString()
   @IsOptional()
-  name?: string;
+  harvestName?: string;
 
   @ApiProperty({ description: 'Ciclo da safra', example: 'Verão', required: false })
   @IsString()
   @IsOptional()
-  cycle?: string;
+  harvestCycle?: string;
 
   @ApiProperty({ description: 'Data de início da safra', example: '2025-09-22', required: false })
   @IsDateString()
   @IsOptional()
-  startDate?: Date;
+  harvestInitialDate?: Date;
 
   @ApiProperty({ description: 'Data final da safra', example: '2025-12-20', required: false })
   @IsDateString()
   @IsOptional()
-  endDate?: Date;
+  harvestEndDate?: Date;
 
   @ApiProperty({ description: 'Status da safra', example: 'Ativa', required: false })
   @IsString()
   @IsOptional()
-  status?: string;
+  harvestStatus?: string;
 
   @ApiProperty({ description: 'ID do produtor', example: 1, required: false })
   @IsNumber()

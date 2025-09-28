@@ -4,6 +4,7 @@ import { CreateHarvestDto } from './dto/create-harvest.dto';
 import { UpdateHarvestDto } from './dto/update-harvest.dto';
 import { HarvestEntity } from './entities/harvest.entity';
 import { HarvestPanelResponseDto } from './dto/harvest-panel.dto';
+import { HarvestResponseDto } from './dto/harvest-response.dto';
 
 @Injectable()
 export class HarvestsService {
@@ -37,6 +38,21 @@ export class HarvestsService {
     await this.findOne(id);
     const harvest = await this.repository.remove(id);
     return new HarvestEntity(harvest);
+  }
+
+  async findInProgressByProducer(producerId: number): Promise<HarvestResponseDto[]> {
+    const harvests = await this.repository.findInProgressByProducer(producerId);
+
+    if(!harvests || harvests.length === 0) {
+      throw new NotFoundException(`Não há nenhuma safra em andamento para o produtor com ID #${producerId}.`);
+    }
+
+    return harvests.map((harvest) => ({
+    harvestId: harvest.id,
+    harvestName: harvest.name,
+    harvestInitialDate: harvest.startDate,
+    harvestEndDate: harvest.endDate,
+    }));
   }
 
 async getHarvestPanel(id: number): Promise<HarvestPanelResponseDto> {

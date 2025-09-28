@@ -6,6 +6,7 @@ import { UpdateHarvestDto } from './dto/update-harvest.dto';
 import { HarvestResponseDto } from './dto/harvest-response.dto';
 import { HarvestPanelResponseDto } from './dto/harvest-panel.dto';
 import { HarvestEntity } from './entities/harvest.entity';
+import { get } from 'http';
 
 @ApiTags('Harvests') // ← Tag para Swagger
 @Controller('harvests') 
@@ -61,4 +62,20 @@ export class HarvestsController {
   getHarvestPanel(@Param('id', ParseIntPipe) id: number): Promise<HarvestPanelResponseDto> {
     return this.harvestsService.getHarvestPanel(id);
   }
+  
+  @Get(':producerId/in-progress')
+  @ApiOperation({ summary: 'Lista todas as safras em andamento de um produtor' })
+  @ApiParam({ name: 'producerId', description: 'ID do produtor' })
+  @ApiResponse({
+      status: 200,
+      description: 'Lista de safras em andamento retornada com sucesso.',
+      type: HarvestResponseDto,
+      isArray: true,
+      })
+      @ApiResponse({ status: 404, description: 'Não há nenhuma safra em andamento.' })
+      findInProgressByProducer(
+        @Param('producerId', ParseIntPipe) producerId: number,
+      ): Promise<HarvestResponseDto[]> {
+        return this.harvestsService.findInProgressByProducer(producerId);
+      }
 }

@@ -59,4 +59,13 @@ export class HarvestsRepository {
       },
     });
   }
+
+  async findInProgressByProducer(producerId: number) {
+    return this.prisma.harvest.findMany({
+      where: {
+        producerId,
+        status: 'Ativa', // Considerando "Ativa" como em andamento
+      },
+    });
+  }
 }
