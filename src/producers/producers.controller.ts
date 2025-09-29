@@ -21,11 +21,17 @@ import { CreateProducerDto } from './dto/create-producer.dto';
 import { FindDocumentoProducerDto } from './dto/findDocument-producer.dto';
 import { UpdateProducerDto } from './dto/update-producer.dto';
 import { ProducerResponseDto } from './dto/producer-response.dto';
+import { PlantingsService } from '../plantings/plantings.service';
+import { HarvestsService } from '../harvests/harvests.service'; // Importar
 
-@ApiTags('Producers') // Agrupa os endpoints no Swagger
+@ApiTags('Producers')
 @Controller('producers')
 export class ProducersController {
-  constructor(private readonly producersService: ProducersService) { }
+  constructor(
+    private readonly producersService: ProducersService,
+    private readonly plantingsService: PlantingsService,
+    private readonly harvestsService: HarvestsService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Cria um novo produtor' })
@@ -73,5 +79,21 @@ export class ProducersController {
   @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.producersService.remove(id);
+  }
+
+  @Get(':id/plantings')
+  @ApiOperation({ summary: 'Busca todos os plantios de um produtor' })
+  @ApiResponse({ status: 200, description: 'Lista de plantios retornada com sucesso.' })
+  @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
+  findAllPlantings(@Param('id', ParseIntPipe) id: number) {
+    return this.plantingsService.findByProducerId(id);
+  }
+
+  @Get(':id/harvests')
+  @ApiOperation({ summary: 'Busca todas as safras de um produtor' })
+  @ApiResponse({ status: 200, description: 'Lista de safras retornada com sucesso.' })
+  @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
+  findAllHarvestsByProducer(@Param('id', ParseIntPipe) id: number) {
+    return this.harvestsService.findByProducerId(id);
   }
 }

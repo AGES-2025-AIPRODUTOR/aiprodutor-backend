@@ -7,6 +7,10 @@ export class AreaResponseDto {
   @ApiProperty({ description: 'Nome da área', example: 'Talhão 1' })
   name: string;
 
+  @ApiProperty({ example: '#34A853', description: 'Cor da área' })
+  color: string;
+
+
   @ApiProperty({
     description: 'Polígono da área (GeoJSON)',
     example: {

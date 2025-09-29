@@ -75,23 +75,22 @@ export class AreasRepository {
   }
 
   async create(areaRequestDto: AreaRequestDto): Promise<any> {
-    const { name, producerId, soilTypeId, irrigationTypeId, polygon } =
+    const { name, producerId, soilTypeId, irrigationTypeId, polygon, color } =
       areaRequestDto;
     const geojsonString = JSON.stringify(polygon);
 
-    // Query modificada para retornar todos os dados necessários de uma vez
-    const result = await this.prisma.$queryRawUnsafe(
+    const result = await this.prisma.$queryRawUnsafe<any[]>(
       `
       WITH new_area AS (
         INSERT INTO areas
-          (name, polygon, "isActive", "producerId", "soilTypeId", "irrigationTypeId", "createdAt", "updatedAt")
+          (name, polygon, color, "isActive", "producerId", "soilTypeId", "irrigationTypeId", "createdAt", "updatedAt")
         VALUES
-          ($1, ST_GeomFromGeoJSON($2), true, $3, $4, $5, NOW(), NOW())
-        RETURNING id, name, "isActive", "producerId", "soilTypeId", "irrigationTypeId", "createdAt", "updatedAt", polygon
+          ($1, ST_GeomFromGeoJSON($2), $3, true, $4, $5, $6, NOW(), NOW())
+        RETURNING id, name, "isActive", "producerId", "soilTypeId", "irrigationTypeId", "createdAt", "updatedAt", polygon, color
       )
       SELECT 
         na.id, na.name, na."isActive", na."producerId", na."soilTypeId", na."irrigationTypeId", 
-        na."createdAt", na."updatedAt", ST_AsGeoJSON(na.polygon) AS polygon,
+        na."createdAt", na."updatedAt", ST_AsGeoJSON(na.polygon) AS polygon, na.color,
         st.name as "soilTypeName",
         it.name as "irrigationTypeName",
         ST_Area(na.polygon::geography) as "areaSize"
@@ -101,15 +100,16 @@ export class AreasRepository {
       `,
       name,
       geojsonString,
+      color,
       producerId,
       soilTypeId,
       irrigationTypeId,
     );
-
-    const row = (Array.isArray(result) ? result[0] : result) as any;
-
+    
+    const row = (Array.isArray(result) ? result[0] : result);
     return this.mapRawAreaToAreaWithRelations(row);
   }
+
 
   async findById(id: number): Promise<AreaWithRelations | null> {
     const result = await this.prisma.$queryRawUnsafe(
@@ -180,7 +180,6 @@ export class AreasRepository {
       updatedAt: new Date(),
     };
 
-    // Somente adiciona os campos que estão definidos no DTO
     if (dto.name !== undefined) {
       mappedData.name = dto.name;
     }

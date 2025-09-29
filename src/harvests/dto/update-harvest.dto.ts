@@ -1,34 +1,62 @@
+import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsOptional, IsString, IsNumber } from 'class-validator';
+import { IsArray, IsDate, IsInt, IsOptional, IsString } from 'class-validator';
 
 export class UpdateHarvestDto {
-  @ApiProperty({ description: 'Nome da safra', example: 'Safra de Verão 2025', required: false })
+  @ApiProperty({
+    description: 'Nome da safra',
+    example: 'Safra de Verão 2025',
+    required: false,
+  })
   @IsString()
   @IsOptional()
-  harvestName?: string;
+  name?: string;
 
-  @ApiProperty({ description: 'Ciclo da safra', example: 'Verão', required: false })
+  @ApiProperty({
+    description: 'Ciclo da safra',
+    example: 'Verão',
+    required: false,
+  })
   @IsString()
   @IsOptional()
-  harvestCycle?: string;
+  cycle?: string;
 
-  @ApiProperty({ description: 'Data de início da safra', example: '2025-09-22', required: false })
-  @IsDateString()
+  @ApiProperty({
+    description: 'Data de início da safra',
+    example: '2025-09-22',
+    required: false,
+  })
+  @Type(() => Date)
+  @IsDate()
   @IsOptional()
-  harvestInitialDate?: Date;
+  startDate?: Date;
 
-  @ApiProperty({ description: 'Data final da safra', example: '2025-12-20', required: false })
-  @IsDateString()
+  @ApiProperty({
+    description: 'Data final da safra',
+    example: '2025-12-20',
+    required: false,
+  })
+  @Type(() => Date)
+  @IsDate()
   @IsOptional()
-  harvestEndDate?: Date;
+  endDate?: Date;
 
-  @ApiProperty({ description: 'Status da safra', example: 'Ativa', required: false })
+  @ApiProperty({
+    description: 'Status da safra',
+    example: 'Ativa',
+    required: false,
+  })
   @IsString()
   @IsOptional()
-  harvestStatus?: string;
-
-  @ApiProperty({ description: 'ID do produtor', example: 1, required: false })
-  @IsNumber()
+  status?: string;
+  
+  @ApiProperty({
+    description: 'Array com os novos IDs de áreas para associar à safra. Substituirá a lista antiga.',
+    example: [3, 4],
+    required: false,
+  })
+  @IsArray()
+  @IsInt({ each: true })
   @IsOptional()
-  producerId?: number;
+  areaIds?: number[];
 }
