@@ -46,5 +46,5 @@ export class PlantingHistoryResponseDto {
     example: '15.50 ha',
     description: 'Tamanho da área em hectares',
   })
-  areaSize: string;
+  areaM2: string;
 }

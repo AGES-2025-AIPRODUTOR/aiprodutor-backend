@@ -22,6 +22,7 @@ CREATE TABLE "public"."areas" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "polygon" geometry NOT NULL,
+    "areaM2" Decimal NOT NULL,
     "color" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,

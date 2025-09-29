@@ -32,6 +32,7 @@ model Area {
   id               Int       @id @default(autoincrement())
   name             String
   polygon          Unsupported("geometry")
+  areaM2           Decimal            
   color            String
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt

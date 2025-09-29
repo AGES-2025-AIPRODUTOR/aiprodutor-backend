@@ -141,11 +141,13 @@ async function main() {
     where: { name: 'Horta Principal' },
   });
   if (!areaHorta) {
+    const polygonWKT = 'POLYGON((-51.22 -30.05, -51.22 -30.02, -51.19 -30.02, -51.19 -30.05, -51.22 -30.05))';
     await prisma.$executeRawUnsafe(`
-      INSERT INTO "areas" (name, color, "producerId", "soilTypeId", "irrigationTypeId", polygon, "createdAt", "updatedAt")
+      INSERT INTO "areas" (name, color, "producerId", "soilTypeId", "irrigationTypeId", polygon, "areaM2", "createdAt", "updatedAt")
       VALUES 
         ('Horta Principal', '#4CAF50', ${producer1.id}, ${soilType2.id}, ${irrigationType2.id}, 
-         ST_GeomFromText('POLYGON((-51.22 -30.05, -51.22 -30.02, -51.19 -30.02, -51.19 -30.05, -51.22 -30.05))', 4326), 
+         ST_GeomFromText('${polygonWKT}', 4326),
+         ST_Area(ST_GeomFromText('${polygonWKT}', 4326)::geography), -- MODIFICAÇÃO AQUI
          NOW(), NOW());
     `);
   }
@@ -154,11 +156,13 @@ async function main() {
     where: { name: 'Campo Leste' },
   });
   if (!areaCampo) {
+    const polygonWKT = 'POLYGON((-51.18 -30.01, -51.18 -29.98, -51.15 -29.98, -51.15 -30.01, -51.18 -30.01))';
     await prisma.$executeRawUnsafe(`
-      INSERT INTO "areas" (name, color, "producerId", "soilTypeId", "irrigationTypeId", polygon, "createdAt", "updatedAt")
+      INSERT INTO "areas" (name, color, "producerId", "soilTypeId", "irrigationTypeId", polygon, "areaM2", "createdAt", "updatedAt")
       VALUES 
         ('Campo Leste', '#FFC107', ${producer1.id}, ${soilType1.id}, ${irrigationType1.id}, 
-         ST_GeomFromText('POLYGON((-51.18 -30.01, -51.18 -29.98, -51.15 -29.98, -51.15 -30.01, -51.18 -30.01))', 4326), 
+         ST_GeomFromText('${polygonWKT}', 4326),
+         ST_Area(ST_GeomFromText('${polygonWKT}', 4326)::geography), -- MODIFICAÇÃO AQUI
          NOW(), NOW());
     `);
   }
@@ -167,11 +171,13 @@ async function main() {
     where: { name: 'Pomar da Maria' },
   });
   if (!areaPomar) {
+    const polygonWKT = 'POLYGON((-51.20 -30.03, -51.20 -30.00, -51.17 -30.00, -51.17 -30.03, -51.20 -30.03))';
     await prisma.$executeRawUnsafe(`
-      INSERT INTO "areas" (name, color, "producerId", "soilTypeId", "irrigationTypeId", polygon, "createdAt", "updatedAt")
+      INSERT INTO "areas" (name, color, "producerId", "soilTypeId", "irrigationTypeId", polygon, "areaM2", "createdAt", "updatedAt")
       VALUES 
         ('Pomar da Maria', '#F44336', ${producer2.id}, ${soilType2.id}, ${irrigationType2.id}, 
-         ST_GeomFromText('POLYGON((-51.20 -30.03, -51.20 -30.00, -51.17 -30.00, -51.17 -30.03, -51.20 -30.03))', 4326), 
+         ST_GeomFromText('${polygonWKT}', 4326),
+         ST_Area(ST_GeomFromText('${polygonWKT}', 4326)::geography), -- MODIFICAÇÃO AQUI
          NOW(), NOW());
     `);
   }
@@ -186,7 +192,7 @@ async function main() {
   });
 
   if (!areaHorta || !areaCampo || !areaPomar) {
-    throw new Error('Erro ao criar áreas');
+    throw new Error('Erro ao criar ou buscar áreas');
   }
 
   console.log('Áreas dos produtores inseridas.');

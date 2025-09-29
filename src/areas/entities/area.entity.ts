@@ -1,4 +1,4 @@
-// Em src/areas/entities/area.entity.ts
+// src/areas/entities/area.entity.ts
 
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -14,19 +14,20 @@ export class Area {
 
   @ApiProperty({
     description: 'Polígono da área (GeoJSON)',
+    type: 'object',
+    additionalProperties: true,
     example: {
       type: 'Polygon',
       coordinates: [
         [
-          [0, 0],
-          [1, 1],
-          [1, 0],
-          [0, 0],
+          [-51.21, -30.03],
+          [-51.2, -30.03],
+          [-51.2, -30.02],
+          [-51.21, -30.02],
+          [-51.21, -30.03],
         ],
       ],
     },
-    type: 'object',
-    additionalProperties: true,
   })
   polygon: Record<string, any>;
 
@@ -34,7 +35,7 @@ export class Area {
     description: 'Tamanho da área em metros quadrados',
     example: 157000,
   })
-  areaSize: number; // Adicionada a propriedade areaSize
+  areaM2: number;
 
   @ApiProperty({
     description: 'Data de criação',

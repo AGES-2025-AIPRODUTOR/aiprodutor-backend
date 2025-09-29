@@ -1,3 +1,5 @@
+// src/areas/dto/area-response.dto.ts
+
 import { ApiProperty } from '@nestjs/swagger';
 
 export class AreaResponseDto {
@@ -10,31 +12,30 @@ export class AreaResponseDto {
   @ApiProperty({ example: '#34A853', description: 'Cor da área' })
   color: string;
 
-
   @ApiProperty({
     description: 'Polígono da área (GeoJSON)',
+    type: 'object',
+    additionalProperties: true,
     example: {
       type: 'Polygon',
       coordinates: [
         [
-          [0, 0],
-          [1, 1],
-          [1, 0],
-          [0, 0],
+          [-51.21, -30.03],
+          [-51.2, -30.03],
+          [-51.2, -30.02],
+          [-51.21, -30.02],
+          [-51.21, -30.03],
         ],
       ],
     },
-    type: 'object',
-    additionalProperties: true,
   })
   polygon: Record<string, any>;
 
   @ApiProperty({
-    description: 'Tamanho da área em hectares',
-    example: 15.7,
-    required: false,
+    description: 'Tamanho da área em metros quadrados (m²)',
+    example: 15700.5,
   })
-  areaSize?: number;
+  areaM2: number;
 
   @ApiProperty({
     description: 'Data de criação',
@@ -72,13 +73,7 @@ export class AreaResponseDto {
   })
   irrigationType?: { id: number; name: string };
 
-  constructor(partial: Partial<AreaResponseDto & { areaSize: number }>) {
+  constructor(partial: Partial<AreaResponseDto>) {
     Object.assign(this, partial);
-
-    // Converte a área de metros quadrados (vindo do DB) para hectares,
-    // arredondando para 2 casas decimais.
-    if (this.areaSize) {
-      this.areaSize = parseFloat((this.areaSize / 10000).toFixed(2));
-    }
   }
 }

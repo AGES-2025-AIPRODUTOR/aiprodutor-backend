@@ -127,8 +127,7 @@ export class ProducersService {
       harvestDate: record.harvestDate,
       quantityPlanted: record.quantityPlanted,
       quantityHarvested: record.quantityHarvested,
-      // Formata o tamanho da área para duas casas decimais e adiciona " ha"
-      areaSize: `${Number(record.areaSize).toFixed(2)} ha`,
+      areaM2: `${Number(record.areaM2).toFixed(2)} ha`,
     }));
   }
 }

@@ -49,7 +49,9 @@ describe('AreasService', () => {
     producerId: 1,
     soilTypeId: 1,
     irrigationTypeId: 1,
-    polygon: { type: 'Polygon', coordinates: [[[-51, -14], [-51, -15], [-52, -15], [-52, -14], [-51, -14]]]},
+    polygon: { type: 'Polygon', coordinates: [[[-51, -14], [-51, -15], [-52, -15], [-52, -14], [-51, -14]]] },
+    color: '',
+    areaM2: 9999.99,
   };
 
   const mockAreaFromRepo: MockArea = {
@@ -96,8 +98,6 @@ describe('create', () => {
     // ASSERT
     expect(mockAreasRepository.create).toHaveBeenCalledWith(mockAreaRequestDto);
     
-    // CORREÇÃO: REMOVA A LINHA ABAIXO, POIS O SERVICE NÃO CHAMA MAIS findById
-    // expect(mockAreasRepository.findById).toHaveBeenCalledWith(createdAreaMinimal.id); 
     
     expect(result).toBeInstanceOf(AreaResponseDto);
     expect(result.id).toEqual(mockAreaFromRepo.id);
@@ -118,7 +118,6 @@ describe('create', () => {
       const areaId = 999;
       mockAreasRepository.findById.mockResolvedValue(null);
 
-      // **CORREÇÃO DA MENSAGEM DE ERRO**
       await expect(service.updateStatus(areaId, { isActive: false })).rejects.toThrow(
         new NotFoundException(`Área com o ID ${areaId} não encontrada.`),
       );
@@ -151,15 +150,12 @@ describe('create', () => {
     const areaId = 999;
     const updateDto = { name: 'Teste' };
     
-    // Arrange: Simula que o repositório não encontrou a área
     mockAreasRepository.findById.mockResolvedValue(null);
 
-    // Act & Assert: Verifica se a chamada ao serviço é rejeitada com a exceção e mensagem corretas
     await expect(service.update(areaId, updateDto)).rejects.toThrow(
       new NotFoundException(`Área com o ID ${areaId} não encontrada.`),
     );
 
-    // Opcional: Verifica se o método de update não foi chamado
     expect(mockAreasRepository.update).not.toHaveBeenCalled();
   });
   });
@@ -175,7 +171,6 @@ describe('create', () => {
       const areaId = 999;
       mockAreasRepository.findById.mockResolvedValue(null);
 
-      // **CORREÇÃO DA MENSAGEM DE ERRO**
       await expect(service.findOne(areaId)).rejects.toThrow(
         new NotFoundException(`Área com o ID ${areaId} não encontrada.`),
       );

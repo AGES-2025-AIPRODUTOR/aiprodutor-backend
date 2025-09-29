@@ -55,7 +55,7 @@ export class ProducersRepository {
           a.name AS "areaName",
           a."isActive" AS "areaStatus",
           -- Calcula a área em metros quadrados e converte para hectares (1 ha = 10.000 m²)
-          ST_Area(a.polygon::geography) / 10000 AS "areaSize",
+          ST_Area(a.polygon::geography) / 10000 AS "areaM2",
           p.name AS "plantingName",
           p."plantingDate",
           p."quantityPlanted",

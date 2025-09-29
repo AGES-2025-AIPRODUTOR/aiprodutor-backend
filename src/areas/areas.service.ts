@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+// CORREÇÃO 1: Removida a importação de 'AreaFromRepository' que não existe.
 import { AreasRepository } from './areas.repository';
 import { AreaRequestDto } from './dto/area-request.dto';
 import { UpdateAreaDto } from './dto/update-area.dto';
@@ -8,10 +9,10 @@ import { ProducersService } from '../producers/producers.service';
 import { SoilTypesService } from '../soil-types/soil-types.service';
 import { IrrigationTypesService } from '../irrigation-types/irrigation-types.service';
 
-// Interface para o tipo de dado que vem do repositório
 interface AreaFromRepository {
   id: number;
   name: string;
+  color: string;
   isActive: boolean;
   producerId: number;
   soilTypeId: number;
@@ -19,7 +20,7 @@ interface AreaFromRepository {
   createdAt: Date;
   updatedAt: Date;
   polygon: Record<string, any> | null;
-  areaSize: number;
+  areaM2: number;
   soilType: { id: number; name: string } | null;
   irrigationType: { id: number; name: string } | null;
 }
@@ -33,17 +34,13 @@ export class AreasService {
     private readonly irrigationTypesService: IrrigationTypesService,
   ) {}
 
-  /**
-   * Mapeia os dados do repositório para o DTO de resposta.
-   * @param areaData - Os dados da área vindos do repositório (não pode ser nulo).
-   * @returns Um AreaResponseDto.
-   */
   private mapToResponseDto(areaData: AreaFromRepository): AreaResponseDto {
     const mappedData = {
       ...areaData,
       polygon: areaData.polygon ?? undefined,
       soilType: areaData.soilType ?? undefined,
       irrigationType: areaData.irrigationType ?? undefined,
+      areaM2: areaData.areaM2,
     };
     return new AreaResponseDto(mappedData);
   }
@@ -54,8 +51,9 @@ export class AreasService {
     await this.producersService.findOne(producerId);
     await this.soilTypesService.findById(soilTypeId);
     await this.irrigationTypesService.findById(irrigationTypeId);
+    
     const fullNewArea = await this.repository.create(areaRequestDto);
-    return this.mapToResponseDto(fullNewArea!);
+    return this.mapToResponseDto(fullNewArea);
   }
 
   async updateStatus(
