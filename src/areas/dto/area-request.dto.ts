@@ -1,4 +1,6 @@
-import { IsInt, IsNotEmpty, IsString, IsNumber } from 'class-validator';
+// src/areas/dto/area-request.dto.ts
+
+import { IsInt, IsNotEmpty, IsNumber, IsPositive, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsGeoJSONPolygon } from './is-geojson-polygon.validator';
 
@@ -27,9 +29,19 @@ export class AreaRequestDto {
   irrigationTypeId: number;
 
   @ApiProperty({
+    example: '#34A853',
+    description: 'Cor para representar a área no mapa (formato hexadecimal)',
+  })
+  @IsString()
+  @IsNotEmpty()
+  color: string;
+
+  @ApiProperty({
+    example: 15700.5,
     description: 'Tamanho da área em metros quadrados (m²)',
   })
   @IsNumber()
+  @IsPositive()
   @IsNotEmpty()
   areaM2: number;
 

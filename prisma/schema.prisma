@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -10,45 +9,52 @@ datasource db {
 }
 
 model Producer {
-  id        Int      @id @default(autoincrement())
-  name      String
-  document  String   @unique
-  phone     String?
-  email     String   @unique
-  zipCode   String
-  city      String
-  street    String
-  number    String
+  id         Int       @id @default(autoincrement())
+  name       String
+  document   String    @unique
+  phone      String?
+  email      String    @unique
+  zipCode    String
+  city       String
+  street     String
+  number     String
   complement String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  areas     Area[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  areas    Area[]
+  harvests Harvest[] // Relação 1-N: Um produtor tem muitas safras
 
   @@map("producers")
 }
 
 model Area {
-  id               Int                @id @default(autoincrement())
+  id               Int       @id @default(autoincrement())
   name             String
   polygon          Unsupported("geometry")
   areaM2           Decimal            
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
+  color            String
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
   producerId       Int
   soilTypeId       Int
   irrigationTypeId Int
-  isActive         Boolean            @default(true)
-  irrigationType   IrrigationType     @relation(fields: [irrigationTypeId], references: [id])
-  producer         Producer           @relation(fields: [producerId], references: [id])
-  soilType         SoilType           @relation(fields: [soilTypeId], references: [id])
+  isActive         Boolean   @default(true)
+
+  irrigationType IrrigationType @relation(fields: [irrigationTypeId], references: [id])
+  producer       Producer       @relation(fields: [producerId], references: [id])
+  soilType       SoilType       @relation(fields: [soilTypeId], references: [id])
+  
+  // Relação N-N: Uma área pode ter muitos plantios e participar de muitas safras
   plantings        Planting[]
+  harvests         Harvest[]
 
   @@map("areas")
 }
 
 model Harvest {
   id        Int       @id @default(autoincrement())
-  name      String
+  name      String    @unique
   cycle     String?
   startDate DateTime
   endDate   DateTime?
@@ -56,40 +62,48 @@ model Harvest {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
-  plantingId Int
+  // Relação 1-N: A safra pertence a um produtor
+  producerId Int
+  producer   Producer  @relation(fields: [producerId], references: [id])
 
-  planting Planting @relation(fields: [plantingId], references: [id])
+  // Relação 1-N: Uma safra "contém" muitos plantios
+  plantings Planting[]
+  // Relação N-N: Uma safra pode abranger muitas áreas
+  areas     Area[]
 
   @@map("harvests")
 }
 
 model Planting {
-  id                  Int       @id @default(autoincrement())
+  id                  Int        @id @default(autoincrement())
   name                String
-  color               String
   plantingDate        DateTime
   plantingEndDate     DateTime?
   expectedHarvestDate DateTime?
   quantityPlanted     Float
   quantityHarvested   Float?
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
 
-  areaId    Int
+  // Relação 1-N: Um plantio pertence a uma safra
+  harvestId Int
+  harvest   Harvest @relation(fields: [harvestId], references: [id])
+
+  // Relações com Produto e Variedade
   productId Int
+  product   Product @relation(fields: [productId], references: [id])
   varietyId Int
+  variety   Variety @relation(fields: [varietyId], references: [id])
 
-  area      Area     @relation(fields: [areaId], references: [id])
-  product   Product  @relation(fields: [productId], references: [id])
-  variety   Variety  @relation(fields: [varietyId], references: [id])
-  harvests  Harvest[]
+  // Relação N-N: Um plantio pode ocupar muitas áreas
+  areas     Area[]
 
   @@map("plantings")
 }
 
 model SoilType {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
   description String?
   areas       Area[]
 
@@ -97,8 +111,8 @@ model SoilType {
 }
 
 model IrrigationType {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
   description String?
   areas       Area[]
 
@@ -122,7 +136,6 @@ model Variety {
   name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
   productId Int
   product   Product  @relation(fields: [productId], references: [id])
 

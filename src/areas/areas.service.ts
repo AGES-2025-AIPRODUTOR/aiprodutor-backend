@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { AreasRepository, AreaFromRepository } from './areas.repository';
+// CORREÇÃO 1: Removida a importação de 'AreaFromRepository' que não existe.
+import { AreasRepository } from './areas.repository';
 import { AreaRequestDto } from './dto/area-request.dto';
 import { UpdateAreaDto } from './dto/update-area.dto';
 import { UpdateAreaStatusDto } from './dto/update-area-status.dto';
@@ -7,7 +8,22 @@ import { AreaResponseDto } from './dto/area-response.dto';
 import { ProducersService } from '../producers/producers.service';
 import { SoilTypesService } from '../soil-types/soil-types.service';
 import { IrrigationTypesService } from '../irrigation-types/irrigation-types.service';
-import { Decimal } from '@prisma/client/runtime/library';
+
+interface AreaFromRepository {
+  id: number;
+  name: string;
+  color: string;
+  isActive: boolean;
+  producerId: number;
+  soilTypeId: number;
+  irrigationTypeId: number;
+  createdAt: Date;
+  updatedAt: Date;
+  polygon: Record<string, any> | null;
+  areaM2: number;
+  soilType: { id: number; name: string } | null;
+  irrigationType: { id: number; name: string } | null;
+}
 
 @Injectable()
 export class AreasService {
@@ -21,26 +37,23 @@ export class AreasService {
   private mapToResponseDto(areaData: AreaFromRepository): AreaResponseDto {
     const mappedData = {
       ...areaData,
-      areaM2: areaData.areaM2,
       polygon: areaData.polygon ?? undefined,
       soilType: areaData.soilType ?? undefined,
       irrigationType: areaData.irrigationType ?? undefined,
+      areaM2: areaData.areaM2,
     };
     return new AreaResponseDto(mappedData);
   }
 
   async create(areaRequestDto: AreaRequestDto): Promise<AreaResponseDto> {
-    const { producerId, soilTypeId, irrigationTypeId, areaM2 } = areaRequestDto;
+    const { producerId, soilTypeId, irrigationTypeId } = areaRequestDto;
 
     await this.producersService.findOne(producerId);
     await this.soilTypesService.findById(soilTypeId);
     await this.irrigationTypesService.findById(irrigationTypeId);
-
-    const fullNewArea = await this.repository.create({
-      ...areaRequestDto,
-      areaM2: areaM2, // Alterado: Usamos o 'areaM2' como 'number'
-    });
-    return this.mapToResponseDto(fullNewArea!);
+    
+    const fullNewArea = await this.repository.create(areaRequestDto);
+    return this.mapToResponseDto(fullNewArea);
   }
 
   async updateStatus(
@@ -65,13 +78,8 @@ export class AreasService {
     if (!areaExists) {
       throw new NotFoundException(`Área com o ID ${id} não encontrada.`);
     }
-
-    const dataToUpdate: any = { ...dto };
-    if (dto.areaM2 !== undefined) {
-      dataToUpdate.areaM2 = new Decimal(dto.areaM2);
-    }
-
-    const updatedArea = await this.repository.update(id, dataToUpdate);
+    
+    const updatedArea = await this.repository.update(id, dto);
     return this.mapToResponseDto(updatedArea!);
   }
 

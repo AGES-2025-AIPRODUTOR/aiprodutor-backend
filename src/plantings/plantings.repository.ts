@@ -7,34 +7,26 @@ import { UpdatePlantingDto } from './dto/update-planting.dto';
 export class PlantingsRepository {
   constructor(private readonly prisma: PrismaService) { }
 
-  async create(plantingRequestDto: PlantingRequestDto) {
+  create(plantingRequestDto: PlantingRequestDto) {
     return this.prisma.planting.create({
-      data: {
-        areaId: plantingRequestDto.areaId,
-        productId: plantingRequestDto.productId,
-        varietyId: plantingRequestDto.varietyId,
-        name: plantingRequestDto.name,
-        color: plantingRequestDto.color,
-        plantingDate: plantingRequestDto.plantingDate,
-        plantingEndDate: plantingRequestDto.plantingEndDate,
-        expectedHarvestDate: plantingRequestDto.expectedHarvestDate,
-        quantityPlanted: plantingRequestDto.quantityPlanted,
-        quantityHarvested: plantingRequestDto.quantityHarvested,
-      },
+      data: plantingRequestDto, 
     });
   }
 
   async findAll() {
-    return this.prisma.planting.findMany();
+    return this.prisma.planting.findMany({
+      include: { areas: true },
+    }); 
   }
 
-  async findById(id: number) {
+  findById(id: number) {
     return this.prisma.planting.findUnique({
       where: { id },
+      include: { areas: true },
     });
   }
 
-  async update(id: number, updatePlantingDto: Partial<UpdatePlantingDto>) {
+  update(id: number, updatePlantingDto: UpdatePlantingDto) {
     return this.prisma.planting.update({
       where: { id },
       data: updatePlantingDto,
@@ -54,11 +46,21 @@ export class PlantingsRepository {
     return !!planting;
   }
 
-  async findByProductId(productId: number) {
+  findByProductId(productId: number) {
     return this.prisma.planting.findMany({
       where: { productId },
+      include: { areas: true },
     });
   }
 
-  
+  findByProducerId(producerId: number) {
+    return this.prisma.planting.findMany({
+      where: { harvest: { producerId: producerId } },
+      include: {
+        areas: true,
+        harvest: true,
+      },
+      orderBy: { plantingDate: 'desc' },
+    });
+  }
 }

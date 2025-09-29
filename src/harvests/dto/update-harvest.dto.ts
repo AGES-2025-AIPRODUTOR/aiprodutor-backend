@@ -1,5 +1,6 @@
+import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsOptional, IsString, IsNumber } from 'class-validator';
+import { IsArray, IsDate, IsInt, IsOptional, IsString } from 'class-validator';
 
 export class UpdateHarvestDto {
   @ApiProperty({
@@ -25,7 +26,8 @@ export class UpdateHarvestDto {
     example: '2025-09-22',
     required: false,
   })
-  @IsDateString()
+  @Type(() => Date)
+  @IsDate()
   @IsOptional()
   startDate?: Date;
 
@@ -34,7 +36,8 @@ export class UpdateHarvestDto {
     example: '2025-12-20',
     required: false,
   })
-  @IsDateString()
+  @Type(() => Date)
+  @IsDate()
   @IsOptional()
   endDate?: Date;
 
@@ -46,9 +49,14 @@ export class UpdateHarvestDto {
   @IsString()
   @IsOptional()
   status?: string;
-
-  @ApiProperty({ description: 'ID do plantio', example: 1, required: false })
-  @IsNumber()
+  
+  @ApiProperty({
+    description: 'Array com os novos IDs de áreas para associar à safra. Substituirá a lista antiga.',
+    example: [3, 4],
+    required: false,
+  })
+  @IsArray()
+  @IsInt({ each: true })
   @IsOptional()
-  plantingId?: number;
+  areaIds?: number[];
 }

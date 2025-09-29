@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsBoolean, IsNumber } from 'class-validator';
+import { IsOptional, IsString, IsBoolean, IsNumber, IsPositive } from 'class-validator';
 
 export class UpdateAreaDto {
   @ApiProperty({
@@ -35,6 +35,7 @@ export class UpdateAreaDto {
   })
   @IsOptional()
   @IsNumber()
+  @IsPositive()
   areaM2?: number;
 
   @ApiProperty({
