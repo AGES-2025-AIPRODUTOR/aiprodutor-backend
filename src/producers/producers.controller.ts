@@ -30,8 +30,8 @@ import { HarvestsService } from '../harvests/harvests.service';
 export class ProducersController {
   constructor(
     private readonly producersService: ProducersService,
-    private readonly plantingsService: PlantingsService, // Mantido da sua versão
-    private readonly harvestsService: HarvestsService,   // Mantido da sua versão
+    private readonly plantingsService: PlantingsService,
+    private readonly harvestsService: HarvestsService,
   ) {}
 
   @Post()
@@ -82,7 +82,6 @@ export class ProducersController {
     return this.producersService.remove(id);
   }
 
-  // Endpoint da sua versão (HEAD)
   @Get(':id/plantings')
   @ApiOperation({ summary: 'Busca todos os plantios de um produtor' })
   @ApiResponse({ status: 200, description: 'Lista de plantios retornada com sucesso.' })
@@ -91,7 +90,6 @@ export class ProducersController {
     return this.plantingsService.findByProducerId(id);
   }
 
-  // Endpoint da sua versão (HEAD)
   @Get(':id/harvests')
   @ApiOperation({ summary: 'Busca todas as safras de um produtor' })
   @ApiResponse({ status: 200, description: 'Lista de safras retornada com sucesso.' })
@@ -100,7 +98,6 @@ export class ProducersController {
     return this.harvestsService.findByProducerId(id);
   }
 
-  // Endpoint da versão 'developer'
   @Get(':id/planting-history')
   @ApiOperation({ summary: 'Lista o histórico de plantios de um produtor' })
   @ApiParam({ name: 'id', description: 'ID do Produtor' })
