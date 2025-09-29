@@ -1,5 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+class AreaInHarvestResponseDto {
+    @ApiProperty()
+    id: number;
+    @ApiProperty()
+    name: string;
+}
+
+class ProducerInHarvestResponseDto {
+    @ApiProperty()
+    id: number;
+    @ApiProperty()
+    name: string;
+}
 
 class PlantingInHarvestResponseDto {
   @ApiProperty({ example: 1, description: 'ID do plantio' })
@@ -9,6 +22,26 @@ class PlantingInHarvestResponseDto {
   name: string;
 }
 
+export class InProgressHarvestDto {
+  @ApiProperty({
+    description: 'Nome da safra',
+    example: 'Safra de Uva',
+  })
+  harvestName: string;
+
+  @ApiProperty({
+    description: 'Data de início da safra',
+    example: '2025-11-19',
+  })
+  harvestInitialDate: Date;
+
+  @ApiProperty({
+    description: 'Data final da safra',
+    example: '2028-11-23',
+    required: false,
+  })
+  harvestEndDate: Date | null;
+}
 
 export class HarvestResponseDto {
   @ApiProperty({ description: 'ID único da safra', example: 1 })
@@ -26,13 +59,13 @@ export class HarvestResponseDto {
 
   @ApiProperty({
     description: 'Data de início da safra',
-    example: '2025-09-22T00:00:00.000Z',
+    example: '2025-09-22',
   })
   startDate: Date;
 
   @ApiProperty({
     description: 'Data final da safra',
-    example: '2025-12-20T23:59:59.000Z',
+    example: '2025-12-20',
     required: false,
   })
   endDate: Date | null;
@@ -44,9 +77,13 @@ export class HarvestResponseDto {
   })
   status?: string;
 
-  @ApiProperty({ 
-    description: 'Lista de plantios associados a esta safra.',
-    type: [PlantingInHarvestResponseDto] 
-  })
+  @ApiProperty({ type: ProducerInHarvestResponseDto })
+  producer: ProducerInHarvestResponseDto;
+
+  @ApiProperty({ type: [AreaInHarvestResponseDto] })
+  areas: AreaInHarvestResponseDto[];
+
+  @ApiProperty({ type: [PlantingInHarvestResponseDto] })
   plantings: PlantingInHarvestResponseDto[];
+
 }

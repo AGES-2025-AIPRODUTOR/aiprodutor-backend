@@ -22,12 +22,17 @@ import { FindDocumentoProducerDto } from './dto/findDocument-producer.dto';
 import { UpdateProducerDto } from './dto/update-producer.dto';
 import { ProducerResponseDto } from './dto/producer-response.dto';
 import { PlantingHistoryResponseDto } from './dto/planting-history-response.dto';
+import { PlantingsService } from '../plantings/plantings.service';
+import { HarvestsService } from '../harvests/harvests.service';
 
-
-@ApiTags('Producers') // Agrupa os endpoints no Swagger
+@ApiTags('Producers')
 @Controller('producers')
 export class ProducersController {
-  constructor(private readonly producersService: ProducersService) { }
+  constructor(
+    private readonly producersService: ProducersService,
+    private readonly plantingsService: PlantingsService,
+    private readonly harvestsService: HarvestsService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Cria um novo produtor' })
@@ -58,10 +63,10 @@ export class ProducersController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Edita os dados de um produtor' })
-  @ApiParam({ name: 'id', type: Number, description: 'ID da área' })
+  @ApiParam({ name: 'id', type: Number, description: 'ID do produtor' })
   @ApiBody({ type: UpdateProducerDto })
-  @ApiResponse({ status: 200, description: 'Área atualizada com sucesso.', type: ProducerResponseDto })
-  @ApiResponse({ status: 404, description: 'Área não encontrada.' })
+  @ApiResponse({ status: 200, description: 'Produtor atualizado com sucesso.', type: ProducerResponseDto })
+  @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateProducerDto: Partial<UpdateProducerDto>,
@@ -75,6 +80,22 @@ export class ProducersController {
   @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.producersService.remove(id);
+  }
+
+  @Get(':id/plantings')
+  @ApiOperation({ summary: 'Busca todos os plantios de um produtor' })
+  @ApiResponse({ status: 200, description: 'Lista de plantios retornada com sucesso.' })
+  @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
+  findAllPlantings(@Param('id', ParseIntPipe) id: number) {
+    return this.plantingsService.findByProducerId(id);
+  }
+
+  @Get(':id/harvests')
+  @ApiOperation({ summary: 'Busca todas as safras de um produtor' })
+  @ApiResponse({ status: 200, description: 'Lista de safras retornada com sucesso.' })
+  @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
+  findAllHarvestsByProducer(@Param('id', ParseIntPipe) id: number) {
+    return this.harvestsService.findByProducerId(id);
   }
 
   @Get(':id/planting-history')

@@ -9,6 +9,9 @@ export class Area {
   @ApiProperty({ description: 'Nome da área', example: 'Talhão 1' })
   name: string;
 
+  @ApiProperty({ description: 'Cor da área', example: '#34A853' })
+  color: string;
+
   @ApiProperty({
     description: 'Polígono da área (GeoJSON)',
     example: {
@@ -35,7 +38,7 @@ export class Area {
 
   @ApiProperty({
     description: 'Data de criação',
-    example: '2025-09-09T10:40:00Z',
+    example: '2025-09-09',
   })
   createdAt: Date;
 
@@ -44,7 +47,7 @@ export class Area {
 
   @ApiProperty({
     description: 'Data de atualização',
-    example: '2025-09-09T10:40:00Z',
+    example: '2025-09-09',
   })
   updatedAt: Date;
 

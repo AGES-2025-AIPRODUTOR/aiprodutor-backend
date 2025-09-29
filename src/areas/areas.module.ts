@@ -10,7 +10,7 @@ import { IrrigationTypesModule } from '../irrigation-types/irrigation-types.modu
 @Module({
   imports: [
     PrismaModule,
-    ProducersModule,
+    forwardRef(() => ProducersModule),
     forwardRef(() => SoilTypesModule),
     forwardRef(() => IrrigationTypesModule),
   ],

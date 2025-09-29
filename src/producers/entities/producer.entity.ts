@@ -22,8 +22,13 @@ export class Producer {
   })
   email: string;
 
-  @ApiProperty({ description: 'Telefone de contato', example: '51999887766' })
-  phone: string;
+  @ApiProperty({
+    description: 'Telefone de contato',
+    example: '51999887766',
+    required: false,
+    nullable: true,
+  })
+  phone: string | null;
 
   @ApiProperty({ description: 'CEP', example: '90619900' })
   zipCode: string;
@@ -41,8 +46,9 @@ export class Producer {
     description: 'Complemento',
     example: 'Prédio 40',
     required: false,
+    nullable: true,
   })
-  complement?: string;
+  complement: string | null;
 
   @ApiProperty()
   createdAt: Date;
@@ -50,13 +56,11 @@ export class Producer {
   @ApiProperty()
   updatedAt: Date;
 
-  // O construtor facilita a criação de instâncias da entidade a partir de dados do Prisma.
   constructor(partial: Partial<Producer>) {
     Object.assign(this, partial);
   }
 
   /**
-   * Exemplo de um método de negócio dentro da entidade.
    * Verifica se o perfil do produtor tem todos os campos de endereço preenchidos.
    */
   isAddressComplete(): boolean {

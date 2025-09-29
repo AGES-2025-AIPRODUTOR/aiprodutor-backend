@@ -28,27 +28,23 @@ export class PlantingRequestDto {
   @IsNotEmpty()
   varietyId: number;
 
-  @ApiProperty({ description: 'Cor do plantio', example: 'Verde' })
-  @IsNotEmpty()
-  color: string;
-
   @ApiProperty({
     description: 'Data do plantio',
-    example: '2025-09-09T10:40:00Z',
+    example: '2025-09-09',
   })
   @IsNotEmpty()
   plantingDate: Date;
 
   @ApiProperty({
     description: 'Data final do plantio',
-    example: '2025-09-09T10:40:00Z',
+    example: '2025-09-09',
   })
   @IsNotEmpty()
   plantingEndDate: Date;
 
   @ApiProperty({
     description: 'Data prevista para a colheita',
-    example: '2026-09-09T10:40:00Z',
+    example: '2026-09-09',
   })
   @IsNotEmpty()
   expectedHarvestDate: Date;

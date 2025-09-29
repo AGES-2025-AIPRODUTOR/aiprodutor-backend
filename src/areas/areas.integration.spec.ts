@@ -95,8 +95,8 @@ describe('AreasController (e2e)', () => {
     soilTypeId: 1,
     irrigationTypeId: 1,
     isActive: true,
-    createdAt: '2023-01-01T00:00:00.000Z',
-    updatedAt: '2023-01-01T00:00:00.000Z',
+    createdAt: '2023-01-01',
+    updatedAt: '2023-01-01',
     polygon: mockValidAreaRequestDto.polygon,
   };
 
@@ -294,7 +294,7 @@ describe('AreasController (e2e)', () => {
       const updatedArea = {
         ...mockArea,
         isActive: false,
-        updatedAt: '2023-01-02T00:00:00.000Z',
+        updatedAt: '2023-01-02',
       };
 
       mockAreasRepository.findById.mockResolvedValue(mockArea);
@@ -403,7 +403,7 @@ describe('AreasController (e2e)', () => {
         soilTypeId: 2,
         irrigationTypeId: 3,
         isActive: false,
-        updatedAt: '2023-01-02T00:00:00.000Z',
+        updatedAt: '2023-01-02',
       };
 
       mockAreasRepository.findById.mockResolvedValue(mockArea);
@@ -445,7 +445,7 @@ describe('AreasController (e2e)', () => {
       const updatedArea = {
         ...mockArea,
         name: 'Apenas Nome Atualizado',
-        updatedAt: '2023-01-02T00:00:00.000Z',
+        updatedAt: '2023-01-02',
       };
 
       mockAreasRepository.findById.mockResolvedValue(mockArea);
@@ -469,7 +469,7 @@ describe('AreasController (e2e)', () => {
       const updatedArea = {
         ...mockArea,
         isActive: false,
-        updatedAt: '2023-01-02T00:00:00.000Z',
+        updatedAt: '2023-01-02',
       };
 
       mockAreasRepository.findById.mockResolvedValue(mockArea);
@@ -564,7 +564,7 @@ describe('AreasController (e2e)', () => {
       const emptyDto = {};
       const unchangedArea = {
         ...mockArea,
-        updatedAt: '2023-01-02T00:00:00.000Z',
+        updatedAt: '2023-01-02',
       };
 
       mockAreasRepository.findById.mockResolvedValue(mockArea);
@@ -592,7 +592,7 @@ describe('AreasController (e2e)', () => {
         soilTypeId: 0,
         irrigationTypeId: 0,
         isActive: false,
-        updatedAt: '2023-01-02T00:00:00.000Z',
+        updatedAt: '2023-01-02',
       };
 
       mockAreasRepository.findById.mockResolvedValue(mockArea);

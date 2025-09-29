@@ -1,7 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Planting } from '@prisma/client';
+import { Planting, Area } from '@prisma/client';
+import { Producer } from '../../producers/entities/producer.entity';
 
-class PlantingEntity implements Partial<Planting> {
+class AreaInHarvestEntity implements Partial<Area> {
+  @ApiProperty({ description: 'ID da área' })
+  id: number;
+
+  @ApiProperty({ description: 'Nome da área' })
+  name: string;
+
+  constructor(partial: Partial<AreaInHarvestEntity>) {
+    Object.assign(this, partial);
+  }
+}
+
+class PlantingInHarvestEntity implements Partial<Planting> {
   @ApiProperty({ description: 'ID do plantio' })
   id: number;
 
@@ -10,8 +23,8 @@ class PlantingEntity implements Partial<Planting> {
 
   @ApiProperty({ description: 'Data do plantio' })
   plantingDate: Date;
-  
-  constructor(partial: Partial<PlantingEntity>) {
+
+  constructor(partial: Partial<PlantingInHarvestEntity>) {
     Object.assign(this, partial);
   }
 }
@@ -32,13 +45,13 @@ export class HarvestEntity {
 
   @ApiProperty({
     description: 'Data de início da safra',
-    example: '2025-09-22T00:00:00.000Z',
+    example: '2025-09-22',
   })
   startDate: Date;
 
   @ApiProperty({
     description: 'Data final da safra',
-    example: '2025-12-20T23:59:59.000Z',
+    example: '2025-12-20',
     required: false,
   })
   endDate: Date | null;
@@ -50,28 +63,43 @@ export class HarvestEntity {
   })
   status?: string | null;
 
-  @ApiProperty({
-    description: 'Lista de plantios que pertencem a esta safra.',
-    type: () => [PlantingEntity],
-  })
-  plantings: PlantingEntity[];
+  @ApiProperty({ description: 'ID do produtor dono da safra' })
+  producerId: number;
+
+  @ApiProperty({ type: () => Producer })
+  producer: Partial<Producer>;
+
+  @ApiProperty({ type: () => [AreaInHarvestEntity] })
+  areas: AreaInHarvestEntity[];
+
+  @ApiProperty({ type: () => [PlantingInHarvestEntity] })
+  plantings: PlantingInHarvestEntity[];
 
   @ApiProperty({
     description: 'Data de criação',
-    example: '2024-01-01T00:00:00.000Z',
+    example: '2024-01-01',
   })
   createdAt: Date;
 
   @ApiProperty({
     description: 'Data de atualização',
-    example: '2024-01-01T00:00:00.000Z',
+    example: '2024-01-01',
   })
   updatedAt: Date;
 
-  constructor(partial: Partial<HarvestEntity>) {
-    Object.assign(this, partial);
-    if (partial.plantings) {
-      this.plantings = partial.plantings.map(p => new PlantingEntity(p));
-    }
+constructor(partial: Partial<HarvestEntity>) {
+  Object.assign(this, partial);
+
+  if (partial.producer) {
+    this.producer = new Producer(partial.producer);
   }
+
+  if (partial.areas) {
+    this.areas = partial.areas.map(a => new AreaInHarvestEntity(a));
+  }
+
+  if (partial.plantings) {
+    this.plantings = partial.plantings.map(p => new PlantingInHarvestEntity(p));
+  }
+}
 }

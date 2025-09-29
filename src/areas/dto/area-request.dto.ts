@@ -27,6 +27,14 @@ export class AreaRequestDto {
   irrigationTypeId: number;
 
   @ApiProperty({
+    example: '#34A853',
+    description: 'Cor para representar a área no mapa (formato hexadecimal)',
+  })
+  @IsString()
+  @IsNotEmpty()
+  color: string;
+
+  @ApiProperty({
     example: {
       type: 'Polygon',
       coordinates: [

@@ -17,7 +17,8 @@ describe('AreasRepository', () => {
     producerId: 1,
     soilTypeId: 1,
     irrigationTypeId: 1,
-    polygon: { type: 'Polygon', coordinates: [[[-51, -14], [-51, -15], [-52, -15], [-52, -14], [-51, -14]]]},
+    polygon: { type: 'Polygon', coordinates: [[[-51, -14], [-51, -15], [-52, -15], [-52, -14], [-51, -14]]] },
+    color: ''
   };
   
   // Objeto completo retornado pela query (com polygon como STRING)
@@ -28,15 +29,14 @@ describe('AreasRepository', () => {
     producerId: 1,
     soilTypeId: 1,
     irrigationTypeId: 1,
-    createdAt: new Date('2023-01-01T00:00:00.000Z'),
-    updatedAt: new Date('2023-01-01T00:00:00.000Z'),
-    polygon: JSON.stringify(mockAreaRequestDto.polygon), // Deve ser string
+    createdAt: new Date('2023-01-01'),
+    updatedAt: new Date('2023-01-01'),
+    polygon: JSON.stringify(mockAreaRequestDto.polygon),
     areaSize: 12345.67,
     soilTypeName: 'Solo Argiloso',
     irrigationTypeName: 'Gotejamento',
   };
 
-  // Objeto final após o mapeamento (com polygon como OBJETO)
   const mockFinalMappedArea = {
       id: mockRawQueryResult.id,
       name: mockRawQueryResult.name,
@@ -46,7 +46,7 @@ describe('AreasRepository', () => {
       irrigationTypeId: mockRawQueryResult.irrigationTypeId,
       createdAt: mockRawQueryResult.createdAt,
       updatedAt: mockRawQueryResult.updatedAt,
-      polygon: mockAreaRequestDto.polygon, // Aqui é objeto
+      polygon: mockAreaRequestDto.polygon,
       areaSize: mockRawQueryResult.areaSize,
       soilType: { id: mockRawQueryResult.soilTypeId, name: mockRawQueryResult.soilTypeName },
       irrigationType: { id: mockRawQueryResult.irrigationTypeId, name: mockRawQueryResult.irrigationTypeName },
@@ -88,8 +88,8 @@ describe('AreasRepository', () => {
   describe('update', () => {
     it('should update area and return the full updated area', async () => {
       const updateDto: UpdateAreaDto = { name: 'Nome Atualizado' };
-      mockPrismaService.area.update.mockResolvedValue({}); // Ação de update
-      mockPrismaService.$queryRawUnsafe.mockResolvedValue([mockRawQueryResult]); // Ação do findById subsequente
+      mockPrismaService.area.update.mockResolvedValue({});
+      mockPrismaService.$queryRawUnsafe.mockResolvedValue([mockRawQueryResult]);
       
       const result = await repository.update(1, updateDto);
 

@@ -14,12 +14,15 @@ export class PlantingsRepository {
   }
 
   async findAll() {
-    return this.prisma.planting.findMany();
+    return this.prisma.planting.findMany({
+      include: { areas: true },
+    }); 
   }
 
-  async findById(id: number) {
+  findById(id: number) {
     return this.prisma.planting.findUnique({
       where: { id },
+      include: { areas: true },
     });
   }
 
@@ -43,11 +46,21 @@ export class PlantingsRepository {
     return !!planting;
   }
 
-  async findByProductId(productId: number) {
+  findByProductId(productId: number) {
     return this.prisma.planting.findMany({
       where: { productId },
+      include: { areas: true },
     });
   }
 
-  
+  findByProducerId(producerId: number) {
+    return this.prisma.planting.findMany({
+      where: { harvest: { producerId: producerId } },
+      include: {
+        areas: true,
+        harvest: true,
+      },
+      orderBy: { plantingDate: 'desc' },
+    });
+  }
 }
