@@ -61,7 +61,7 @@ export class HarvestsController {
   @Get(':id/panel')
   @ApiOperation({ summary: 'Obtém o painel de controle de uma safra' })
   @ApiParam({ name: 'id', description: 'ID da safra' })
-  @ApiResponse({ status: 200, description: 'Dados do painel retornados com sucesso.', type: HarvestPanelResponseDto })
+  @ApiResponse({ status: 200, description: 'Dados do painel retornados.', type: HarvestPanelResponseDto })
   @ApiResponse({ status: 404, description: 'Safra não encontrada.' })
   getHarvestPanel(@Param('id', ParseIntPipe) id: number): Promise<HarvestPanelResponseDto> {
     return this.harvestsService.getHarvestPanel(id);

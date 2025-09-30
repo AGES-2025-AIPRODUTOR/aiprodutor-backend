@@ -33,14 +33,14 @@ export class InProgressHarvestDto {
     description: 'Data de início da safra',
     example: '2025-11-19',
   })
-  harvestInitialDate: Date;
+  harvestInitialDate: string;
 
   @ApiProperty({
     description: 'Data final da safra',
     example: '2028-11-23',
     required: false,
   })
-  harvestEndDate: Date | null;
+  harvestEndDate: string | null;
 }
 
 export class HarvestResponseDto {

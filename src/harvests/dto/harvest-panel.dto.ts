@@ -1,40 +1,40 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class LinkedPlantingDto {
+class LinkedPlantingDto {
   @ApiProperty({ example: '1st orange planting' })
   plantingName: string;
 
-  @ApiProperty({ example: 'Area 1' })
+  @ApiProperty({ example: 'Area 1, Area 2' })
   plantingArea: string;
 
-  @ApiProperty({ example: 10000 })
-  expectedYield: number;
+  @ApiProperty({ example: 10000, required: false, nullable: true })
+  expectedYield: number | null;
 
-  @ApiProperty({ example: '2026-02-29' })
-  plantingDate: Date;
+  @ApiProperty({ example: '29/02/2026' })
+  plantingDate: string;
 
-  @ApiProperty({ example: '2027-02-25' })
-  estimatedHarvestDate: Date | null;
+  @ApiProperty({ example: '25/02/2027', required: false, nullable: true })
+  estimatedHarvestDate: string | null;
 }
 
-export class GeneralInfoDto {
+class GeneralInfoDto {
   @ApiProperty({ example: 3 })
   areaCount: number;
 
-  @ApiProperty({ example: 25.0 })
+  @ApiProperty({ example: 25.0, description: 'Área total em hectares (ha)' })
   totalArea: number;
 
-  @ApiProperty({ example: 'Orange' })
+  @ApiProperty({ example: 'Orange, Lemon' })
   cultivar: string;
 
-  @ApiProperty({ example: 16000 })
-  expectedYield: number;
+  @ApiProperty({ example: 16000, required: false, nullable: true })
+  expectedYield: number | null;
 
-  @ApiProperty({ example: '2026-02-29' })
-  harvestStartDate: Date;
+  @ApiProperty({ example: '29/02/2026' })
+  harvestStartDate: string;
 
-  @ApiProperty({ example: '2027-02-25', required: false })
-  harvestEndDate: Date | null;
+  @ApiProperty({ example: '25/02/2027', required: false, nullable: true })
+  harvestEndDate: string | null;
 
   @ApiProperty({ type: [LinkedPlantingDto] })
   linkedPlantings: LinkedPlantingDto[];

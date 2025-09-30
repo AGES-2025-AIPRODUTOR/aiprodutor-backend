@@ -16,6 +16,7 @@ import { HarvestHistoryResponseDto } from './dto/harvest-history-response.dto';
 import { ProductsService } from '../products/products.service';
 import { VarietiesService } from '../varieties/varieties.service';
 import { InProgressHarvestDto  } from './dto/harvest-response.dto';
+import { format } from 'date-fns';
 
 @Injectable()
 export class HarvestsService {
@@ -26,7 +27,12 @@ export class HarvestsService {
     private readonly productsService: ProductsService,
     private readonly varietiesService: VarietiesService,
   ) {}
-
+  private formatDate(date: Date | null | undefined): string | null {
+    if (!date) {
+      return null;
+    }
+    return format(new Date(date), 'dd-MM-yyyy');
+  }
   async findHistoryByProducer(
     producerId: number,
     queryDto: GetHarvestHistoryQueryDto,
@@ -139,46 +145,54 @@ export class HarvestsService {
 
   async getHarvestPanel(id: number): Promise<HarvestPanelResponseDto> {
     const harvest = await this.repository.findById(id);
-    if (!harvest) { throw new NotFoundException(`Safra com o ID #${id} não encontrada.`); }
+    if (!harvest) {
+      throw new NotFoundException(`Safra com o ID #${id} não encontrada.`);
+    }
 
-    const totalAreaInMeters = await this.repository.getTotalAreaForHarvest(id);
+    const totalAreaInMeters = harvest.areas.reduce(
+      (sum, area) => sum + area.areaM2.toNumber(), 0
+    );
     const totalAreaInHectares = parseFloat((totalAreaInMeters / 10000).toFixed(2));
 
     const linkedPlantings = harvest.plantings.map((p) => ({
       plantingName: p.name,
       plantingArea: p.areas.map(a => a.name).join(', '),
-      expectedYield: p.quantityPlanted,
-      plantingDate: p.plantingDate,
-      estimatedHarvestDate: p.expectedHarvestDate,
+      expectedYield: p.expectedYield,
+      
+      // 2. APLICAR A FORMATAÇÃO
+      plantingDate: this.formatDate(p.plantingDate)!, // Usamos '!' pois sabemos que plantingDate é obrigatório
+      estimatedHarvestDate: this.formatDate(p.expectedHarvestDate),
     }));
 
-    const totalExpectedYield = harvest.plantings.reduce((sum, p) => sum + p.quantityPlanted, 0);
     const cultivares = [...new Set(harvest.plantings.map(p => p.product.name))].join(', ');
 
     return {
       generalInfo: {
-        areaCount: harvest.plantings.length,
+        areaCount: harvest.areas.length,
         totalArea: totalAreaInHectares,
         cultivar: cultivares || 'Nenhum',
-        expectedYield: totalExpectedYield,
-        harvestStartDate: harvest.startDate,
-        harvestEndDate: harvest.endDate,
+        expectedYield: harvest.expectedYield,
+        
+        // 3. APLICAR A FORMATAÇÃO
+        harvestStartDate: this.formatDate(harvest.startDate)!,
+        harvestEndDate: this.formatDate(harvest.endDate),
+
         linkedPlantings: linkedPlantings,
       },
     };
   }
 
-async findInProgressByProducer(
-  producerId: number,
-): Promise<InProgressHarvestDto[]> {
-  await this.producersService.findOne(producerId);
+  async findInProgressByProducer(
+    producerId: number,
+  ): Promise<InProgressHarvestDto[]> {
+    await this.producersService.findOne(producerId);
 
-  const harvests = await this.repository.findInProgressByProducer(producerId);
+    const harvests = await this.repository.findInProgressByProducer(producerId);
 
-  return harvests.map((harvest) => ({
-    harvestName: harvest.name,
-    harvestInitialDate: harvest.startDate,
-    harvestEndDate: harvest.endDate,
-  }));
-}
+    return harvests.map((harvest) => ({
+      harvestName: harvest.name,
+      harvestInitialDate: this.formatDate(harvest.startDate)!,
+      harvestEndDate: this.formatDate(harvest.endDate),
+    }));
+  }
 }
