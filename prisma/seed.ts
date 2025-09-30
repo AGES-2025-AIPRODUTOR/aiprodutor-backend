@@ -210,7 +210,7 @@ async function main() {
         name: 'Safra de Verão 2025',
         startDate: new Date('2025-09-22T00:00:00Z'),
         endDate: new Date('2025-12-21T00:00:00Z'),
-        status: 'Finalizada',
+        status: 'Ativa',
         expectedYield: 2100.0,
         producerId: producer1.id,
         areas: { connect: [{ id: areaHorta.id }, { id: areaCampo.id }] },

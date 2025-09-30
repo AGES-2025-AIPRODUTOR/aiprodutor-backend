@@ -31,7 +31,7 @@ export class HarvestsService {
     if (!date) {
       return null;
     }
-    return format(new Date(date), 'dd-MM-yyyy');
+    return format(new Date(date), 'yyyy-MM-dd');
   }
   async findHistoryByProducer(
     producerId: number,
