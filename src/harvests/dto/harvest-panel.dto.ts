@@ -10,11 +10,11 @@ class LinkedPlantingDto {
   @ApiProperty({ example: 10000, required: false, nullable: true })
   expectedYield: number | null;
 
-  @ApiProperty({ example: '29/02/2026' })
-  plantingDate: string;
+  @ApiProperty({ example: '2026-02-29T03:00:00.000Z' })
+  plantingDate: Date;
 
-  @ApiProperty({ example: '25/02/2027', required: false, nullable: true })
-  estimatedHarvestDate: string | null;
+  @ApiProperty({ example: '2027-02-25T03:00:00.000Z', required: false, nullable: true })
+  estimatedHarvestDate: Date | null;
 }
 
 class GeneralInfoDto {
@@ -30,11 +30,11 @@ class GeneralInfoDto {
   @ApiProperty({ example: 16000, required: false, nullable: true })
   expectedYield: number | null;
 
-  @ApiProperty({ example: '29/02/2026' })
-  harvestStartDate: string;
+  @ApiProperty({ example: '2026-02-29T03:00:00.000Z' })
+  harvestStartDate: Date;
 
-  @ApiProperty({ example: '25/02/2027', required: false, nullable: true })
-  harvestEndDate: string | null;
+  @ApiProperty({ example: '2027-02-25T03:00:00.000Z', required: false, nullable: true })
+  harvestEndDate: Date | null;
 
   @ApiProperty({ type: [LinkedPlantingDto] })
   linkedPlantings: LinkedPlantingDto[];

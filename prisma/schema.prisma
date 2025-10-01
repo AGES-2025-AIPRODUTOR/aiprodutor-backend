@@ -67,7 +67,7 @@ model Harvest {
   producer   Producer  @relation(fields: [producerId], references: [id])
 
   // Relação 1-N: Uma safra "contém" muitos plantios
-  plantings Planting[]
+  plantings Planting[]  
   // Relação N-N: Uma safra pode abranger muitas áreas
   areas     Area[]
 

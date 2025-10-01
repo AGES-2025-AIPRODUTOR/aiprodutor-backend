@@ -10,7 +10,7 @@ import { UpdateHarvestDto } from './dto/update-harvest.dto';
 import { HarvestEntity } from './entities/harvest.entity';
 import { HarvestPanelResponseDto } from './dto/harvest-panel.dto';
 import { AreasService } from '../areas/areas.service';
-import { ProducersService } from '../producers/producers.service'; // IMPORTAR
+import { ProducersService } from '../producers/producers.service';
 import { GetHarvestHistoryQueryDto } from './dto/get-harvest-history-query.dto';
 import { HarvestHistoryResponseDto } from './dto/harvest-history-response.dto';
 import { ProductsService } from '../products/products.service';
@@ -66,13 +66,11 @@ export class HarvestsService {
   async create(createHarvestDto: CreateHarvestDto): Promise<HarvestEntity> {
     const { areaIds, producerId, name, plantings } = createHarvestDto;
 
-    // 1. Validação de nome duplicado
     const existingHarvest = await this.repository.findByName(name);
     if (existingHarvest) {
       throw new ConflictException(`Já existe uma safra com o nome "${name}".`);
     }
 
-    // 2. Valida a existência do produtor e das áreas da safra
     await this.producersService.findOne(producerId);
     for (const areaId of areaIds) {
       await this.areasService.findOne(areaId);
@@ -81,13 +79,11 @@ export class HarvestsService {
   
     if (plantings && plantings.length > 0) {
       for (const planting of plantings) {
-        // 3a. Valida se a área do plantio está contida nas áreas da safra
         const isAreaValid = planting.areaIds.every(id => areaIds.includes(id));
         if (!isAreaValid) {
           throw new BadRequestException(`O plantio "${planting.name}" está sendo associado a uma área que não pertence à safra.`);
         }
 
-        // 3b. Valida a existência do produto, variedade e áreas do plantio
         await this.productsService.findOne(planting.productId);
         await this.varietiesService.findOne(planting.varietyId);
         for (const areaId of planting.areaIds) {
@@ -159,9 +155,8 @@ export class HarvestsService {
       plantingArea: p.areas.map(a => a.name).join(', '),
       expectedYield: p.expectedYield,
       
-      // 2. APLICAR A FORMATAÇÃO
-      plantingDate: this.formatDate(p.plantingDate)!, // Usamos '!' pois sabemos que plantingDate é obrigatório
-      estimatedHarvestDate: this.formatDate(p.expectedHarvestDate),
+      plantingDate: p.plantingDate,
+      estimatedHarvestDate: p.expectedHarvestDate,
     }));
 
     const cultivares = [...new Set(harvest.plantings.map(p => p.product.name))].join(', ');
@@ -173,9 +168,8 @@ export class HarvestsService {
         cultivar: cultivares || 'Nenhum',
         expectedYield: harvest.expectedYield,
         
-        // 3. APLICAR A FORMATAÇÃO
-        harvestStartDate: this.formatDate(harvest.startDate)!,
-        harvestEndDate: this.formatDate(harvest.endDate),
+        harvestStartDate: harvest.startDate,
+        harvestEndDate: harvest.endDate,
 
         linkedPlantings: linkedPlantings,
       },
@@ -191,8 +185,8 @@ export class HarvestsService {
 
     return harvests.map((harvest) => ({
       harvestName: harvest.name,
-      harvestInitialDate: this.formatDate(harvest.startDate)!,
-      harvestEndDate: this.formatDate(harvest.endDate),
+      harvestInitialDate: harvest.startDate,
+      harvestEndDate: harvest.endDate,
     }));
   }
 }

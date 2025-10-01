@@ -31,16 +31,16 @@ export class InProgressHarvestDto {
 
   @ApiProperty({
     description: 'Data de início da safra',
-    example: '2025-11-19',
+    example: '2025-11-19T03:00:00.000Z',
   })
-  harvestInitialDate: string;
+  harvestInitialDate: Date;
 
   @ApiProperty({
     description: 'Data final da safra',
-    example: '2028-11-23',
+    example: '2028-11-23T03:00:00.000Z',
     required: false,
   })
-  harvestEndDate: string | null;
+  harvestEndDate: Date | null;
 }
 
 export class HarvestResponseDto {
@@ -59,16 +59,16 @@ export class HarvestResponseDto {
 
   @ApiProperty({
     description: 'Data de início da safra',
-    example: '2025-09-22',
+    example: '2025-11-19T03:00:00.000Z',
   })
-  startDate: Date;
+  harvestInitialDate: Date;
 
   @ApiProperty({
     description: 'Data final da safra',
-    example: '2025-12-20',
+    example: '2028-11-23T03:00:00.000Z',
     required: false,
   })
-  endDate: Date | null;
+  harvestEndDate: Date | null;
 
   @ApiProperty({
     description: 'Status da safra',
