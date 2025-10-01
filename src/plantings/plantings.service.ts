@@ -97,4 +97,13 @@ export class PlantingsService {
     const plantings = await this.repository.findByProducerId(producerId);
     return plantings.map((planting) => this.mapToResponseDto(planting));
   }
+
+  async remove(id: number): Promise<void> {
+    const planting = await this.repository.findById(id);
+    if (!planting) {
+      throw new NotFoundException(`Plantio com o ID ${id} não encontrado.`);
+    }
+
+    await this.repository.remove(id);
+  }
 }

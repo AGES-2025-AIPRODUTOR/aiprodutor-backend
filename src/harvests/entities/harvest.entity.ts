@@ -36,12 +36,6 @@ export class HarvestEntity {
   @ApiProperty({ description: 'Nome da safra', example: 'Safra de Verão 2025' })
   name: string;
 
-  @ApiProperty({
-    description: 'Ciclo da safra',
-    example: 'Verão',
-    required: false,
-  })
-  cycle?: string | null;
 
   @ApiProperty({
     description: 'Data de início da safra',

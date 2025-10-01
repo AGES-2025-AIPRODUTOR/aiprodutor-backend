@@ -61,13 +61,6 @@ export class CreateHarvestDto {
   @IsArray() @IsInt({ each: true }) @IsNotEmpty() areaIds: number[];
 
   @ApiProperty({
-    description: 'Ciclo da safra',
-    example: 'Verão',
-    required: false,
-  })
-  @IsString() @IsOptional() cycle?: string;
-
-  @ApiProperty({
     description: 'Data de início da safra',
     example: '2025-09-22',
   })

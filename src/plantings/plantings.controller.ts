@@ -8,6 +8,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Delete,
 } from '@nestjs/common';
 import {
   ApiBody,
@@ -88,22 +89,6 @@ export class PlantingsController {
     return this.plantingsService.update(id, updatePlantingDto);
   }
 
-  // Comentado pois removeram campo status da tabela
-  // @Patch(':id/status')
-  // @ApiOperation({ summary: 'Remover um plantio (soft delete)' })
-  // @ApiParam({ name: 'id', type: Number, description: 'ID do plantio' })
-  // @ApiResponse({
-  //   status: 200,
-  //   description: 'Status do plantio atualizado com sucesso.',
-  //   type: PlantingResponseDto,
-  // })
-  // @ApiResponse({ status: 404, description: 'Plantio não encontrado.' })
-  // updateStatus(
-  //   @Param('id', ParseIntPipe) id: number,
-  // ) {
-  //   return this.plantingsService.remove(id);
-  // }
-
   @Get()
   @ApiOperation({ summary: 'Busca todos os plantios cadastrados' })
   @ApiResponse({
@@ -112,5 +97,15 @@ export class PlantingsController {
   })
   findAll() {
     return this.plantingsService.findAll();
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Remove um plantio' })
+  @ApiParam({ name: 'id', type: Number, description: 'ID do plantio a ser removido' })
+  @ApiResponse({ status: 204, description: 'Plantio removido com sucesso.' })
+  @ApiResponse({ status: 404, description: 'Plantio não encontrado.' })
+  remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    return this.plantingsService.remove(id);
   }
 }

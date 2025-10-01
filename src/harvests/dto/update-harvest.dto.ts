@@ -12,14 +12,6 @@ export class UpdateHarvestDto {
   @IsOptional()
   name?: string;
 
-  @ApiProperty({
-    description: 'Ciclo da safra',
-    example: 'Verão',
-    required: false,
-  })
-  @IsString()
-  @IsOptional()
-  cycle?: string;
 
   @ApiProperty({
     description: 'Data de início da safra',

@@ -69,7 +69,7 @@ export class HarvestsRepository {
         areas: true,
         plantings: {
           include: {
-            areas: true, // Inclui as áreas de cada plantio
+            areas: true,
             product: true,
             variety: true,
           },
@@ -193,7 +193,7 @@ export class HarvestsRepository {
     return this.prisma.harvest.findMany({
       where: {
         producerId,
-        status: 'Ativa', // Considerando "Ativa" como em andamento
+        status: 'Ativa',
       },
     });
   }

@@ -19,7 +19,6 @@ export class ProductsService {
     if (existingProduct) {
       throw new ConflictException('Um produto com este nome já existe.');
     }
-    // O DTO já contém as variedades, então basta passá-lo para o repositório
     return this.repository.create(createProductDto);
   }
 

@@ -100,6 +100,6 @@ describe('ProducersController', () => {
     };
     const result = await controller.findAllOrByDocument(dto);
     expect(result).toEqual(mockProducer);
-    expect(service.findAllOrByDocument).toHaveBeenCalledWith(dto.document); // <-- fix here
+    expect(service.findAllOrByDocument).toHaveBeenCalledWith(dto.document);
   });
 });

@@ -61,13 +61,13 @@ model Harvest {
   status    String?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-
+  expectedYield Float?    @map("expected_yield")
   // Relação 1-N: A safra pertence a um produtor
   producerId Int
   producer   Producer  @relation(fields: [producerId], references: [id])
 
   // Relação 1-N: Uma safra "contém" muitos plantios
-  plantings Planting[]
+  plantings Planting[]  
   // Relação N-N: Uma safra pode abranger muitas áreas
   areas     Area[]
 
@@ -84,6 +84,7 @@ model Planting {
   quantityHarvested   Float?
   createdAt           DateTime   @default(now())
   updatedAt           DateTime   @updatedAt
+  expectedYield       Float?     @map("expected_yield")
 
   // Relação 1-N: Um plantio pertence a uma safra
   harvestId Int
