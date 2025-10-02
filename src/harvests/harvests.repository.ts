@@ -193,7 +193,19 @@ export class HarvestsRepository {
     return this.prisma.harvest.findMany({
       where: {
         producerId,
-        status: 'Ativa',
+        status: {
+          equals: 'Ativa', 
+          mode: 'insensitive'
+        },
+      },
+      // ADICIONADO: Incluir todos os dados relacionados
+      include: {
+        producer: true,
+        areas: true,
+        plantings: true,
+      },
+      orderBy: {
+        startDate: 'desc',
       },
     });
   }

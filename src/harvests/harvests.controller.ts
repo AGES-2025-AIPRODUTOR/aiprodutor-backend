@@ -86,13 +86,13 @@ export class HarvestsController {
   @ApiResponse({
       status: 200,
       description: 'Lista de safras em andamento retornada com sucesso.',
-      type: InProgressHarvestDto,
+      type: HarvestEntity,
       isArray: true,
-      })
-      @ApiResponse({ status: 404, description: 'Não há nenhuma safra em andamento.' })
-      findInProgressByProducer(
-        @Param('producerId', ParseIntPipe) producerId: number,
-      ): Promise<InProgressHarvestDto[]> {
-        return this.harvestsService.findInProgressByProducer(producerId);
-      }
+    })
+  @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
+  findInProgressByProducer(
+    @Param('producerId', ParseIntPipe) producerId: number,
+  ): Promise<HarvestEntity[]> {
+    return this.harvestsService.findInProgressByProducer(producerId);
+  }
 }

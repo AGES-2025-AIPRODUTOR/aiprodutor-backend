@@ -178,15 +178,12 @@ export class HarvestsService {
 
   async findInProgressByProducer(
     producerId: number,
-  ): Promise<InProgressHarvestDto[]> {
+  ): Promise<HarvestEntity[]> {
     await this.producersService.findOne(producerId);
 
     const harvests = await this.repository.findInProgressByProducer(producerId);
 
-    return harvests.map((harvest) => ({
-      harvestName: harvest.name,
-      harvestInitialDate: harvest.startDate,
-      harvestEndDate: harvest.endDate,
-    }));
+    // CORRIGIDO: Mapeia para a entidade completa
+    return harvests.map((harvest) => new HarvestEntity(harvest));
   }
 }
