@@ -178,7 +178,7 @@ export class HarvestsService {
 
   async findInProgressByProducer(
     producerId: number,
-  ): Promise<HarvestEntity[]> { // CORRIGIDO: O tipo de retorno agora é um array de HarvestEntity
+  ): Promise<HarvestEntity[]> {
     await this.producersService.findOne(producerId);
 
     const harvests = await this.repository.findInProgressByProducer(producerId);

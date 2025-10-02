@@ -194,8 +194,8 @@ export class HarvestsRepository {
       where: {
         producerId,
         status: {
-          equals: 'Ativa', // Usar 'equals' para busca exata (e case-sensitive)
-          mode: 'insensitive' // Adicionado para ignorar maiúsculas/minúsculas
+          equals: 'Ativa', 
+          mode: 'insensitive'
         },
       },
       // ADICIONADO: Incluir todos os dados relacionados

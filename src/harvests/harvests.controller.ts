@@ -86,13 +86,13 @@ export class HarvestsController {
   @ApiResponse({
       status: 200,
       description: 'Lista de safras em andamento retornada com sucesso.',
-      type: HarvestEntity, // CORRIGIDO: O tipo de resposta agora é a entidade completa
+      type: HarvestEntity,
       isArray: true,
     })
   @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
   findInProgressByProducer(
     @Param('producerId', ParseIntPipe) producerId: number,
-  ): Promise<HarvestEntity[]> { // CORRIGIDO: O tipo de retorno do método
+  ): Promise<HarvestEntity[]> {
     return this.harvestsService.findInProgressByProducer(producerId);
   }
 }
