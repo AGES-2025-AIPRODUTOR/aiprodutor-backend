@@ -5,18 +5,18 @@ import { UpdatePlantingDto } from './dto/update-planting.dto';
 
 @Injectable()
 export class PlantingsRepository {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   create(plantingRequestDto: PlantingRequestDto) {
     return this.prisma.planting.create({
-      data: plantingRequestDto, 
+      data: plantingRequestDto,
     });
   }
 
   async findAll() {
     return this.prisma.planting.findMany({
       include: { areas: true },
-    }); 
+    });
   }
 
   findById(id: number) {
@@ -30,6 +30,7 @@ export class PlantingsRepository {
     return this.prisma.planting.update({
       where: { id },
       data: updatePlantingDto,
+      include: { areas: true },
     });
   }
 
