@@ -54,6 +54,7 @@ export class HarvestsService {
         status: harvest.status,
         planting: harvest.plantings.map(p => ({
           id: p.id,
+          name: p.name,
           initialDate: p.plantingDate,
           estimatedEndDate: p.expectedHarvestDate,
           qtyEstimated: `${p.quantityPlanted.toString()}kg`,
