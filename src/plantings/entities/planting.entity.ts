@@ -8,14 +8,8 @@ export class Planting {
     @ApiProperty({ description: 'ID da safra associada ao plantio', example: 1 })
     harvestId: number;
 
-    @ApiProperty({ description: 'ID da área associada ao plantio', example: 1 })
-    areaId: number;
-
     @ApiProperty({ description: 'ID do produto plantado', example: 1 })
     productId: number;
-
-    @ApiProperty({ description: 'ID da variedade do produto', example: 1 })
-    varietyId: number;
 
     @ApiProperty({ description: 'Nome do plantio', example: 'Plantio de Milho' })
     name: string;

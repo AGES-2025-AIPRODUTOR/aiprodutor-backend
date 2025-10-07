@@ -45,61 +45,7 @@ async function main() {
   console.log('Tipos de irrigação inseridos.');
 
   //================================================================================
-  // 2. PRODUTOS E VARIEDADES
-  //================================================================================
-  const tomate = await prisma.product.upsert({
-    where: { name: 'Tomate' },
-    update: {},
-    create: { name: 'Tomate' },
-  });
-
-  const alface = await prisma.product.upsert({
-    where: { name: 'Alface' },
-    update: {},
-    create: { name: 'Alface' },
-  });
-
-  // Criar variedades separadamente - usando findFirst + create para evitar conflitos
-  let tomateCereja = await prisma.variety.findFirst({
-    where: { name: 'Tomate Cereja', productId: tomate.id },
-  });
-  if (!tomateCereja) {
-    tomateCereja = await prisma.variety.create({
-      data: { name: 'Tomate Cereja', productId: tomate.id },
-    });
-  }
-
-  let tomateItaliano = await prisma.variety.findFirst({
-    where: { name: 'Tomate Italiano', productId: tomate.id },
-  });
-  if (!tomateItaliano) {
-    tomateItaliano = await prisma.variety.create({
-      data: { name: 'Tomate Italiano', productId: tomate.id },
-    });
-  }
-
-  let alfaceCrespa = await prisma.variety.findFirst({
-    where: { name: 'Alface Crespa', productId: alface.id },
-  });
-  if (!alfaceCrespa) {
-    alfaceCrespa = await prisma.variety.create({
-      data: { name: 'Alface Crespa', productId: alface.id },
-    });
-  }
-
-  let alfaceAmericana = await prisma.variety.findFirst({
-    where: { name: 'Alface Americana', productId: alface.id },
-  });
-  if (!alfaceAmericana) {
-    alfaceAmericana = await prisma.variety.create({
-      data: { name: 'Alface Americana', productId: alface.id },
-    });
-  }
-
-  console.log('Produtos e variedades inseridos.');
-
-  //================================================================================
-  // 3. PRODUTORES
+  // 2. PRODUTORES
   //================================================================================
   const producer1 = await prisma.producer.upsert({
     where: { document: '12345678901' },
@@ -132,6 +78,86 @@ async function main() {
   console.log('Produtores inseridos.');
 
   //================================================================================
+  // 3. PRODUTOS ESPECÍFICOS POR PRODUTOR
+  //================================================================================
+
+  // Produtos do João da Silva (producer1)
+  const tomateJoao = await prisma.product.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      name: 'Tomate Santa Cruz',
+      producerId: producer1.id,
+    },
+  });
+
+  const alfaceJoao = await prisma.product.upsert({
+    where: { id: 2 },
+    update: {},
+    create: {
+      name: 'Alface Americana',
+      producerId: producer1.id,
+    },
+  });
+
+  const cenouraJoao = await prisma.product.upsert({
+    where: { id: 3 },
+    update: {},
+    create: {
+      name: 'Cenoura Brasília',
+      producerId: producer1.id,
+    },
+  });
+
+  const ruculaJoao = await prisma.product.upsert({
+    where: { id: 4 },
+    update: {},
+    create: {
+      name: 'Rúcula Cultivada',
+      producerId: producer1.id,
+    },
+  });
+
+  // Produtos da Maria Oliveira (producer2)
+  const tomateMaria = await prisma.product.upsert({
+    where: { id: 5 },
+    update: {},
+    create: {
+      name: 'Tomate Cereja Orgânico',
+      producerId: producer2.id,
+    },
+  });
+
+  const alfaceMaria = await prisma.product.upsert({
+    where: { id: 6 },
+    update: {},
+    create: {
+      name: 'Alface Crespa Roxa',
+      producerId: producer2.id,
+    },
+  });
+
+  const espinafre = await prisma.product.upsert({
+    where: { id: 7 },
+    update: {},
+    create: {
+      name: 'Espinafre Orgânico',
+      producerId: producer2.id,
+    },
+  });
+
+  const brocolis = await prisma.product.upsert({
+    where: { id: 8 },
+    update: {},
+    create: {
+      name: 'Brócolis Ramoso',
+      producerId: producer2.id,
+    },
+  });
+
+  console.log('Produtos específicos inseridos para cada produtor.');
+
+  //================================================================================
   // 4. ÁREAS DOS PRODUTORES
   //================================================================================
   console.log('Criando áreas...');
@@ -141,7 +167,8 @@ async function main() {
     where: { name: 'Horta Principal' },
   });
   if (!areaHorta) {
-    const polygonWKT = 'POLYGON((-51.22 -30.05, -51.22 -30.02, -51.19 -30.02, -51.19 -30.05, -51.22 -30.05))';
+    const polygonWKT =
+      'POLYGON((-51.22 -30.05, -51.22 -30.02, -51.19 -30.02, -51.19 -30.05, -51.22 -30.05))';
     await prisma.$executeRawUnsafe(`
       INSERT INTO "areas" (name, color, "producerId", "soilTypeId", "irrigationTypeId", polygon, "areaM2", "createdAt", "updatedAt")
       VALUES 
@@ -156,7 +183,8 @@ async function main() {
     where: { name: 'Campo Leste' },
   });
   if (!areaCampo) {
-    const polygonWKT = 'POLYGON((-51.18 -30.01, -51.18 -29.98, -51.15 -29.98, -51.15 -30.01, -51.18 -30.01))';
+    const polygonWKT =
+      'POLYGON((-51.18 -30.01, -51.18 -29.98, -51.15 -29.98, -51.15 -30.01, -51.18 -30.01))';
     await prisma.$executeRawUnsafe(`
       INSERT INTO "areas" (name, color, "producerId", "soilTypeId", "irrigationTypeId", polygon, "areaM2", "createdAt", "updatedAt")
       VALUES 
@@ -171,7 +199,8 @@ async function main() {
     where: { name: 'Pomar da Maria' },
   });
   if (!areaPomar) {
-    const polygonWKT = 'POLYGON((-51.20 -30.03, -51.20 -30.00, -51.17 -30.00, -51.17 -30.03, -51.20 -30.03))';
+    const polygonWKT =
+      'POLYGON((-51.20 -30.03, -51.20 -30.00, -51.17 -30.00, -51.17 -30.03, -51.20 -30.03))';
     await prisma.$executeRawUnsafe(`
       INSERT INTO "areas" (name, color, "producerId", "soilTypeId", "irrigationTypeId", polygon, "areaM2", "createdAt", "updatedAt")
       VALUES 
@@ -198,7 +227,7 @@ async function main() {
   console.log('Áreas dos produtores inseridas.');
 
   //================================================================================
-  // 5. SAFRAS (COM LÓGICA MANUAL)
+  // 5. SAFRAS
   //================================================================================
   console.log('Criando ou buscando safras...');
   let safraVerao = await prisma.harvest.findFirst({
@@ -210,10 +239,9 @@ async function main() {
         name: 'Safra de Verão 2025',
         startDate: new Date('2025-09-22T00:00:00Z'),
         endDate: new Date('2025-12-21T00:00:00Z'),
-        status: 'Ativa',
+        status: 'in_progress',
         expectedYield: 2100.0,
         producerId: producer1.id,
-        areas: { connect: [{ id: areaHorta.id }, { id: areaCampo.id }] },
       },
     });
   }
@@ -227,72 +255,86 @@ async function main() {
         name: 'Safra de Outono 2025',
         startDate: new Date('2025-03-20T00:00:00Z'),
         endDate: new Date('2025-06-20T00:00:00Z'),
-        status: 'Ativa',
+        status: 'in_progress',
         expectedYield: 400.0,
         producerId: producer2.id,
-        areas: { connect: [{ id: areaPomar.id }] },
       },
     });
   }
   console.log('Safras inseridas.');
 
   //================================================================================
-  // 6. PLANTIOS (COM LÓGICA MANUAL)
+  // 6. PLANTIOS
   //================================================================================
   console.log('Criando ou buscando plantios...');
   let planting1 = await prisma.planting.findFirst({
-    where: { name: 'Plantio de Tomate Cereja - Verão 2025' },
+    where: { name: 'Plantio de Tomate - Verão 2025' },
   });
   if (!planting1) {
     planting1 = await prisma.planting.create({
       data: {
-        name: 'Plantio de Tomate Cereja - Verão 2025',
+        name: 'Plantio de Tomate - Verão 2025',
         plantingDate: new Date('2025-09-25T00:00:00Z'),
         expectedHarvestDate: new Date('2025-11-25T00:00:00Z'),
         quantityPlanted: 500.0,
         expectedYield: 600.0,
         harvestId: safraVerao.id,
-        productId: tomate.id,
-        varietyId: tomateCereja.id,
+        productId: tomateJoao.id,
         areas: { connect: [{ id: areaHorta.id }, { id: areaCampo.id }] },
       },
     });
   }
 
   let planting2 = await prisma.planting.findFirst({
-    where: { name: 'Plantio de Alface Crespa - Verão 2025' },
+    where: { name: 'Plantio de Alface - Verão 2025' },
   });
   if (!planting2) {
     planting2 = await prisma.planting.create({
       data: {
-        name: 'Plantio de Alface Crespa - Verão 2025',
+        name: 'Plantio de Alface - Verão 2025',
         plantingDate: new Date('2025-10-01T00:00:00Z'),
         expectedHarvestDate: new Date('2025-11-01T00:00:00Z'),
         quantityPlanted: 1200.0,
         expectedYield: 1500.0,
         harvestId: safraVerao.id,
-        productId: alface.id,
-        varietyId: alfaceCrespa.id,
+        productId: alfaceJoao.id,
         areas: { connect: [{ id: areaHorta.id }] },
       },
     });
   }
 
   let planting3 = await prisma.planting.findFirst({
-    where: { name: 'Plantio de Tomate Italiano - Outono 2025' },
+    where: { name: 'Plantio de Cenoura - Outono 2025' },
   });
   if (!planting3) {
     planting3 = await prisma.planting.create({
       data: {
-        name: 'Plantio de Tomate Italiano - Outono 2025',
+        name: 'Plantio de Tomate Cereja - Outono 2025',
         plantingDate: new Date('2025-03-25T00:00:00Z'),
         expectedHarvestDate: new Date('2025-06-25T00:00:00Z'),
         quantityPlanted: 300.0,
         expectedYield: 400.0,
         harvestId: safraOutono.id,
-        productId: tomate.id,
-        varietyId: tomateItaliano.id,
+        productId: tomateMaria.id,
         areas: { connect: [{ id: areaPomar.id }] },
+      },
+    });
+  }
+
+  let planting4 = await prisma.planting.findFirst({
+    where: { name: 'Plantio de Batata - Outono 2025' },
+  });
+  if (!planting4) {
+    planting4 = await prisma.planting.create({
+      data: {
+        name: 'Plantio de Espinafre - Outono 2025',
+        plantingDate: new Date('2025-04-10T00:00:00Z'),
+        expectedHarvestDate: new Date('2025-07-10T00:00:00Z'),
+        quantityPlanted: 800.0,
+        expectedYield: 1200.0,
+        harvestId: safraOutono.id,
+        productId: espinafre.id,
+        areas: { connect: [{ id: areaCampo.id }] },
       },
     });
   }

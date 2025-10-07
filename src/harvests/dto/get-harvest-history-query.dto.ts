@@ -1,14 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsOptional, IsString } from 'class-validator';
+import { IsDateString, IsOptional, IsString, IsEnum } from 'class-validator';
+import { HarvestStatus } from '@prisma/client';
 
 export class GetHarvestHistoryQueryDto {
   @ApiProperty({
-    description: 'Filtrar por status da safra (ex: concluida)',
+    description: 'Filtrar por status da safra',
     required: false,
+    enum: HarvestStatus,
   })
-  @IsString()
+  @IsEnum(HarvestStatus)
   @IsOptional()
-  status?: string;
+  status?: HarvestStatus;
 
   @ApiProperty({
     description: 'Filtrar por nome da safra (busca parcial)',

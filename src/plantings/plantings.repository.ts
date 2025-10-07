@@ -1,18 +1,27 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../shared/prisma/prisma.service';
-import { PlantingRequestDto } from './dto/planting-request.dto';
+import { CreatePlantingDto } from './dto/create-planting.dto';
 import { UpdatePlantingDto } from './dto/update-planting.dto';
 
 @Injectable()
 export class PlantingsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  create(plantingRequestDto: PlantingRequestDto) {
+  create(createPlantingDto: CreatePlantingDto) {
+    const { areaIds, ...plantingData } = createPlantingDto;
+
     return this.prisma.planting.create({
-      data: plantingRequestDto,
+      data: {
+        ...plantingData,
+        areas: {
+          connect: areaIds.map((id) => ({ id })),
+        },
+      },
+      include: {
+        areas: true,
+      },
     });
   }
-
   async findAll() {
     return this.prisma.planting.findMany({
       include: { areas: true },
@@ -38,13 +47,6 @@ export class PlantingsRepository {
     return this.prisma.planting.delete({
       where: { id },
     });
-  }
-
-  async existsByVarietyId(varietyId: number): Promise<boolean> {
-    const planting = await this.prisma.planting.findFirst({
-      where: { varietyId },
-    });
-    return !!planting;
   }
 
   findByProductId(productId: number) {

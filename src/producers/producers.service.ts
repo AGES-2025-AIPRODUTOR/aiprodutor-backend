@@ -105,29 +105,29 @@ export class ProducersService {
     return this.repository.remove(id);
   }
 
-  async getPlantingHistory(
-    producerId: number,
-  ): Promise<PlantingHistoryResponseDto[]> {
-    // 1. Garante que o produtor existe (reaproveita a lógica de findOne)
-    await this.findOne(producerId);
+async getPlantingHistory(
+  producerId: number,
+): Promise<PlantingHistoryResponseDto[]> {
+  // 1. Garante que o produtor existe
+  await this.findOne(producerId);
 
-    // 2. Chama o repositório para buscar os dados brutos
-    const historyRecords = await this.repository.findPlantingHistory(
-      producerId,
-    );
+  // 2. Chama o repositório com a query correta
+  const historyRecords = await this.repository.findPlantingHistory(
+    producerId,
+  );
 
-    // 3. Mapeia e formata os dados para o DTO de resposta
+  // 3. Mapeia e formata os dados para o DTO de resposta
     return historyRecords.map((record) => ({
       areaName: record.areaName,
       plantingName: record.plantingName,
-      varietyName: record.varietyName,
+      productName: record.productName,
       safraName: record.safraName,
       areaStatus: record.areaStatus,
       plantingDate: record.plantingDate,
       harvestDate: record.harvestDate,
       quantityPlanted: record.quantityPlanted,
       quantityHarvested: record.quantityHarvested,
-      areaM2: `${Number(record.areaM2).toFixed(2)} ha`,
+      areaM2: Number(record.areaM2),
     }));
   }
 }

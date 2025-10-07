@@ -13,12 +13,20 @@ export class ProductsService {
   constructor(private readonly repository: ProductsRepository) {}
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
-    const existingProduct = await this.repository.findByName(
-      createProductDto.name,
-    );
+    const { name, producerId } = createProductDto;
+
+    const existingProduct = await this.repository.findByName(name, producerId);
+
     if (existingProduct) {
-      throw new ConflictException('Um produto com este nome já existe.');
+      if (!producerId) {
+        return existingProduct;
+      }
+
+      throw new ConflictException(
+        `Este produtor já possui um produto com o nome "${name}".`,
+      );
     }
+
     return this.repository.create(createProductDto);
   }
 
@@ -26,12 +34,18 @@ export class ProductsService {
     id: number,
     updateProductDto: UpdateProductDto,
   ): Promise<Product> {
-    await this.findOne(id); // Garante que o produto existe
+    await this.findOne(id);
     return this.repository.update(id, updateProductDto);
   }
 
   async findAll(): Promise<Product[]> {
     return this.repository.findAll();
+  }
+
+  async findByProducer(
+    producerId: number,
+  ): Promise<{ id: number; name: string }[]> {
+    return this.repository.findByProducer(producerId);
   }
 
   async findOne(id: number): Promise<Product> {
@@ -43,7 +57,7 @@ export class ProductsService {
   }
 
   async remove(id: number): Promise<Product> {
-    await this.findOne(id); // Garante que o produto existe
+    await this.findOne(id);
     try {
       return await this.repository.remove(id);
     } catch (error) {
@@ -51,23 +65,20 @@ export class ProductsService {
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2003'
       ) {
-        // Analisa o erro para dar uma resposta mais específica
-        const constraint = error.meta?.constraint as string;
+        const constraint = error.meta?.field_name as string;
+
         let userMessage =
           'Não é possível remover o produto, pois ele está em uso.';
 
-        if (constraint?.includes('varieties')) {
-          userMessage =
-            'Não é possível remover o produto, pois ele está associado a uma ou mais variedades.';
-        } else if (constraint?.includes('plantings')) {
+        if (constraint?.includes('productId')) {
           userMessage =
             'Não é possível remover o produto, pois ele está associado a um ou mais plantios.';
         }
 
         throw new ConflictException(userMessage);
       }
-      // Re-lança outros erros inesperados
       throw error;
     }
   }
 }
+

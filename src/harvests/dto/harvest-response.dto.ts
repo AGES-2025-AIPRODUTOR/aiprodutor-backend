@@ -74,10 +74,6 @@ export class HarvestResponseDto {
   @ApiProperty({ type: ProducerInHarvestResponseDto })
   producer: ProducerInHarvestResponseDto;
 
-  @ApiProperty({ type: [AreaInHarvestResponseDto] })
-  areas: AreaInHarvestResponseDto[];
-
   @ApiProperty({ type: [PlantingInHarvestResponseDto] })
   plantings: PlantingInHarvestResponseDto[];
-
 }

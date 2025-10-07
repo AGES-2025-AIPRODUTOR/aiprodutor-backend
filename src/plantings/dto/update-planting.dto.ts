@@ -84,15 +84,6 @@ export class UpdatePlantingDto {
   productId?: number;
 
   @ApiProperty({
-    description: 'ID da variedade',
-    example: 1,
-    required: false,
-  })
-  @IsOptional()
-  @IsInt()
-  varietyId?: number;
-
-  @ApiProperty({
     description: 'Produção esperada',
     example: 600.0,
     required: false,

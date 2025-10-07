@@ -1,50 +1,18 @@
 import { Type } from 'class-transformer';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsDate,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  IsArray,
-  IsInt,
-  ValidateNested,
-  IsNumber,
+  IsDate, IsNotEmpty, IsOptional, IsString, IsArray, IsInt, ValidateNested, IsNumber, IsEnum,
 } from 'class-validator';
+import { HarvestStatus } from '@prisma/client';
+
 
 class CreatePlantingNestedDto {
-  @ApiProperty({ example: 'Plantio de Tomate Cereja' })
-  @IsString() @IsNotEmpty() name: string;
-
-  @ApiProperty({
-    description: 'Data do plantio',
-    example: '2025-09-25',
-  })
-  @Type(() => Date)
-  @IsDate()
-  @IsNotEmpty()
-  plantingDate: Date;
-
-  @ApiProperty({
-    description: 'Data prevista para a colheita (opcional)',
-    example: '2025-12-15',
-    required: false,
-  })
-  @Type(() => Date)
-  @IsDate()
-  @IsOptional()
-  expectedHarvestDate?: Date;
-  
-  @ApiProperty({ example: 500 })
-  @IsNumber() @IsNotEmpty() quantityPlanted: number;
-
-  @ApiProperty({ example: 1 })
-  @IsInt() @IsNotEmpty() productId: number;
-
-  @ApiProperty({ example: 1 })
-  @IsInt() @IsNotEmpty() varietyId: number;
-
-  @ApiProperty({ example: [1] })
-  @IsArray() @IsInt({ each: true }) @IsNotEmpty() areaIds: number[];
+  @ApiProperty() @IsString() @IsNotEmpty() name: string;
+  @ApiProperty() @Type(() => Date) @IsDate() @IsNotEmpty() plantingDate: Date;
+  @ApiProperty() @IsNumber() @IsNotEmpty() quantityPlanted: number;
+  @ApiProperty() @IsInt() @IsNotEmpty() productId: number;
+  @ApiProperty({ example: [1] }) @IsArray() @IsInt({ each: true }) @IsNotEmpty() areaIds: number[];
+  @ApiPropertyOptional() @Type(() => Date) @IsDate() @IsOptional() expectedHarvestDate?: Date;
 }
 
 export class CreateHarvestDto {
@@ -54,55 +22,26 @@ export class CreateHarvestDto {
   @ApiProperty({ description: 'ID do produtor dono da safra', example: 1 })
   @IsInt() @IsNotEmpty() producerId: number;
   
-  @ApiProperty({
-    description: 'Array com os IDs das áreas que pertencem a esta safra.',
-    example: [1, 2],
-  })
-  @IsArray() @IsInt({ each: true }) @IsNotEmpty() areaIds: number[];
 
-  @ApiProperty({
-    description: 'Data de início da safra',
-    example: '2025-09-22',
-  })
+  @ApiProperty({ description: 'Data de início da safra' })
   @Type(() => Date) @IsDate() @IsNotEmpty() startDate: Date;
 
-  @ApiProperty({
-    description: 'Data final da safra',
-    example: '2025-12-20',
-    required: false,
-  })
+  @ApiPropertyOptional({ description: 'Data final da safra' })
   @Type(() => Date) @IsDate() @IsOptional() endDate?: Date;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Status da safra',
-    example: 'Ativa',
-    required: false,
+    example: 'em_andamento',
+    enum: HarvestStatus,
   })
-  @IsString() @IsOptional() status?: string;
+  @IsEnum(HarvestStatus)
+  @IsOptional()
+  status?: HarvestStatus;
 
-  @ApiProperty({
-    description: 'Lista opcional de plantios a serem criados junto com a safra.',
+
+  @ApiPropertyOptional({
+    description: 'Lista de plantios a serem criados junto com a safra.',
     type: [CreatePlantingNestedDto],
-    required: false,
-    example: [
-      {
-        name: "Plantio de Tomate Cereja (na Área 1)",
-        plantingDate: "2025-09-25",
-        expectedHarvestDate: "2025-12-15",
-        quantityPlanted: 500,
-        productId: 1,
-        varietyId: 1,
-        areaIds: [1]
-      },
-      {
-        name: "Plantio de Alface Crespa (na Área 2)",
-        plantingDate: "2025-10-01",
-        quantityPlanted: 1200,
-        productId: 2,
-        varietyId: 3,
-        areaIds: [2]
-      }
-    ]
   })
   @IsOptional()
   @IsArray()
