@@ -9,7 +9,7 @@ stages:
   - build_and_push
   - sync_github
 
-# ---- Workflow 2: Roda os testes ao abrir um MR para a 'developer' ----
+# ---- Workflow 2: Roda os testes e o lint ao abrir um MR para a 'developer' ----
 run_tests:
   stage: test
   image: node:20-alpine
@@ -24,6 +24,21 @@ run_tests:
     - npm run test
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "developer"'
+
+# ---- NOVO JOB: Roda o Lint em paralelo com os testes ----
+run_lint:
+  stage: test
+  image: node:20-alpine
+  tags:
+    - docker
+  before_script:
+    - npm install
+  script:
+    - echo "Verificando a qualidade e o estilo do código..."
+    - npm run lint
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "developer"'
+
 
 # ---- Workflow 1: Roda em merges para a 'main' ----
 migrate_database:
