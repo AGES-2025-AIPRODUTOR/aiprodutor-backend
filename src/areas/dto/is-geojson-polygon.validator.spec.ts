@@ -1,10 +1,13 @@
 import { validateSync } from 'class-validator';
 import { IsGeoJSONPolygon } from './is-geojson-polygon.validator';
-import geojsonValidation from 'geojson-validation';
 
 jest.mock('geojson-validation', () => ({
-  isPolygon: jest.fn(),
+  default: {
+    isPolygon: jest.fn(),
+  },
 }));
+
+import geojsonValidation from 'geojson-validation';
 
 class TestDto {
   @IsGeoJSONPolygon({

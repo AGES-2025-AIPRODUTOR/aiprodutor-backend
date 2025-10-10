@@ -76,7 +76,10 @@ describe('ProductsService', () => {
       const result = await service.create(createDto);
 
       expect(result).toEqual(expectedProduct);
-      expect(repository.findByName).toHaveBeenCalledWith('Tomate Santa Cruz');
+      expect(repository.findByName).toHaveBeenCalledWith(
+        'Tomate Santa Cruz',
+        1,
+      );
       expect(repository.create).toHaveBeenCalledWith(createDto);
     });
 
@@ -99,16 +102,19 @@ describe('ProductsService', () => {
       const result = await service.create(createDto);
 
       expect(result).toEqual(expectedProduct);
-      expect(repository.findByName).toHaveBeenCalledWith('Tomate Geral');
+      expect(repository.findByName).toHaveBeenCalledWith(
+        'Tomate Geral',
+        undefined,
+      );
       expect(repository.create).toHaveBeenCalledWith(createDto);
     });
 
-    it('should throw a ConflictException if product name already exists', async () => {
-      const createDto: CreateProductDto = { name: 'Tomate' };
+    it('should throw a ConflictException if product name already exists for a producer', async () => {
+      const createDto: CreateProductDto = { name: 'Tomate', producerId: 1 };
       const existingProduct: Product = {
         id: 1,
         name: 'Tomate',
-        producerId: null,
+        producerId: 1,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -117,6 +123,27 @@ describe('ProductsService', () => {
       await expect(service.create(createDto)).rejects.toThrow(
         ConflictException,
       );
+    });
+
+    it('should return existing product if general product with same name exists', async () => {
+      const createDto: CreateProductDto = { name: 'Tomate Geral' };
+      const existingProduct: Product = {
+        id: 3,
+        name: 'Tomate Geral',
+        producerId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      repository.findByName.mockResolvedValue(existingProduct);
+
+      const result = await service.create(createDto);
+
+      expect(result).toEqual(existingProduct);
+      expect(repository.findByName).toHaveBeenCalledWith(
+        'Tomate Geral',
+        undefined,
+      );
+      expect(repository.create).not.toHaveBeenCalled();
     });
   });
 

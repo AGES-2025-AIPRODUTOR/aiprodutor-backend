@@ -51,7 +51,7 @@ export class AreasService {
     await this.producersService.findOne(producerId);
     await this.soilTypesService.findById(soilTypeId);
     await this.irrigationTypesService.findById(irrigationTypeId);
-    
+
     const fullNewArea = await this.repository.create(areaRequestDto);
     return this.mapToResponseDto(fullNewArea);
   }
@@ -78,7 +78,7 @@ export class AreasService {
     if (!areaExists) {
       throw new NotFoundException(`Área com o ID ${id} não encontrada.`);
     }
-    
+
     const updatedArea = await this.repository.update(id, dto);
     return this.mapToResponseDto(updatedArea!);
   }

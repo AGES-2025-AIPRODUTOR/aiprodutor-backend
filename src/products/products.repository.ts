@@ -32,10 +32,7 @@ export class ProductsRepository {
     return this.prisma.product.findUnique({ where: { id } });
   }
 
-  async findByName(
-    name: string,
-    producerId?: number,
-  ): Promise<Product | null> {
+  async findByName(name: string, producerId?: number): Promise<Product | null> {
     return this.prisma.product.findFirst({
       where: {
         name: { equals: name, mode: 'insensitive' },
@@ -43,7 +40,6 @@ export class ProductsRepository {
       },
     });
   }
-  
 
   async findByProducer(
     producerId: number,

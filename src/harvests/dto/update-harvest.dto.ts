@@ -5,14 +5,22 @@ import { HarvestStatus } from '@prisma/client';
 
 export class UpdateHarvestDto {
   @ApiPropertyOptional({ description: 'Nome da safra' })
-  @IsString() @IsOptional() name?: string;
-  
+  @IsString()
+  @IsOptional()
+  name?: string;
+
   @ApiPropertyOptional({ description: 'Data de início da safra' })
-  @Type(() => Date) @IsDate() @IsOptional() startDate?: Date;
-  
+  @Type(() => Date)
+  @IsDate()
+  @IsOptional()
+  startDate?: Date;
+
   @ApiPropertyOptional({ description: 'Data final da safra' })
-  @Type(() => Date) @IsDate() @IsOptional() endDate?: Date;
-  
+  @Type(() => Date)
+  @IsDate()
+  @IsOptional()
+  endDate?: Date;
+
   @ApiPropertyOptional({
     description: 'Status da safra',
     example: 'concluida',
@@ -20,5 +28,5 @@ export class UpdateHarvestDto {
   })
   @IsEnum(HarvestStatus)
   @IsOptional()
-  status?: HarvestStatus; 
+  status?: HarvestStatus;
 }

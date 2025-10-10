@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Matches, IsNumberString, IsOptional } from 'class-validator';
 
 export class FindDocumentoProducerDto {

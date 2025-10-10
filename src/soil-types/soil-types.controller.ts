@@ -25,7 +25,7 @@ import { UpdateSoilTypeDto } from './update-soil-type.dto';
 @ApiTags('Tipos de Solo')
 @Controller('soil-types')
 export class SoilTypesController {
-  constructor(private readonly soilTypesService: SoilTypesService) { }
+  constructor(private readonly soilTypesService: SoilTypesService) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -63,7 +63,10 @@ export class SoilTypesController {
   @ApiOperation({ summary: 'Atualiza um tipo de solo existente' })
   @ApiParam({ name: 'id', type: Number, description: 'ID do tipo de solo' })
   @ApiBody({ type: UpdateSoilTypeDto })
-  @ApiResponse({ status: 200, description: 'Tipo de solo atualizado com sucesso.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Tipo de solo atualizado com sucesso.',
+  })
   @ApiResponse({ status: 404, description: 'Tipo de solo não encontrado.' })
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -74,7 +77,10 @@ export class SoilTypesController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Remove um tipo de solo' })
-  @ApiResponse({ status: 200, description: 'Tipo de solo removido com sucesso.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Tipo de solo removido com sucesso.',
+  })
   @ApiResponse({ status: 404, description: 'Tipo de solo não encontrado.' })
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.soilTypesService.remove(id);

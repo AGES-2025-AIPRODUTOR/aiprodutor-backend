@@ -15,7 +15,6 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Product } from './entities/product.entity';
 import { ProductSimpleResponseDto } from './dto/product-simple-response.dto';
 
-
 @ApiTags('Products')
 @Controller('products')
 export class ProductsController {

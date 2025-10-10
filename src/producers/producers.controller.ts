@@ -65,7 +65,11 @@ export class ProducersController {
   @ApiOperation({ summary: 'Edita os dados de um produtor' })
   @ApiParam({ name: 'id', type: Number, description: 'ID do produtor' })
   @ApiBody({ type: UpdateProducerDto })
-  @ApiResponse({ status: 200, description: 'Produtor atualizado com sucesso.', type: ProducerResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Produtor atualizado com sucesso.',
+    type: ProducerResponseDto,
+  })
   @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -76,7 +80,11 @@ export class ProducersController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Remove um produtor' })
-  @ApiResponse({ status: 200, description: 'Produtor removido com sucesso.', type: ProducerResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Produtor removido com sucesso.',
+    type: ProducerResponseDto,
+  })
   @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.producersService.remove(id);
@@ -84,7 +92,10 @@ export class ProducersController {
 
   @Get(':id/plantings')
   @ApiOperation({ summary: 'Busca todos os plantios de um produtor' })
-  @ApiResponse({ status: 200, description: 'Lista de plantios retornada com sucesso.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de plantios retornada com sucesso.',
+  })
   @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
   findAllPlantings(@Param('id', ParseIntPipe) id: number) {
     return this.plantingsService.findByProducerId(id);
@@ -92,7 +103,10 @@ export class ProducersController {
 
   @Get(':id/harvests')
   @ApiOperation({ summary: 'Busca todas as safras de um produtor' })
-  @ApiResponse({ status: 200, description: 'Lista de safras retornada com sucesso.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de safras retornada com sucesso.',
+  })
   @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
   findAllHarvestsByProducer(@Param('id', ParseIntPipe) id: number) {
     return this.harvestsService.findByProducerId(id);

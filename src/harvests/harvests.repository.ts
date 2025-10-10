@@ -6,7 +6,6 @@ import { GetHarvestHistoryQueryDto } from './dto/get-harvest-history-query.dto';
 import { Prisma, HarvestStatus } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
-
 @Injectable()
 export class HarvestsRepository {
   constructor(private readonly prisma: PrismaService) {}

@@ -9,11 +9,13 @@ import {
   IsOptional,
   IsPositive,
   IsString,
-  Min,
 } from 'class-validator';
 
 export class CreatePlantingDto {
-  @ApiProperty({ description: 'Nome do plantio', example: 'Plantio de Soja 2025' })
+  @ApiProperty({
+    description: 'Nome do plantio',
+    example: 'Plantio de Soja 2025',
+  })
   @IsString()
   @IsNotEmpty()
   name: string;
@@ -30,7 +32,9 @@ export class CreatePlantingDto {
   @IsOptional()
   plantingEndDate?: Date;
 
-  @ApiPropertyOptional({ description: 'Data prevista para a colheita (opcional)' })
+  @ApiPropertyOptional({
+    description: 'Data prevista para a colheita (opcional)',
+  })
   @Type(() => Date)
   @IsDate()
   @IsOptional()
@@ -41,7 +45,7 @@ export class CreatePlantingDto {
   @IsPositive()
   @IsNotEmpty()
   quantityPlanted: number;
-  
+
   @ApiPropertyOptional({ description: 'Previsão de rendimento (opcional)' })
   @IsNumber()
   @IsPositive()
