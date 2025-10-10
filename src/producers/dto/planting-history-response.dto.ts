@@ -10,8 +10,8 @@ export class PlantingHistoryResponseDto {
   })
   plantingName: string;
 
-  @ApiProperty({ example: 'BRS 5980', description: 'Nome da variedade' })
-  varietyName: string | null;
+  @ApiProperty({ example: 'Soja BRS 5980', description: 'Nome do produto' })
+  productName: string | null;
 
   @ApiProperty({ example: 'Safra de Verão 2025', description: 'Nome da safra' })
   safraName: string | null;
@@ -32,19 +32,19 @@ export class PlantingHistoryResponseDto {
   })
   harvestDate: Date | null;
 
-  @ApiProperty({ example: 500.0, description: 'Quantidade plantada (em kg)' })
+  @ApiProperty({ example: 500.0, description: 'Quantidade plantada' })
   quantityPlanted: number;
 
   @ApiProperty({
     example: 480.5,
-    description: 'Quantidade colhida (em kg)',
+    description: 'Quantidade colhida',
     required: false,
   })
   quantityHarvested: number | null;
 
   @ApiProperty({
-    example: '15.50 ha',
-    description: 'Tamanho da área em hectares',
+    example: 155000.5,
+    description: 'Tamanho da área em metros quadrados (m²)',
   })
-  areaM2: string;
+  areaM2: number;
 }

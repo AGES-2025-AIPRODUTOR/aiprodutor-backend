@@ -9,20 +9,8 @@ export class ProductsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
-    const { name, varieties } = createProductDto;
-
     return this.prisma.product.create({
-      data: {
-        name,
-        varieties: varieties
-          ? {
-              create: varieties.map((varietyName) => ({ name: varietyName })),
-            }
-          : undefined,
-      },
-      include: {
-        varieties: true,
-      },
+      data: createProductDto,
     });
   }
 
@@ -30,21 +18,9 @@ export class ProductsRepository {
     id: number,
     updateProductDto: UpdateProductDto,
   ): Promise<Product> {
-    const { name, varieties } = updateProductDto;
-
     return this.prisma.product.update({
       where: { id },
-      data: {
-        name,
-        varieties: varieties
-          ? {
-              create: varieties.map((varietyName) => ({ name: varietyName })),
-            }
-          : undefined,
-      },
-      include: {
-        varieties: true,
-      },
+      data: updateProductDto,
     });
   }
 
@@ -56,8 +32,34 @@ export class ProductsRepository {
     return this.prisma.product.findUnique({ where: { id } });
   }
 
-  async findByName(name: string): Promise<Product | null> {
-    return this.prisma.product.findUnique({ where: { name } });
+  async findByName(
+    name: string,
+    producerId?: number,
+  ): Promise<Product | null> {
+    return this.prisma.product.findFirst({
+      where: {
+        name: { equals: name, mode: 'insensitive' },
+        producerId: producerId || null,
+      },
+    });
+  }
+  
+
+  async findByProducer(
+    producerId: number,
+  ): Promise<{ id: number; name: string }[]> {
+    return this.prisma.product.findMany({
+      where: {
+        OR: [{ producerId }, { producerId: null }],
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    });
   }
 
   async remove(id: number): Promise<Product> {

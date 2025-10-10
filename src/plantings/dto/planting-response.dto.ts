@@ -1,28 +1,26 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 class AreaInPlantingResponseDto {
-    @ApiProperty()
-    id: number;
-    @ApiProperty()
-    name: string;
-    @ApiProperty()
-    color: string;
+  @ApiProperty()
+  id: number;
+  @ApiProperty()
+  name: string;
+  @ApiProperty()
+  color: string;
 }
+
 export class PlantingResponseDto {
     @ApiProperty({ description: 'ID único do plantio', example: 1 })
     id: number;
 
-    @ApiProperty({ description: 'ID da safra associada', example: 1 })
-    harvestId: number;
-
     @ApiProperty({ description: 'Nome do plantio', example: 'Plantio de Milho' })
     name: string;
 
+    @ApiProperty({ description: 'ID da safra associada', example: 1 })
+    harvestId: number;
+    
     @ApiProperty({ description: 'ID do produto plantado', example: 1 })
     productId: number;
-
-    @ApiProperty({ description: 'ID da variedade do produto', example: 1 })
-    varietyId: number;
 
     @ApiProperty({ description: 'Data do plantio', example: '2025-09-09' })
     plantingDate: Date;

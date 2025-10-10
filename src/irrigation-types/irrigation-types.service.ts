@@ -40,7 +40,6 @@ export class IrrigationTypesService {
     // Garante que o registro existe antes de tentar atualizar
     await this.findById(id);
 
-    // Executa a atualização
     return await this.repository.update(id, updateIrrigationTypeDto);
   }
 

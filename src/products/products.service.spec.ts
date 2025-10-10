@@ -8,14 +8,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 type Product = {
   id: number;
   name: string;
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-type Variety = {
-  id: number;
-  name: string;
-  productId: number;
+  producerId: number | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -33,6 +26,7 @@ describe('ProductsService', () => {
     findAll: jest.fn(),
     findById: jest.fn(),
     findByName: jest.fn(),
+    findByProducer: jest.fn(),
     update: jest.fn(),
     remove: jest.fn(),
   };
@@ -62,40 +56,18 @@ describe('ProductsService', () => {
 
   // --- Testes para o método CREATE ---
   describe('create', () => {
-    it('should create a new product with varieties successfully', async () => {
+    it('should create a new product successfully', async () => {
       const createDto: CreateProductDto = {
-        name: 'Tomate',
-        varieties: ['Italiano', 'Cereja'],
+        name: 'Tomate Santa Cruz',
+        producerId: 1,
       };
 
-      // Simula o retorno do repositório, que inclui as variedades criadas
-      const expectedProduct: {
-        id: number;
-        name: string;
-        createdAt: Date;
-        updatedAt: Date;
-        varieties: Variety[];
-      } = {
+      const expectedProduct: Product = {
         id: 1,
-        name: 'Tomate',
+        name: 'Tomate Santa Cruz',
+        producerId: 1,
         createdAt: new Date(),
         updatedAt: new Date(),
-        varieties: [
-          {
-            id: 1,
-            name: 'Italiano',
-            productId: 1,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-          {
-            id: 2,
-            name: 'Cereja',
-            productId: 1,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-        ],
       };
 
       repository.findByName.mockResolvedValue(null);
@@ -104,7 +76,30 @@ describe('ProductsService', () => {
       const result = await service.create(createDto);
 
       expect(result).toEqual(expectedProduct);
-      expect(repository.findByName).toHaveBeenCalledWith('Tomate');
+      expect(repository.findByName).toHaveBeenCalledWith('Tomate Santa Cruz');
+      expect(repository.create).toHaveBeenCalledWith(createDto);
+    });
+
+    it('should create a new product without producer successfully', async () => {
+      const createDto: CreateProductDto = {
+        name: 'Tomate Geral',
+      };
+
+      const expectedProduct: Product = {
+        id: 2,
+        name: 'Tomate Geral',
+        producerId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      repository.findByName.mockResolvedValue(null);
+      repository.create.mockResolvedValue(expectedProduct);
+
+      const result = await service.create(createDto);
+
+      expect(result).toEqual(expectedProduct);
+      expect(repository.findByName).toHaveBeenCalledWith('Tomate Geral');
       expect(repository.create).toHaveBeenCalledWith(createDto);
     });
 
@@ -113,6 +108,7 @@ describe('ProductsService', () => {
       const existingProduct: Product = {
         id: 1,
         name: 'Tomate',
+        producerId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -128,7 +124,13 @@ describe('ProductsService', () => {
   describe('findAll', () => {
     it('should return an array of products', async () => {
       const products: Product[] = [
-        { id: 1, name: 'Tomate', createdAt: new Date(), updatedAt: new Date() },
+        {
+          id: 1,
+          name: 'Tomate',
+          producerId: 1,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
       ];
       repository.findAll.mockResolvedValue(products);
 
@@ -139,12 +141,41 @@ describe('ProductsService', () => {
     });
   });
 
+  // --- Testes para o método FINDBYPRODUCER ---
+  describe('findByProducer', () => {
+    it('should return products for a specific producer', async () => {
+      const products: Product[] = [
+        {
+          id: 1,
+          name: 'Tomate Santa Cruz',
+          producerId: 1,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: 2,
+          name: 'Alface Americana',
+          producerId: 1,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+      repository.findByProducer.mockResolvedValue(products);
+
+      const result = await service.findByProducer(1);
+
+      expect(result).toEqual(products);
+      expect(repository.findByProducer).toHaveBeenCalledWith(1);
+    });
+  });
+
   // --- Testes para o método FINDONE ---
   describe('findOne', () => {
     it('should return a single product by ID', async () => {
       const product: Product = {
         id: 1,
         name: 'Tomate',
+        producerId: 1,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -164,30 +195,23 @@ describe('ProductsService', () => {
 
   // --- Testes para o método UPDATE ---
   describe('update', () => {
-    it('should update a product and add new varieties successfully', async () => {
+    it('should update a product successfully', async () => {
       const updateDto: UpdateProductDto = {
         name: 'Tomate Doce',
-        varieties: ['Amarelo'],
+        producerId: 2,
       };
       const existingProduct: Product = {
         id: 1,
         name: 'Tomate',
+        producerId: 1,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      const updatedProduct: Product & { varieties: Variety[] } = {
+      const updatedProduct: Product = {
         ...existingProduct,
         name: 'Tomate Doce',
+        producerId: 2,
         updatedAt: new Date(),
-        varieties: [
-          {
-            id: 3,
-            name: 'Amarelo',
-            productId: 1,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-        ],
       };
 
       repository.findById.mockResolvedValue(existingProduct);
@@ -215,6 +239,7 @@ describe('ProductsService', () => {
       const existingProduct: Product = {
         id: 1,
         name: 'Tomate',
+        producerId: 1,
         createdAt: new Date(),
         updatedAt: new Date(),
       };

@@ -18,7 +18,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { PlantingsService } from './plantings.service';
-import { PlantingRequestDto } from './dto/planting-request.dto';
+import { CreatePlantingDto } from './dto/create-planting.dto';
 import { PlantingResponseDto } from './dto/planting-response.dto';
 import { UpdatePlantingDto } from './dto/update-planting.dto';
 
@@ -30,7 +30,7 @@ export class PlantingsController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Cria um novo plantio' })
-  @ApiBody({ type: PlantingRequestDto })
+  @ApiBody({ type: CreatePlantingDto })
   @ApiResponse({
     status: 201,
     description: 'Plantio criado com sucesso.',
@@ -38,12 +38,11 @@ export class PlantingsController {
   })
   @ApiResponse({
     status: 404,
-    description:
-      'Recurso relacionado (produto, área, variedade) não encontrado.',
+    description: 'Recurso relacionado (produto, área, etc.) não encontrado.',
   })
   @ApiResponse({ status: 400, description: 'Payload inválido.' })
-  create(@Body() plantingRequestDto: PlantingRequestDto) {
-    return this.plantingsService.create(plantingRequestDto);
+  create(@Body() createPlantingDto: CreatePlantingDto) {
+    return this.plantingsService.create(createPlantingDto);
   }
 
   @Get('produto/:productId')
