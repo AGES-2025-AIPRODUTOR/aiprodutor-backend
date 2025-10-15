@@ -67,6 +67,16 @@ export class HarvestsController {
     return this.harvestsService.getHarvestPanel(id);
   }
 
+  @Get('producer/:producerId')
+  @ApiOperation({ summary: 'Lista todas as safras de um produtor' })
+  @ApiParam({ name: 'producerId', description: 'ID do produtor' })
+  @ApiResponse({ status: 200, description: 'Lista de safras retornada com sucesso.', type: [HarvestResponseDto] })
+  findByProducer(
+    @Param('producerId', ParseIntPipe) producerId: number,
+  ): Promise<HarvestEntity[]> {
+    return this.harvestsService.findByProducerId(producerId);
+  }
+
   @Get(':id/historico')
   @ApiOperation({ summary: 'Busca o histórico de safras de um produtor' })
   @ApiParam({ name: 'id', description: 'ID do Produtor para o qual o histórico será buscado' })

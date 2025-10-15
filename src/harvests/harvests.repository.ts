@@ -88,6 +88,7 @@ export class HarvestsRepository {
     return this.prisma.harvest.findMany({
       where: { producerId },
       include: {
+        producer: true,
         plantings: true,
       },
       orderBy: {
