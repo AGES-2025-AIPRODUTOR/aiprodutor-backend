@@ -1,12 +1,14 @@
 variables:
   ECR_REPOSITORY_URI: "558069890454.dkr.ecr.us-east-2.amazonaws.com/aiprodutor-backend"
   AWS_REGION: "us-east-2"
+  LAMBDA_FUNCTION_NAME: "aiprodutor-api-container"
 
 stages:
   - test
   - migrate
   - seed
   - build_and_push
+  - deploy_lambda
   - sync_github
 
 # ---- Workflow 2: Roda os testes e o lint ao abrir um MR para a 'developer' ----
@@ -54,7 +56,7 @@ migrate_database:
     - echo "Running Prisma migrations on RDS..."
     - npx prisma migrate deploy
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+  - if: '$CI_COMMIT_BRANCH == "main"'
 
 # ---- Workflow 1: Roda em merges para a 'main' (Opcional) ----
 seed_database:
@@ -93,6 +95,21 @@ build_and_push_to_ecr:
     - docker build -t $ECR_REPOSITORY_URI:latest .
     - docker push $ECR_REPOSITORY_URI:$IMAGE_TAG
     - docker push $ECR_REPOSITORY_URI:latest
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+# ---- JOB MODIFICADO: Deploy direto na Lambda (sem Canary) ----
+deploy_to_lambda:
+  stage: deploy_lambda
+  image:
+    name: amazon/aws-cli:latest
+    entrypoint: [""]
+  tags:
+    - docker
+  script:
+    - echo "Atualizando a função Lambda com a nova imagem do ECR..."
+    - aws lambda update-function-code --function-name $LAMBDA_FUNCTION_NAME --image-uri $ECR_REPOSITORY_URI:latest
+    - echo "Função Lambda atualizada com sucesso!"
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
