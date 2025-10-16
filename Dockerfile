@@ -7,13 +7,20 @@ COPY . .
 RUN npx prisma generate
 RUN npm run build
 
+# Remove arquivos desnecessários e duplicados
+RUN rm -f dist/lambda.js dist/lambda.js.map dist/lambda.d.ts
+RUN rm -f dist/main.js dist/main.js.map dist/main.d.ts
+
+RUN npm prune --production
 
 # ---- Estágio 2: Production ----
-FROM node:20-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm install --omit=dev
-COPY --from=builder /app/dist ./dist
+FROM public.ecr.aws/lambda/nodejs:20
+WORKDIR ${LAMBDA_TASK_ROOT}
+
+# Copia APENAS o conteúdo essencial de dist/src/
+COPY --from=builder /app/dist/src/ ./
+
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
-EXPOSE 3000
-CMD ["node", "dist/main"]
+
+CMD [ "lambda.handler" ]

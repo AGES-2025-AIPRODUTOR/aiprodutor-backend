@@ -1,19 +1,30 @@
 // src/app.module.ts
+
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { PrismaModule } from './shared/prisma/prisma.module';
+import { ProducersModule } from './producers/producers.module';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { PropertiesModule } from './properties/properties.module';
-
+import { AreasModule } from './areas/areas.module';
+import { IrrigationTypesModule } from './irrigation-types/irrigation-types.module';
+import { SoilTypesModule } from './soil-types/soil-types.module';
+import { ProductsModule } from './products/products.module';
+import { PlantingsModule } from './plantings/plantings.module';
+import { HarvestsModule } from './harvests/harvests.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true, // Torna as variáveis de ambiente disponíveis em todo o app
-    }),
-    PropertiesModule,
+    ConfigModule.forRoot({ isGlobal: true }),
+    PrismaModule,
+    ProducersModule,
+    AreasModule,
+    IrrigationTypesModule,
+    HarvestsModule,
+    SoilTypesModule,
+    ProductsModule,
+    PlantingsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [],
 })
 export class AppModule {}

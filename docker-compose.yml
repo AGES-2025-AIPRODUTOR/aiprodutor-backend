@@ -1,26 +1,44 @@
+# docker-compose.yml
+
+version: '3.8' # Especifica a versão do Docker Compose para garantir compatibilidade
+
 services:
+  # Serviço do Banco de Dados com PostGIS
   postgres:
-    image: postgres:15
+    # 👇 AQUI ESTÁ A MUDANÇA PRINCIPAL: Usando a imagem oficial do PostGIS
+    image: postgis/postgis:15-3.4
     container_name: aiprodutor-db
     restart: always
     ports:
-      - "5433:5432" # Mantendo a porta 5433 na sua máquina
+      - "5433:5432"
     environment:
       POSTGRES_USER: devuser
       POSTGRES_PASSWORD: devpassword
       POSTGRES_DB: aiprodutor
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - aiprodutor-net
 
+  # Serviço da API Backend
   backend:
     container_name: aiprodutor-api
     build: .
     ports:
       - "3000:3000"
     environment:
+      # O host agora é o nome do serviço 'postgres', não 'localhost'
       DATABASE_URL: "postgresql://devuser:devpassword@postgres:5432/aiprodutor"
     depends_on:
       - postgres
+    networks:
+      - aiprodutor-net
 
+# Define o volume para persistir os dados do banco
 volumes:
   postgres_data:
+
+# Define a rede para a comunicação entre os containers
+networks:
+  aiprodutor-net:
+    driver: bridge

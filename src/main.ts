@@ -1,17 +1,26 @@
-// src/main.ts
-
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'; // 1. Importe as ferramentas
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors();
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
 
-  // Configurar o Swagger
+  // Define o prefixo global para a API
+  app.setGlobalPrefix('api/v1', {
+    exclude: ['/'],
+  });
+
+  // Configura o Swagger
   const config = new DocumentBuilder()
     .setTitle('API Ai Produtor')
     .setDescription(
@@ -23,5 +32,7 @@ async function bootstrap() {
   SwaggerModule.setup('api-docs', app, document);
 
   await app.listen(process.env.PORT ?? 3000);
+  console.log(`Application is running on: ${await app.getUrl()}`);
 }
-bootstrap();
+
+bootstrap().catch((err) => console.error(err));
