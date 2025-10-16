@@ -13,7 +13,11 @@ class LinkedPlantingDto {
   @ApiProperty({ example: '2026-02-29T03:00:00.000Z' })
   plantingDate: Date;
 
-  @ApiProperty({ example: '2027-02-25T03:00:00.000Z', required: false, nullable: true })
+  @ApiProperty({
+    example: '2027-02-25T03:00:00.000Z',
+    required: false,
+    nullable: true,
+  })
   estimatedHarvestDate: Date | null;
 }
 
@@ -33,7 +37,11 @@ class GeneralInfoDto {
   @ApiProperty({ example: '2026-02-29T03:00:00.000Z' })
   harvestStartDate: Date;
 
-  @ApiProperty({ example: '2027-02-25T03:00:00.000Z', required: false, nullable: true })
+  @ApiProperty({
+    example: '2027-02-25T03:00:00.000Z',
+    required: false,
+    nullable: true,
+  })
   harvestEndDate: Date | null;
 
   @ApiProperty({ type: [LinkedPlantingDto] })

@@ -7,7 +7,6 @@ import { UpdateAreaStatusDto } from './dto/update-area-status.dto';
 
 describe('AreasController', () => {
   let controller: AreasController;
-  let service: AreasService;
 
   const mockAreaService = {
     create: jest.fn(),
@@ -20,6 +19,8 @@ describe('AreasController', () => {
     producerId: 1,
     soilTypeId: 1,
     irrigationTypeId: 1,
+    areaM2: 15700.5,
+    color: '#34A853',
     polygon: {
       type: 'Polygon',
       coordinates: [
@@ -69,7 +70,6 @@ describe('AreasController', () => {
     }).compile();
 
     controller = module.get<AreasController>(AreasController);
-    service = module.get<AreasService>(AreasService);
   });
 
   afterEach(() => {
@@ -82,8 +82,8 @@ describe('AreasController', () => {
 
       const result = await controller.create(mockAreaRequestDto);
 
-      expect(service.create).toHaveBeenCalledWith(mockAreaRequestDto);
-      expect(service.create).toHaveBeenCalledTimes(1);
+      expect(mockAreaService.create).toHaveBeenCalledWith(mockAreaRequestDto);
+      expect(mockAreaService.create).toHaveBeenCalledTimes(1);
       expect(result).toEqual(mockAreaResponse);
     });
 
@@ -94,8 +94,8 @@ describe('AreasController', () => {
       await expect(controller.create(mockAreaRequestDto)).rejects.toThrow(
         'Service error',
       );
-      expect(service.create).toHaveBeenCalledWith(mockAreaRequestDto);
-      expect(service.create).toHaveBeenCalledTimes(1);
+      expect(mockAreaService.create).toHaveBeenCalledWith(mockAreaRequestDto);
+      expect(mockAreaService.create).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -114,11 +114,11 @@ describe('AreasController', () => {
         mockUpdateAreaStatusDto,
       );
 
-      expect(service.updateStatus).toHaveBeenCalledWith(
+      expect(mockAreaService.updateStatus).toHaveBeenCalledWith(
         areaId,
         mockUpdateAreaStatusDto,
       );
-      expect(service.updateStatus).toHaveBeenCalledTimes(1);
+      expect(mockAreaService.updateStatus).toHaveBeenCalledTimes(1);
       expect(result).toEqual(updatedAreaResponse);
     });
 
@@ -130,11 +130,11 @@ describe('AreasController', () => {
       await expect(
         controller.updateStatus(areaId, mockUpdateAreaStatusDto),
       ).rejects.toThrow('Area not found');
-      expect(service.updateStatus).toHaveBeenCalledWith(
+      expect(mockAreaService.updateStatus).toHaveBeenCalledWith(
         areaId,
         mockUpdateAreaStatusDto,
       );
-      expect(service.updateStatus).toHaveBeenCalledTimes(1);
+      expect(mockAreaService.updateStatus).toHaveBeenCalledTimes(1);
     });
 
     it('should return area when status is already the desired one (idempotence)', async () => {
@@ -144,11 +144,11 @@ describe('AreasController', () => {
 
       const result = await controller.updateStatus(areaId, activeUpdateDto);
 
-      expect(service.updateStatus).toHaveBeenCalledWith(
+      expect(mockAreaService.updateStatus).toHaveBeenCalledWith(
         areaId,
         activeUpdateDto,
       );
-      expect(service.updateStatus).toHaveBeenCalledTimes(1);
+      expect(mockAreaService.updateStatus).toHaveBeenCalledTimes(1);
       expect(result).toEqual(mockAreaResponse);
     });
   });
@@ -168,8 +168,11 @@ describe('AreasController', () => {
 
       const result = await controller.update(areaId, mockUpdateAreaDto);
 
-      expect(service.update).toHaveBeenCalledWith(areaId, mockUpdateAreaDto);
-      expect(service.update).toHaveBeenCalledTimes(1);
+      expect(mockAreaService.update).toHaveBeenCalledWith(
+        areaId,
+        mockUpdateAreaDto,
+      );
+      expect(mockAreaService.update).toHaveBeenCalledTimes(1);
       expect(result).toEqual(updatedAreaResponse);
     });
 
@@ -178,11 +181,14 @@ describe('AreasController', () => {
       const error = new Error('Area not found');
       mockAreaService.update.mockRejectedValue(error);
 
-      await expect(controller.update(areaId, mockUpdateAreaDto)).rejects.toThrow(
-        'Area not found',
+      await expect(
+        controller.update(areaId, mockUpdateAreaDto),
+      ).rejects.toThrow('Area not found');
+      expect(mockAreaService.update).toHaveBeenCalledWith(
+        areaId,
+        mockUpdateAreaDto,
       );
-      expect(service.update).toHaveBeenCalledWith(areaId, mockUpdateAreaDto);
-      expect(service.update).toHaveBeenCalledTimes(1);
+      expect(mockAreaService.update).toHaveBeenCalledTimes(1);
     });
 
     it('should update area with partial data', async () => {
@@ -199,8 +205,11 @@ describe('AreasController', () => {
 
       const result = await controller.update(areaId, partialUpdateDto);
 
-      expect(service.update).toHaveBeenCalledWith(areaId, partialUpdateDto);
-      expect(service.update).toHaveBeenCalledTimes(1);
+      expect(mockAreaService.update).toHaveBeenCalledWith(
+        areaId,
+        partialUpdateDto,
+      );
+      expect(mockAreaService.update).toHaveBeenCalledTimes(1);
       expect(result).toEqual(updatedAreaResponse);
     });
 
@@ -218,8 +227,11 @@ describe('AreasController', () => {
 
       const result = await controller.update(areaId, statusOnlyUpdateDto);
 
-      expect(service.update).toHaveBeenCalledWith(areaId, statusOnlyUpdateDto);
-      expect(service.update).toHaveBeenCalledTimes(1);
+      expect(mockAreaService.update).toHaveBeenCalledWith(
+        areaId,
+        statusOnlyUpdateDto,
+      );
+      expect(mockAreaService.update).toHaveBeenCalledTimes(1);
       expect(result).toEqual(updatedAreaResponse);
     });
   });

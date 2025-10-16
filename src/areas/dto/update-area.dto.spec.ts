@@ -227,8 +227,8 @@ describe('UpdateAreaDto', () => {
       const errors = await validate(dto);
 
       expect(errors).toHaveLength(4);
-      
-      const errorProperties = errors.map(error => error.property);
+
+      const errorProperties = errors.map((error) => error.property);
       expect(errorProperties).toContain('name');
       expect(errorProperties).toContain('soilTypeId');
       expect(errorProperties).toContain('irrigationTypeId');

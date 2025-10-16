@@ -1,29 +1,119 @@
-stages:
-  - deploy
+variables:
+  ECR_REPOSITORY_URI: "558069890454.dkr.ecr.us-east-2.amazonaws.com/aiprodutor-backend"
+  AWS_REGION: "us-east-2"
 
-test_sync_to_github:
-  stage: deploy
+stages:
+  - test
+  - migrate
+  - seed
+  - build_and_push
+  - sync_github
+
+# ---- Workflow 2: Roda os testes e o lint ao abrir um MR para a 'developer' ----
+run_tests:
+  stage: test
+  image: node:20-alpine
+  tags:
+    - docker
+  variables:
+    DATABASE_URL: $DATABASE_URL
+  before_script:
+    - npm install
+  script:
+    - echo "Rodando testes..."
+    - npm run test
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "developer"'
+
+# ---- NOVO JOB: Roda o Lint em paralelo com os testes ----
+run_lint:
+  stage: test
+  image: node:20-alpine
+  tags:
+    - docker
+  before_script:
+    - npm install
+  script:
+    - echo "Verificando a qualidade e o estilo do código..."
+    - npm run lint
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "developer"'
+
+
+# ---- Workflow 1: Roda em merges para a 'main' ----
+migrate_database:
+  stage: migrate
+  image: node:20-alpine
+  tags:
+    - docker
+  variables:
+    DATABASE_URL: $DATABASE_URL
+  before_script:
+    - npm install
+  script:
+    - echo "Running Prisma migrations on RDS..."
+    - npx prisma migrate deploy
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+# ---- Workflow 1: Roda em merges para a 'main' (Opcional) ----
+seed_database:
+  stage: seed
+  image: node:20-alpine
+  tags:
+    - docker
+  variables:
+    DATABASE_URL: $DATABASE_URL
+  before_script:
+    - npm install
+  script:
+    - echo "Running Prisma seed on RDS..."
+    - npx prisma db seed
+  when: manual
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+# ---- Workflow 1: Roda em merges para a 'main' ----
+build_and_push_to_ecr:
+  stage: build_and_push
+  image: docker:latest
+  services:
+    - docker:dind
+  tags:
+    - docker
+  variables:
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - apk add --no-cache aws-cli
+  script:
+    - sleep 20
+    - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPOSITORY_URI
+    - IMAGE_TAG=$(echo $CI_COMMIT_SHA | cut -c1-8)
+    - docker build -t $ECR_REPOSITORY_URI:$IMAGE_TAG .
+    - docker build -t $ECR_REPOSITORY_URI:latest .
+    - docker push $ECR_REPOSITORY_URI:$IMAGE_TAG
+    - docker push $ECR_REPOSITORY_URI:latest
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+# ---- Workflows 1 e 3: Roda em merges para 'main' E 'developer' ----
+sync_to_github:
+  stage: sync_github
+  image: alpine:latest
+  tags:
+    - docker
+  variables:
+    GIT_DEPTH: "0" 
+  before_script:
+    - apk add --no-cache git
   script:
     - echo "Branch de origem:${CI_COMMIT_REF_NAME}"
     - git config --global user.email "pipeline@gitlab.com"
     - git config --global user.name "GitLab Pipeline"
-
-    # Garante que não estamos em um clone superficial
-    - git fetch --unshallow || true
-
-    # Garante que estamos em uma branch local para o checkout
-    - git checkout -B "${CI_COMMIT_REF_NAME}"
-
-    # Configura o remote do GitHub
     - git remote remove github || true
-
-    - git remote add github "https://${GITHUB_TOKEN}@github.com/AGES-2025-AIPRODUTOR/aiprodutor-backend.git"
-
-    # Força o push para a branch 'developer'
+    - git remote add github "https://AGES-2025-AIPRODUTOR:${GITHUB_TOKEN}@github.com/AGES-2025-AIPRODUTOR/aiprodutor-backend.git"
     - echo "Enviando de '${CI_COMMIT_REF_NAME}' para a branch 'developer' no GitHub..."
-    - git push github HEAD:developer -o ci.skip --force
-
-    - echo "TESTE DE SINCRONIZAÇÃO CONCLUÍDO!"
-    - echo "Verifique a branch 'developer' no GitHub para confirmar as alterações."
+    - git push github HEAD:developer --force
+    - echo "SINCRONIZAÇÃO COM GITHUB CONCLUÍDA!"
   rules:
-    - if: '$CI_COMMIT_BRANCH == "developer"'
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "developer"'

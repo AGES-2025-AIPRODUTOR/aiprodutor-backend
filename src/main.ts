@@ -14,7 +14,7 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  
+
   // Define o prefixo global para a API
   app.setGlobalPrefix('api/v1', {
     exclude: ['/'],

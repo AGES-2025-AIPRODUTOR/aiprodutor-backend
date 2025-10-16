@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PlantingsRepository } from './plantings.repository';
 import { CreatePlantingDto } from './dto/create-planting.dto';
 import { UpdatePlantingDto } from './dto/update-planting.dto';
@@ -41,7 +45,7 @@ export class PlantingsService {
     const { productId, areaIds, harvestId } = createPlantingDto;
 
     // 1. Valida se a safra e o produto existem e captura o objeto da safra.
-    const [_, harvest] = await Promise.all([
+    const [harvest] = await Promise.all([
       this.productsService.findOne(productId),
       this.harvestsService.findOne(harvestId),
     ]);
@@ -93,7 +97,7 @@ export class PlantingsService {
     const plantings = await this.repository.findAll();
     return plantings.map((planting) => this.mapToResponseDto(planting));
   }
-  
+
   async findByProducerId(producerId: number): Promise<PlantingResponseDto[]> {
     const plantings = await this.repository.findByProducerId(producerId);
     return plantings.map((planting) => this.mapToResponseDto(planting));

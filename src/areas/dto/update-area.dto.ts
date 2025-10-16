@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsBoolean, IsNumber, IsPositive } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsBoolean,
+  IsNumber,
+  IsPositive,
+  IsNotEmpty,
+} from 'class-validator';
 
 export class UpdateAreaDto {
   @ApiProperty({
@@ -9,6 +16,7 @@ export class UpdateAreaDto {
   })
   @IsOptional()
   @IsString()
+  @IsNotEmpty()
   name?: string;
 
   @ApiProperty({
