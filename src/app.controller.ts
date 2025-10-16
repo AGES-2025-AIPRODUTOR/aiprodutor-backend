@@ -5,6 +5,7 @@ import { ApiExcludeController, ApiOperation } from '@nestjs/swagger';
 @Controller()
 @ApiExcludeController() // Esconde este controller da documentação do Swagger
 export class AppController {
+  
   @Get()
   @Redirect('/api-docs', 302) // Redireciona a rota '/' para '/api-docs'
   redirectToDocs() {}
