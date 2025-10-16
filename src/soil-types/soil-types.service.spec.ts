@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SoilTypesService } from './soil-types.service';
 import { SoilTypesRepository } from './soil-types.repository';
+import { AreasRepository } from '../areas/areas.repository';
 import { SoilTypesDto } from './dto/soil-types.dto';
 
 describe('SoilTypesService', () => {
@@ -11,6 +12,9 @@ describe('SoilTypesService', () => {
     findById: jest.fn(),
   };
 
+  const mockAreasRepository = {
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -18,6 +22,10 @@ describe('SoilTypesService', () => {
         {
           provide: SoilTypesRepository,
           useValue: mockSoilTypesRepository,
+        },
+        {
+          provide: AreasRepository,
+          useValue: mockAreasRepository,
         },
       ],
     }).compile();

@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../shared/prisma/prisma.service';
 import { AreaRequestDto } from './dto/area-request.dto';
 import { UpdateAreaDto } from './dto/update-area.dto';
-import { Prisma } from '@prisma/client';
 
 interface RawAreaQueryResult {
   id: number;
@@ -67,8 +66,15 @@ export class AreasRepository {
   }
 
   async create(areaRequestDto: AreaRequestDto): Promise<AreaWithRelations> {
-    const { name, producerId, soilTypeId, irrigationTypeId, polygon, color, areaM2 } =
-      areaRequestDto;
+    const {
+      name,
+      producerId,
+      soilTypeId,
+      irrigationTypeId,
+      polygon,
+      color,
+      areaM2,
+    } = areaRequestDto;
     const geojsonString = JSON.stringify(polygon);
 
     const result = await this.prisma.$queryRaw<RawAreaQueryResult[]>`
@@ -97,7 +103,7 @@ export class AreasRepository {
       LEFT JOIN soil_types st ON na."soilTypeId" = st.id
       LEFT JOIN irrigation_types it ON na."irrigationTypeId" = it.id;
     `;
-    
+
     return this.mapRawAreaToAreaWithRelations(result[0]);
   }
 
@@ -140,7 +146,10 @@ export class AreasRepository {
     return result.map((row) => this.mapRawAreaToAreaWithRelations(row));
   }
 
-  async updateStatus(id: number, isActive: boolean): Promise<AreaWithRelations | null> {
+  async updateStatus(
+    id: number,
+    isActive: boolean,
+  ): Promise<AreaWithRelations | null> {
     await this.prisma.area.update({
       where: { id },
       data: { isActive: isActive, updatedAt: new Date() },
@@ -148,7 +157,10 @@ export class AreasRepository {
     return this.findById(id);
   }
 
-  async update(id: number, dto: UpdateAreaDto): Promise<AreaWithRelations | null> {
+  async update(
+    id: number,
+    dto: UpdateAreaDto,
+  ): Promise<AreaWithRelations | null> {
     await this.prisma.area.update({
       where: { id },
       data: { ...dto, updatedAt: new Date() },
@@ -180,7 +192,9 @@ export class AreasRepository {
   }
 
   async existsByIrrigationTypeId(irrigationTypeId: number): Promise<boolean> {
-    const area = await this.prisma.area.findFirst({ where: { irrigationTypeId } });
+    const area = await this.prisma.area.findFirst({
+      where: { irrigationTypeId },
+    });
     return !!area;
   }
 }

@@ -11,4 +11,4 @@ import { AreasModule } from '../areas/areas.module';
   providers: [SoilTypesService, SoilTypesRepository],
   exports: [SoilTypesService],
 })
-export class SoilTypesModule { }
+export class SoilTypesModule {}

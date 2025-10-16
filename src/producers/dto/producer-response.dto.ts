@@ -1,8 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsEmail,
-  Matches,
-} from 'class-validator';
+import { IsEmail, Matches } from 'class-validator';
 
 export class ProducerResponseDto {
   @ApiProperty({

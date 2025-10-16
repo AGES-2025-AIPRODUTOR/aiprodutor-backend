@@ -7,7 +7,6 @@ import { SoilTypesService } from '../soil-types/soil-types.service';
 import { IrrigationTypesService } from '../irrigation-types/irrigation-types.service';
 import { AreaRequestDto } from './dto/area-request.dto';
 import { UpdateAreaDto } from './dto/update-area.dto';
-import { UpdateAreaStatusDto } from './dto/update-area-status.dto';
 import { AreaResponseDto } from './dto/area-response.dto';
 
 // Interfaces para mocks
@@ -49,7 +48,18 @@ describe('AreasService', () => {
     producerId: 1,
     soilTypeId: 1,
     irrigationTypeId: 1,
-    polygon: { type: 'Polygon', coordinates: [[[-51, -14], [-51, -15], [-52, -15], [-52, -14], [-51, -14]]] },
+    polygon: {
+      type: 'Polygon',
+      coordinates: [
+        [
+          [-51, -14],
+          [-51, -15],
+          [-52, -15],
+          [-52, -14],
+          [-51, -14],
+        ],
+      ],
+    },
     color: '',
     areaM2: 9999.99,
   };
@@ -68,7 +78,7 @@ describe('AreasService', () => {
     soilType: { id: 1, name: 'Tipo de Solo Teste' },
     irrigationType: { id: 1, name: 'Tipo de Irrigação Teste' },
   };
-  
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -76,7 +86,10 @@ describe('AreasService', () => {
         { provide: AreasRepository, useValue: mockAreasRepository },
         { provide: ProducersService, useValue: mockProducersService },
         { provide: SoilTypesService, useValue: mockSoilTypesService },
-        { provide: IrrigationTypesService, useValue: mockIrrigationTypesService },
+        {
+          provide: IrrigationTypesService,
+          useValue: mockIrrigationTypesService,
+        },
       ],
     }).compile();
 
@@ -84,24 +97,25 @@ describe('AreasService', () => {
     jest.clearAllMocks(); // Limpa os mocks antes de cada teste
   });
 
-describe('create', () => {
-  it('should create a new area successfully', async () => {
-    // ARRANGE
-    mockProducersService.findOne.mockResolvedValue({ id: 1 });
-    mockSoilTypesService.findById.mockResolvedValue({ id: 1 });
-    mockIrrigationTypesService.findById.mockResolvedValue({ id: 1 });
-    mockAreasRepository.create.mockResolvedValue(mockAreaFromRepo);
-      
-    // ACT
-    const result = await service.create(mockAreaRequestDto);
+  describe('create', () => {
+    it('should create a new area successfully', async () => {
+      // ARRANGE
+      mockProducersService.findOne.mockResolvedValue({ id: 1 });
+      mockSoilTypesService.findById.mockResolvedValue({ id: 1 });
+      mockIrrigationTypesService.findById.mockResolvedValue({ id: 1 });
+      mockAreasRepository.create.mockResolvedValue(mockAreaFromRepo);
 
-    // ASSERT
-    expect(mockAreasRepository.create).toHaveBeenCalledWith(mockAreaRequestDto);
-    
-    
-    expect(result).toBeInstanceOf(AreaResponseDto);
-    expect(result.id).toEqual(mockAreaFromRepo.id);
-  });
+      // ACT
+      const result = await service.create(mockAreaRequestDto);
+
+      // ASSERT
+      expect(mockAreasRepository.create).toHaveBeenCalledWith(
+        mockAreaRequestDto,
+      );
+
+      expect(result).toBeInstanceOf(AreaResponseDto);
+      expect(result.id).toEqual(mockAreaFromRepo.id);
+    });
   });
 
   describe('updateStatus', () => {
@@ -113,21 +127,23 @@ describe('create', () => {
       const result = await service.updateStatus(1, { isActive: false });
       expect(result.isActive).toBe(false);
     });
-    
+
     it('should throw NotFoundException when area is not found', async () => {
       const areaId = 999;
       mockAreasRepository.findById.mockResolvedValue(null);
 
-      await expect(service.updateStatus(areaId, { isActive: false })).rejects.toThrow(
+      await expect(
+        service.updateStatus(areaId, { isActive: false }),
+      ).rejects.toThrow(
         new NotFoundException(`Área com o ID ${areaId} não encontrada.`),
       );
     });
-    
+
     it('should return existing area if status is already the desired one', async () => {
       mockAreasRepository.findById.mockResolvedValue(mockAreaFromRepo);
-      
+
       const result = await service.updateStatus(1, { isActive: true }); // Status já é true
-      
+
       expect(mockAreasRepository.updateStatus).not.toHaveBeenCalled();
       expect(result.id).toEqual(mockAreaFromRepo.id);
     });
@@ -137,27 +153,27 @@ describe('create', () => {
     it('should update area successfully', async () => {
       const updateDto: UpdateAreaDto = { name: 'Nome Atualizado' };
       const updatedArea = { ...mockAreaFromRepo, name: 'Nome Atualizado' };
-      
+
       mockAreasRepository.findById.mockResolvedValue(mockAreaFromRepo);
       mockAreasRepository.update.mockResolvedValue(updatedArea);
-      
+
       const result = await service.update(1, updateDto);
-      
+
       expect(result.name).toBe('Nome Atualizado');
     });
 
-  it('should throw NotFoundException when area to update is not found', async () => {
-    const areaId = 999;
-    const updateDto = { name: 'Teste' };
-    
-    mockAreasRepository.findById.mockResolvedValue(null);
+    it('should throw NotFoundException when area to update is not found', async () => {
+      const areaId = 999;
+      const updateDto = { name: 'Teste' };
 
-    await expect(service.update(areaId, updateDto)).rejects.toThrow(
-      new NotFoundException(`Área com o ID ${areaId} não encontrada.`),
-    );
+      mockAreasRepository.findById.mockResolvedValue(null);
 
-    expect(mockAreasRepository.update).not.toHaveBeenCalled();
-  });
+      await expect(service.update(areaId, updateDto)).rejects.toThrow(
+        new NotFoundException(`Área com o ID ${areaId} não encontrada.`),
+      );
+
+      expect(mockAreasRepository.update).not.toHaveBeenCalled();
+    });
   });
 
   describe('findOne', () => {

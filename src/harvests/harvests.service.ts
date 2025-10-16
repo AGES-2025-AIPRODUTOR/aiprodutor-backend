@@ -177,22 +177,24 @@ export class HarvestsService {
 
     // Mapeia os resultados para o DTO de resposta.
     return harvestsFromDb.map((harvest) => {
-      const allAreasFromPlantings = harvest.plantings.flatMap(p => p.areas);
-      const uniqueAreas = Array.from(new Map(allAreasFromPlantings.map(a => [a.id, a])).values());
+      const allAreasFromPlantings = harvest.plantings.flatMap((p) => p.areas);
+      const uniqueAreas = Array.from(
+        new Map(allAreasFromPlantings.map((a) => [a.id, a])).values(),
+      );
 
       return {
         safraId: harvest.id,
         safraName: harvest.name,
         safraInitialDate: harvest.startDate,
         safraEndDate: harvest.endDate,
-        areas: uniqueAreas.map(a => ({ id: a.id, name: a.name })), // Áreas únicas da safra
+        areas: uniqueAreas.map((a) => ({ id: a.id, name: a.name })), // Áreas únicas da safra
         status: harvest.status,
-        planting: harvest.plantings.map(p => ({
+        planting: harvest.plantings.map((p) => ({
           id: p.id,
           initialDate: p.plantingDate,
           estimatedEndDate: p.expectedHarvestDate,
           qtyEstimated: `${p.quantityPlanted.toString()}`,
-          areaName: p.areas.map(a => a.name),
+          areaName: p.areas.map((a) => a.name),
         })),
       };
     });
@@ -201,9 +203,7 @@ export class HarvestsService {
   /**
    * Busca safras em andamento de um produtor.
    */
-  async findInProgressByProducer(
-    producerId: number,
-  ): Promise<HarvestEntity[]> {
+  async findInProgressByProducer(producerId: number): Promise<HarvestEntity[]> {
     await this.producersService.findOne(producerId);
     const harvests = await this.repository.findInProgressByProducer(producerId);
     return harvests.map((harvest) => new HarvestEntity(harvest));

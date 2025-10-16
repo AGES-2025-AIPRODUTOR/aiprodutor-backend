@@ -11,13 +11,16 @@ export class AppController {
   redirectToDocs() {}
 
   @Get('health')
-  @ApiOperation({ summary: 'Health check endpoint', description: 'Verifica se a API está funcionando' })
+  @ApiOperation({
+    summary: 'Health check endpoint',
+    description: 'Verifica se a API está funcionando',
+  })
   getHealth() {
     return {
       status: 'OK',
       service: 'AiProdutor Backend',
       timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || 'development'
+      environment: process.env.NODE_ENV || 'development',
     };
   }
 }

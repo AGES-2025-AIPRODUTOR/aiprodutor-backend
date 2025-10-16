@@ -12,7 +12,13 @@ async function bootstrap(): Promise<Handler> {
     const app = await NestFactory.create(AppModule);
 
     app.enableCors();
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }));
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+      }),
+    );
     app.setGlobalPrefix('api/v1', { exclude: ['/'] });
 
     await app.init();
@@ -22,7 +28,11 @@ async function bootstrap(): Promise<Handler> {
   return cachedServer;
 }
 
-export const handler: Handler = async (event: any, context: Context, callback: Callback) => {
+export const handler: Handler = async (
+  event: any,
+  context: Context,
+  callback: Callback,
+) => {
   const server = await bootstrap();
   return server(event, context, callback);
 };

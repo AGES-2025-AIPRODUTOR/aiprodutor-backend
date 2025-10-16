@@ -1,24 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-class AreaInHarvestResponseDto {
-    @ApiProperty()
-    id: number;
-    @ApiProperty()
-    name: string;
-}
-
 class ProducerInHarvestResponseDto {
-    @ApiProperty()
-    id: number;
-    @ApiProperty()
-    name: string;
+  @ApiProperty()
+  id: number;
+  @ApiProperty()
+  name: string;
 }
 
 class PlantingInHarvestResponseDto {
   @ApiProperty({ example: 1, description: 'ID do plantio' })
   id: number;
 
-  @ApiProperty({ example: 'Plantio de Tomate Cereja', description: 'Nome do plantio' })
+  @ApiProperty({
+    example: 'Plantio de Tomate Cereja',
+    description: 'Nome do plantio',
+  })
   name: string;
 }
 
@@ -49,7 +45,6 @@ export class HarvestResponseDto {
 
   @ApiProperty({ description: 'Nome da safra', example: 'Safra de Verão 2025' })
   name: string;
-
 
   @ApiProperty({
     description: 'Data de início da safra',

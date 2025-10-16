@@ -105,18 +105,17 @@ export class ProducersService {
     return this.repository.remove(id);
   }
 
-async getPlantingHistory(
-  producerId: number,
-): Promise<PlantingHistoryResponseDto[]> {
-  // 1. Garante que o produtor existe
-  await this.findOne(producerId);
+  async getPlantingHistory(
+    producerId: number,
+  ): Promise<PlantingHistoryResponseDto[]> {
+    // 1. Garante que o produtor existe
+    await this.findOne(producerId);
 
-  // 2. Chama o repositório com a query correta
-  const historyRecords = await this.repository.findPlantingHistory(
-    producerId,
-  );
+    // 2. Chama o repositório com a query correta
+    const historyRecords =
+      await this.repository.findPlantingHistory(producerId);
 
-  // 3. Mapeia e formata os dados para o DTO de resposta
+    // 3. Mapeia e formata os dados para o DTO de resposta
     return historyRecords.map((record) => ({
       areaName: record.areaName,
       plantingName: record.plantingName,

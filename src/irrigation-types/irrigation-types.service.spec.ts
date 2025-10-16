@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { IrrigationTypesService } from './irrigation-types.service';
 import { IrrigationTypesRepository } from './irrigation-types.repository';
 import { IrrigationTypesDto } from './dto/irrigation-types.dto';
+import { AreasRepository } from '../areas/areas.repository';
 
 describe('IrrigationTypesService', () => {
   let service: IrrigationTypesService;
@@ -11,6 +12,10 @@ describe('IrrigationTypesService', () => {
     findById: jest.fn(),
   };
 
+  const mockAreasRepository = {
+    findByIrrigationTypeId: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -18,6 +23,10 @@ describe('IrrigationTypesService', () => {
         {
           provide: IrrigationTypesRepository,
           useValue: mockIrrigationTypesRepository,
+        },
+        {
+          provide: AreasRepository,
+          useValue: mockAreasRepository,
         },
       ],
     }).compile();

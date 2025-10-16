@@ -101,7 +101,11 @@ export class PlantingsController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Remove um plantio' })
-  @ApiParam({ name: 'id', type: Number, description: 'ID do plantio a ser removido' })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'ID do plantio a ser removido',
+  })
   @ApiResponse({ status: 204, description: 'Plantio removido com sucesso.' })
   @ApiResponse({ status: 404, description: 'Plantio não encontrado.' })
   remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
