@@ -6,6 +6,7 @@ jest.mock('geojson-validation', () => ({
   default: {
     isPolygon: jest.fn(),
   },
+  isPolygon: jest.fn(),
 }));
 
 import * as geojsonValidation from 'geojson-validation';
