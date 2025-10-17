@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  BadRequestException, // Adicionado para erros de regra de negócio no update
 } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -12,31 +13,65 @@ import { Prisma, Product } from '@prisma/client';
 export class ProductsService {
   constructor(private readonly repository: ProductsRepository) {}
 
+  /**
+   * CRÍTICO: Implementa validação de unicidade individual E conflito com produto global.
+   */
   async create(createProductDto: CreateProductDto): Promise<Product> {
     const { name, producerId } = createProductDto;
 
-    const existingProduct = await this.repository.findByName(name, producerId);
+    // 1. Validação CRÍTICA: Conflito com NOME GLOBAL
+    const existingGlobalProduct = await this.repository.findByNameAndProducer(
+      name,
+      null, // Busca produtos globais (producerId: null)
+    );
 
-    if (existingProduct) {
-      if (!producerId) {
-        return existingProduct;
-      }
-
+    if (existingGlobalProduct) {
       throw new ConflictException(
-        `Este produtor já possui um produto com o nome "${name}".`,
+        `O nome do produto "${name}" conflita com um produto global e não pode ser usado.`,
       );
     }
 
+    // 2. Validação CRÍTICA: Unicidade para o MESMO PRODUTOR
+    if (producerId) {
+      // Usando findByNameAndProducer (nome correto do método)
+      const existingProduct = await this.repository.findByNameAndProducer(
+        name,
+        producerId,
+      );
+
+      if (existingProduct) {
+        throw new ConflictException(
+          `Este produtor já possui um produto com o nome "${name}".`,
+        );
+      }
+    }
+
+    // 3. Permite a criação (incluindo a criação de novos produtos globais, se producerId for omitido)
     return this.repository.create(createProductDto);
   }
 
+  /**
+   * CRÍTICO: Atualiza um produto, PROIBINDO a alteração do nome.
+   */
   async update(
     id: number,
     updateProductDto: UpdateProductDto,
   ): Promise<Product> {
+    // 1. NOVA REGRA: Proíbe a alteração do campo 'name'
+    if (updateProductDto.name !== undefined) {
+      throw new BadRequestException(
+        'O nome do produto não pode ser alterado após a criação.',
+      );
+    }
+
+    // 2. Busca o produto para garantir que ele exista antes de tentar atualizar
     await this.findOne(id);
+
+    // 3. Se passou pela validação, atualiza os outros campos (producerId, etc.).
     return this.repository.update(id, updateProductDto);
   }
+
+  // --- Outros métodos que permanecem inalterados na lógica de negócio: ---
 
   async findAll(): Promise<Product[]> {
     return this.repository.findAll();
@@ -45,6 +80,7 @@ export class ProductsService {
   async findByProducer(
     producerId: number,
   ): Promise<{ id: number; name: string }[]> {
+    // A lógica de inclusão de produtos globais está no Repository.
     return this.repository.findByProducer(producerId);
   }
 
