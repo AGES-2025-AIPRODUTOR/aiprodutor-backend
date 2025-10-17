@@ -1,6 +1,5 @@
 import { registerDecorator, ValidationOptions } from 'class-validator';
-import geojsonValidation from 'geojson-validation';
-
+import * as geojsonValidation from 'geojson-validation';
 function isValidCoordinate(coord: any): boolean {
   if (!Array.isArray(coord) || coord.length < 2) {
     return false;
