@@ -21,8 +21,7 @@ jest.mock('geojson-validation', () => ({
   },
 }));
 
-import geojsonValidation from 'geojson-validation';
-
+import * as geojsonValidation from 'geojson-validation';
 describe('AreasController (e2e)', () => {
   let app: INestApplication;
 

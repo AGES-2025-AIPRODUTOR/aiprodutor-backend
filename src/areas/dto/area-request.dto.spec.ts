@@ -8,8 +8,7 @@ jest.mock('geojson-validation', () => ({
   },
 }));
 
-import geojsonValidation from 'geojson-validation';
-
+import * as geojsonValidation from 'geojson-validation';
 describe('AreaRequestDto', () => {
   let dto: AreaRequestDto;
 
