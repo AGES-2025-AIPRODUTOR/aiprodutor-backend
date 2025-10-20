@@ -6,6 +6,7 @@ import { GetHarvestHistoryQueryDto } from './dto/get-harvest-history-query.dto';
 import { Prisma, HarvestStatus } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
+
 @Injectable()
 export class HarvestsRepository {
   constructor(private readonly prisma: PrismaService) {}
@@ -87,6 +88,7 @@ export class HarvestsRepository {
     return this.prisma.harvest.findMany({
       where: { producerId },
       include: {
+        producer: true,
         plantings: true,
       },
       orderBy: {

@@ -5,10 +5,10 @@ jest.mock('geojson-validation', () => ({
   default: {
     isPolygon: jest.fn(),
   },
+  isPolygon: jest.fn(),
 }));
 
-import geojsonValidation from 'geojson-validation';
-
+import * as geojsonValidation from 'geojson-validation';
 class TestDto {
   @IsGeoJSONPolygon({
     message: 'O campo polygon deve ser um GeoJSON Polygon válido.',
