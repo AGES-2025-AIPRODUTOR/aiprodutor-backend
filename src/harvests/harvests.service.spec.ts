@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HarvestsService } from './harvests.service';
+import { Decimal } from '@prisma/client/runtime/library';
 import { HarvestsRepository } from './harvests.repository';
 import { AreasService } from '../areas/areas.service';
 import { ProducersService } from '../producers/producers.service';
 import { ProductsService } from '../products/products.service';
-import { VarietiesService } from '../varieties/varieties.service';
 import { NotFoundException, ConflictException } from '@nestjs/common';
 import { CreateHarvestDto } from './dto/create-harvest.dto';
 
@@ -26,20 +26,29 @@ describe('HarvestsService', () => {
   const mockAreasService = { findOne: jest.fn() };
   const mockProducersService = { findOne: jest.fn() };
   const mockProductsService = { findOne: jest.fn() };
-  const mockVarietiesService = { findOne: jest.fn() };
+  // VarietiesService removed from current implementation; keep only used mocks
 
   const sampleHarvest: any = {
     id: 1,
     name: 'Safra Teste',
     producerId: 1,
-    areas: [{ id: 1, name: 'Area 1' }],
-    plantings: [
-      { id: 10, name: 'Plantio A', productId: 1, varietyId: 1, product: { name: 'Produto A' }, areas: [{ id: 1, name: 'Area 1' }], quantityPlanted: 100 }
-    ],
+    expectedYield: 100,
     startDate: new Date(),
     endDate: null,
     createdAt: new Date(),
     updatedAt: new Date(),
+    plantings: [
+      {
+        id: 10,
+        name: 'Plantio A',
+        productId: 1,
+        product: { name: 'Produto A' },
+        expectedYield: 100,
+        plantingDate: new Date(),
+        expectedHarvestDate: new Date(),
+        areas: [{ id: 1, name: 'Area 1', producerId: 1, areaM2: new Decimal(10000) }],
+      },
+    ],
   };
 
   beforeEach(async () => {
@@ -50,7 +59,7 @@ describe('HarvestsService', () => {
         { provide: AreasService, useValue: mockAreasService },
         { provide: ProducersService, useValue: mockProducersService },
         { provide: ProductsService, useValue: mockProductsService },
-        { provide: VarietiesService, useValue: mockVarietiesService },
+  // VarietiesService not used in current HarvestsService constructor
       ],
     }).compile();
 
@@ -84,9 +93,8 @@ describe('HarvestsService', () => {
 
       mockRepository.findByName.mockResolvedValue(null);
       mockProducersService.findOne.mockResolvedValue({ id: 1 });
-      mockAreasService.findOne.mockResolvedValue({ id: 1 });
+  mockAreasService.findOne.mockResolvedValue({ id: 1, producerId: 1, areaM2: new Decimal(10000) });
       mockProductsService.findOne.mockResolvedValue({ id: 1 });
-      mockVarietiesService.findOne.mockResolvedValue({ id: 1 });
       mockRepository.create.mockResolvedValue(sampleHarvest);
 
       const result = await service.create(dto);
@@ -101,6 +109,32 @@ describe('HarvestsService', () => {
       mockRepository.findByName.mockResolvedValue(sampleHarvest);
 
       await expect(service.create(dto)).rejects.toThrow(ConflictException);
+    });
+
+    it('throws BadRequestException when a planting area does not belong to the producer', async () => {
+      const dto: CreateHarvestDto = {
+        name: 'Safra Teste',
+        producerId: 1,
+        areaIds: [1],
+        startDate: new Date(),
+        plantings: [
+          {
+            name: 'Plantio X',
+            plantingDate: new Date(),
+            quantityPlanted: 10,
+            productId: 1,
+            areaIds: [2],
+          },
+        ],
+      } as any;
+
+      mockRepository.findByName.mockResolvedValue(null);
+      mockProducersService.findOne.mockResolvedValue({ id: 1 });
+      // area 2 belongs to a different producer
+      mockAreasService.findOne.mockResolvedValue({ id: 2, producerId: 999 });
+      mockProductsService.findOne.mockResolvedValue({ id: 1 });
+
+  await expect(service.create(dto)).rejects.toThrow(/não pertence ao produtor/);
     });
   });
 
@@ -152,11 +186,11 @@ describe('HarvestsService', () => {
 
     it('getHarvestPanel returns transformed panel', async () => {
       mockRepository.findById.mockResolvedValue(sampleHarvest);
-      mockRepository.getTotalAreaForHarvest.mockResolvedValue(10000);
 
       const panel = await service.getHarvestPanel(1);
       expect(panel.generalInfo.areaCount).toBeDefined();
       expect(panel.generalInfo.linkedPlantings.length).toBe(sampleHarvest.plantings.length);
+      expect(panel.generalInfo.totalArea).toBeGreaterThan(0);
     });
   });
 });

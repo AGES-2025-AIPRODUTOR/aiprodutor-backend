@@ -13,6 +13,9 @@ describe('HarvestsController', () => {
     getHarvestPanel: jest.fn(),
     findHistory: jest.fn(),
     findByProducerId: jest.fn(),
+    findByProducer: jest.fn(),
+    findInProgressByProducer: jest.fn(),
+    findHistoryByProducer: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -67,5 +70,26 @@ describe('HarvestsController', () => {
     mockService.getHarvestPanel.mockResolvedValue({ generalInfo: { areaCount: 1, linkedPlantings: [] } } as any);
     const res = await controller.getHarvestPanel(1);
     expect(res.generalInfo.areaCount).toBe(1);
+  });
+
+  it('findByProducer', async () => {
+    mockService.findByProducerId.mockResolvedValue([{ id: 1 } as any]);
+    const res = await controller.findByProducer(1);
+    expect(res.length).toBe(1);
+    expect(mockService.findByProducerId).toHaveBeenCalledWith(1);
+  });
+
+  it('findHistory', async () => {
+    mockService.findHistoryByProducer.mockResolvedValue([] as any);
+    const res = await controller.findHistory(1, {} as any);
+    expect(Array.isArray(res)).toBe(true);
+    expect(mockService.findHistoryByProducer).toHaveBeenCalledWith(1, {});
+  });
+
+  it('findInProgressByProducer', async () => {
+    mockService.findInProgressByProducer.mockResolvedValue([] as any);
+    const res = await controller.findInProgressByProducer(1);
+    expect(Array.isArray(res)).toBe(true);
+    expect(mockService.findInProgressByProducer).toHaveBeenCalledWith(1);
   });
 });

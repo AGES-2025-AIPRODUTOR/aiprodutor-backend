@@ -2,6 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { HarvestsRepository } from './harvests.repository';
 import { PrismaService } from '../shared/prisma/prisma.service';
 
+import { Decimal } from '@prisma/client/runtime/library';
+
 const mockPrisma = () => ({
   harvest: {
     create: jest.fn(),
@@ -10,7 +12,6 @@ const mockPrisma = () => ({
     update: jest.fn(),
     delete: jest.fn(),
   },
-  $queryRaw: jest.fn(),
 });
 
 describe('HarvestsRepository', () => {
@@ -68,9 +69,65 @@ describe('HarvestsRepository', () => {
   });
 
   it('getTotalAreaForHarvest uses $queryRaw', async () => {
-    prisma.$queryRaw.mockResolvedValue([{ total_area: 12 }]);
+    // mock a findUnique that returns plantings with areas including areaM2 (Decimal)
+    // Provide a real Decimal instance for areaM2 so repository reduction works
+    const decimalVal = new Decimal(12);
+    prisma.harvest.findUnique.mockResolvedValue({
+      id: 1,
+      plantings: [
+        { areas: [{ id: 1, areaM2: decimalVal }] },
+      ],
+    });
     const res = await repo.getTotalAreaForHarvest(1);
-    expect(prisma.$queryRaw).toHaveBeenCalled();
+    expect(prisma.harvest.findUnique).toHaveBeenCalled();
     expect(res).toEqual(12);
+  });
+
+  it('getTotalAreaForHarvest returns 0 when harvest missing', async () => {
+    prisma.harvest.findUnique.mockResolvedValue(null);
+    const res = await repo.getTotalAreaForHarvest(999);
+    expect(res).toBe(0);
+  });
+
+  it('getTotalAreaForHarvest returns 0 when harvest has no plantings', async () => {
+    prisma.harvest.findUnique.mockResolvedValue({ id: 2, plantings: [] });
+    const res = await repo.getTotalAreaForHarvest(2);
+    expect(res).toBe(0);
+  });
+
+  it('getTotalAreaForHarvest deduplicates areas across plantings', async () => {
+    const decimalVal = new Decimal(5);
+    // area id 1 appears twice across plantings
+    prisma.harvest.findUnique.mockResolvedValue({
+      id: 3,
+      plantings: [
+        { areas: [{ id: 1, areaM2: decimalVal }, { id: 2, areaM2: new Decimal(3) }] },
+        { areas: [{ id: 1, areaM2: decimalVal }] },
+      ],
+    });
+
+    const res = await repo.getTotalAreaForHarvest(3);
+    // unique areas: id1 (5) + id2 (3) = 8
+    expect(res).toBe(8);
+  });
+
+  it('findHistoryByProducer applies filters and returns mapped result', async () => {
+    const fakeDbResult = [
+      {
+        id: 10,
+        name: 'Safra X',
+        startDate: new Date('2025-01-01'),
+        endDate: new Date('2025-12-31'),
+        status: 'Completed',
+        plantings: [
+          { id: 1, plantingDate: new Date('2025-02-01'), expectedHarvestDate: new Date('2025-06-01'), quantityPlanted: 100, areas: [{ id: 1, name: 'A' }] },
+        ],
+      },
+    ];
+
+    prisma.harvest.findMany.mockResolvedValue(fakeDbResult);
+    const res = await repo.findHistoryByProducer(1, { safraName: 'Safra', status: 'Completed' } as any);
+  expect(Array.isArray(res)).toBe(true);
+  expect(res[0].id).toBe(10);
   });
 });
