@@ -1,24 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-class AreaInHarvestResponseDto {
-    @ApiProperty()
-    id: number;
-    @ApiProperty()
-    name: string;
-}
-
 class ProducerInHarvestResponseDto {
-    @ApiProperty()
-    id: number;
-    @ApiProperty()
-    name: string;
+  @ApiProperty()
+  id: number;
+  @ApiProperty()
+  name: string;
 }
 
 class PlantingInHarvestResponseDto {
   @ApiProperty({ example: 1, description: 'ID do plantio' })
   id: number;
 
-  @ApiProperty({ example: 'Plantio de Tomate Cereja', description: 'Nome do plantio' })
+  @ApiProperty({
+    example: 'Plantio de Tomate Cereja',
+    description: 'Nome do plantio',
+  })
   name: string;
 }
 
@@ -31,13 +27,13 @@ export class InProgressHarvestDto {
 
   @ApiProperty({
     description: 'Data de início da safra',
-    example: '2025-11-19',
+    example: '2025-11-19T03:00:00.000Z',
   })
   harvestInitialDate: Date;
 
   @ApiProperty({
     description: 'Data final da safra',
-    example: '2028-11-23',
+    example: '2028-11-23T03:00:00.000Z',
     required: false,
   })
   harvestEndDate: Date | null;
@@ -51,24 +47,17 @@ export class HarvestResponseDto {
   name: string;
 
   @ApiProperty({
-    description: 'Ciclo da safra',
-    example: 'Verão',
-    required: false,
-  })
-  cycle?: string;
-
-  @ApiProperty({
     description: 'Data de início da safra',
-    example: '2025-09-22',
+    example: '2025-11-19T03:00:00.000Z',
   })
-  startDate: Date;
+  harvestInitialDate: Date;
 
   @ApiProperty({
     description: 'Data final da safra',
-    example: '2025-12-20',
+    example: '2028-11-23T03:00:00.000Z',
     required: false,
   })
-  endDate: Date | null;
+  harvestEndDate: Date | null;
 
   @ApiProperty({
     description: 'Status da safra',
@@ -80,10 +69,6 @@ export class HarvestResponseDto {
   @ApiProperty({ type: ProducerInHarvestResponseDto })
   producer: ProducerInHarvestResponseDto;
 
-  @ApiProperty({ type: [AreaInHarvestResponseDto] })
-  areas: AreaInHarvestResponseDto[];
-
   @ApiProperty({ type: [PlantingInHarvestResponseDto] })
   plantings: PlantingInHarvestResponseDto[];
-
 }

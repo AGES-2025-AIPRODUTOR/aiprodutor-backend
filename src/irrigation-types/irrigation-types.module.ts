@@ -6,10 +6,7 @@ import { PrismaModule } from '../shared/prisma/prisma.module';
 import { AreasModule } from '../areas/areas.module';
 
 @Module({
-  imports: [
-    PrismaModule,
-    forwardRef(() => AreasModule),
-  ],
+  imports: [PrismaModule, forwardRef(() => AreasModule)],
   controllers: [IrrigationTypesController],
   providers: [IrrigationTypesService, IrrigationTypesRepository],
   exports: [IrrigationTypesService],

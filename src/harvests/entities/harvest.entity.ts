@@ -1,18 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Planting, Area } from '@prisma/client';
+import { Planting } from '@prisma/client';
 import { Producer } from '../../producers/entities/producer.entity';
-
-class AreaInHarvestEntity implements Partial<Area> {
-  @ApiProperty({ description: 'ID da área' })
-  id: number;
-
-  @ApiProperty({ description: 'Nome da área' })
-  name: string;
-
-  constructor(partial: Partial<AreaInHarvestEntity>) {
-    Object.assign(this, partial);
-  }
-}
 
 class PlantingInHarvestEntity implements Partial<Planting> {
   @ApiProperty({ description: 'ID do plantio' })
@@ -35,13 +23,6 @@ export class HarvestEntity {
 
   @ApiProperty({ description: 'Nome da safra', example: 'Safra de Verão 2025' })
   name: string;
-
-  @ApiProperty({
-    description: 'Ciclo da safra',
-    example: 'Verão',
-    required: false,
-  })
-  cycle?: string | null;
 
   @ApiProperty({
     description: 'Data de início da safra',
@@ -69,9 +50,6 @@ export class HarvestEntity {
   @ApiProperty({ type: () => Producer })
   producer: Partial<Producer>;
 
-  @ApiProperty({ type: () => [AreaInHarvestEntity] })
-  areas: AreaInHarvestEntity[];
-
   @ApiProperty({ type: () => [PlantingInHarvestEntity] })
   plantings: PlantingInHarvestEntity[];
 
@@ -87,19 +65,17 @@ export class HarvestEntity {
   })
   updatedAt: Date;
 
-constructor(partial: Partial<HarvestEntity>) {
-  Object.assign(this, partial);
+  constructor(partial: Partial<HarvestEntity>) {
+    Object.assign(this, partial);
 
-  if (partial.producer) {
-    this.producer = new Producer(partial.producer);
-  }
+    if (partial.producer) {
+      this.producer = new Producer(partial.producer);
+    }
 
-  if (partial.areas) {
-    this.areas = partial.areas.map(a => new AreaInHarvestEntity(a));
+    if (partial.plantings) {
+      this.plantings = partial.plantings.map(
+        (p) => new PlantingInHarvestEntity(p),
+      );
+    }
   }
-
-  if (partial.plantings) {
-    this.plantings = partial.plantings.map(p => new PlantingInHarvestEntity(p));
-  }
-}
 }

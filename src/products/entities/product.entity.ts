@@ -11,6 +11,15 @@ export class Product implements PrismaProduct {
   })
   name: string;
 
+  @ApiProperty({
+    description:
+      'ID do produtor que cadastrou o produto. Nulo se for um produto global.',
+    example: 123,
+    nullable: true,
+    required: false,
+  })
+  producerId: number | null;
+
   @ApiProperty()
   createdAt: Date;
 

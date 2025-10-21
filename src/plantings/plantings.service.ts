@@ -1,20 +1,21 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PlantingsRepository } from './plantings.repository';
-import { PlantingRequestDto } from './dto/planting-request.dto';
+import { CreatePlantingDto } from './dto/create-planting.dto';
 import { UpdatePlantingDto } from './dto/update-planting.dto';
 import { PlantingResponseDto } from './dto/planting-response.dto';
 import { ProductsService } from '../products/products.service';
-import { VarietiesService } from '../varieties/varieties.service';
 import { AreasService } from '../areas/areas.service';
 import { HarvestsService } from '../harvests/harvests.service';
-
 
 @Injectable()
 export class PlantingsService {
   constructor(
     private readonly repository: PlantingsRepository,
     private readonly productsService: ProductsService,
-    private readonly varietiesService: VarietiesService,
     private readonly areasService: AreasService,
     private readonly harvestsService: HarvestsService,
   ) {}
@@ -25,11 +26,10 @@ export class PlantingsService {
       harvestId: plantingData.harvestId,
       name: plantingData.name,
       productId: plantingData.productId,
-      varietyId: plantingData.varietyId,
-      areas: plantingData.areas.map(area => ({
-          id: area.id,
-          name: area.name,
-          color: area.color
+      areas: plantingData.areas.map((area) => ({
+        id: area.id,
+        name: area.name,
+        color: area.color,
       })),
       plantingDate: plantingData.plantingDate,
       plantingEndDate: plantingData.plantingEndDate,
@@ -39,35 +39,40 @@ export class PlantingsService {
     };
   }
 
-  async create(plantingRequestDto: PlantingRequestDto): Promise<PlantingResponseDto> {
-    const { productId, varietyId, areaId, harvestId } = plantingRequestDto;
+  async create(
+    createPlantingDto: CreatePlantingDto,
+  ): Promise<PlantingResponseDto> {
+    const { productId, areaIds, harvestId } = createPlantingDto;
 
-    await Promise.all([
+    // 1. Valida se a safra e o produto existem e captura o objeto da safra.
+    const [harvest] = await Promise.all([
       this.productsService.findOne(productId),
-      this.varietiesService.findOne(varietyId),
-      this.areasService.findOne(areaId),
       this.harvestsService.findOne(harvestId),
     ]);
 
-    const harvest = await this.harvestsService.findOne(harvestId);
-    const harvestAreaIds = harvest.areas.map(area => area.id);
-
-    if (!harvestAreaIds.includes(areaId)) {
-        throw new BadRequestException(`A área #${areaId} não pertence à safra #${harvestId}.`);
+    // 2. Valida se todas as áreas informadas existem e pertencem ao mesmo produtor da safra.
+    for (const areaId of areaIds) {
+      const area = await this.areasService.findOne(areaId);
+      if (area.producerId !== harvest.producerId) {
+        throw new BadRequestException(
+          `A área #${areaId} não pertence ao mesmo produtor da safra #${harvestId}.`,
+        );
+      }
     }
 
-    const planting = await this.repository.create(plantingRequestDto);
-    return this.mapToResponseDto(planting);
+    const newPlanting = await this.repository.create(createPlantingDto);
+    return this.mapToResponseDto(newPlanting);
   }
 
-  async update(id: number, dto: UpdatePlantingDto): Promise<PlantingResponseDto> {
+  async update(
+    id: number,
+    dto: UpdatePlantingDto,
+  ): Promise<PlantingResponseDto> {
     await this.findOne(id); // Valida se o plantio existe
 
-    // Se um novo harvestId for informado, valida se ele existe
     if (dto.harvestId) {
       await this.harvestsService.findOne(dto.harvestId);
     }
-    
 
     const updatedPlanting = await this.repository.update(id, dto);
     return this.mapToResponseDto(updatedPlanting);
@@ -92,9 +97,17 @@ export class PlantingsService {
     const plantings = await this.repository.findAll();
     return plantings.map((planting) => this.mapToResponseDto(planting));
   }
-  
+
   async findByProducerId(producerId: number): Promise<PlantingResponseDto[]> {
     const plantings = await this.repository.findByProducerId(producerId);
     return plantings.map((planting) => this.mapToResponseDto(planting));
+  }
+
+  async remove(id: number): Promise<void> {
+    const planting = await this.repository.findById(id);
+    if (!planting) {
+      throw new NotFoundException(`Plantio com o ID ${id} não encontrado.`);
+    }
+    await this.repository.remove(id);
   }
 }

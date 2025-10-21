@@ -123,7 +123,7 @@ describe('ProducersService', () => {
 
   it('should return a producer by id', async () => {
     mockRepository.findById.mockResolvedValue(mockProducer);
-    const result = await service.findOne(1); // pass number instead of string
+    const result = await service.findOne(1);
     expect(result).toEqual(mockProducer);
     expect(mockRepository.findById).toHaveBeenCalledWith(1);
   });

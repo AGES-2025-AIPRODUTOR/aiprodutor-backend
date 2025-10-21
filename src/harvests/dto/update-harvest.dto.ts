@@ -1,62 +1,32 @@
 import { Type } from 'class-transformer';
-import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsDate, IsInt, IsOptional, IsString } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsDate, IsOptional, IsString, IsEnum } from 'class-validator';
+import { HarvestStatus } from '@prisma/client';
 
 export class UpdateHarvestDto {
-  @ApiProperty({
-    description: 'Nome da safra',
-    example: 'Safra de Verão 2025',
-    required: false,
-  })
+  @ApiPropertyOptional({ description: 'Nome da safra' })
   @IsString()
   @IsOptional()
   name?: string;
 
-  @ApiProperty({
-    description: 'Ciclo da safra',
-    example: 'Verão',
-    required: false,
-  })
-  @IsString()
-  @IsOptional()
-  cycle?: string;
-
-  @ApiProperty({
-    description: 'Data de início da safra',
-    example: '2025-09-22',
-    required: false,
-  })
+  @ApiPropertyOptional({ description: 'Data de início da safra' })
   @Type(() => Date)
   @IsDate()
   @IsOptional()
   startDate?: Date;
 
-  @ApiProperty({
-    description: 'Data final da safra',
-    example: '2025-12-20',
-    required: false,
-  })
+  @ApiPropertyOptional({ description: 'Data final da safra' })
   @Type(() => Date)
   @IsDate()
   @IsOptional()
   endDate?: Date;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Status da safra',
-    example: 'Ativa',
-    required: false,
+    example: 'concluida',
+    enum: HarvestStatus,
   })
-  @IsString()
+  @IsEnum(HarvestStatus)
   @IsOptional()
-  status?: string;
-  
-  @ApiProperty({
-    description: 'Array com os novos IDs de áreas para associar à safra. Substituirá a lista antiga.',
-    example: [3, 4],
-    required: false,
-  })
-  @IsArray()
-  @IsInt({ each: true })
-  @IsOptional()
-  areaIds?: number[];
+  status?: HarvestStatus;
 }

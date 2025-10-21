@@ -1,9 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsArray, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsNumber } from 'class-validator';
 
 export class CreateProductDto {
   @ApiProperty({
-    example: 'Tomate',
+    example: 'Tomate Santa Cruz',
     description: 'Nome do produto agrícola',
   })
   @IsString()
@@ -11,13 +11,10 @@ export class CreateProductDto {
   name: string;
 
   @ApiPropertyOptional({
-    example: ['Italiano', 'Cereja', 'Débora'],
-    description:
-      'Uma lista com os nomes das variedades iniciais para este produto (opcional)',
-    type: [String],
+    example: 1,
+    description: 'ID do produtor proprietário do produto (opcional)',
   })
-  @IsArray()
-  @IsString({ each: true }) // Valida que cada item do array é uma string
+  @IsNumber()
   @IsOptional()
-  varieties?: string[];
+  producerId?: number;
 }

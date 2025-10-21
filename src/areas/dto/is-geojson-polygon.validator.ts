@@ -1,10 +1,5 @@
-import {
-  registerDecorator,
-  ValidationOptions,
-  ValidationArguments,
-} from 'class-validator';
-import geojsonValidation from 'geojson-validation';
-
+import { registerDecorator, ValidationOptions } from 'class-validator';
+import * as geojsonValidation from 'geojson-validation';
 function isValidCoordinate(coord: any): boolean {
   if (!Array.isArray(coord) || coord.length < 2) {
     return false;
@@ -49,7 +44,7 @@ export function IsGeoJSONPolygon(validationOptions?: ValidationOptions) {
       propertyName: propertyName,
       options: validationOptions,
       validator: {
-        validate(value: any, _args: ValidationArguments) {
+        validate(value: any) {
           // Verificações básicas
           if (!value || typeof value !== 'object') {
             return false;
@@ -79,12 +74,12 @@ export function IsGeoJSONPolygon(validationOptions?: ValidationOptions) {
           // mas com proteção contra erros
           try {
             return geojsonValidation.isPolygon(value);
-          } catch (error) {
+          } catch {
             // Se a biblioteca quebrar, retornar false
             return false;
           }
         },
-        defaultMessage(_args: ValidationArguments) {
+        defaultMessage() {
           return 'O campo deve ser um GeoJSON Polygon válido.';
         },
       },

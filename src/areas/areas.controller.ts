@@ -31,7 +31,11 @@ export class AreasController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Cria uma nova área de plantio' })
   @ApiBody({ type: AreaRequestDto })
-  @ApiResponse({ status: 201, description: 'Área criada com sucesso.', type: AreaResponseDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Área criada com sucesso.',
+    type: AreaResponseDto,
+  })
   @ApiResponse({
     status: 404,
     description: 'Recurso relacionado (produtor, etc.) não encontrado.',
@@ -57,7 +61,11 @@ export class AreasController {
   @Get(':id')
   @ApiOperation({ summary: 'Busca uma área específica pelo seu ID' })
   @ApiParam({ name: 'id', type: Number, description: 'ID da área' })
-  @ApiResponse({ status: 200, description: 'Área encontrada com sucesso.', type: AreaResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Área encontrada com sucesso.',
+    type: AreaResponseDto,
+  })
   @ApiResponse({ status: 404, description: 'Área não encontrada.' })
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.areasService.findOne(id);
@@ -67,7 +75,11 @@ export class AreasController {
   @ApiOperation({ summary: 'Edita uma área de plantio' })
   @ApiParam({ name: 'id', type: Number, description: 'ID da área' })
   @ApiBody({ type: UpdateAreaDto })
-  @ApiResponse({ status: 200, description: 'Área atualizada com sucesso.', type: AreaResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Área atualizada com sucesso.',
+    type: AreaResponseDto,
+  })
   @ApiResponse({ status: 404, description: 'Área não encontrada.' })
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -102,5 +114,4 @@ export class AreasController {
   findAll() {
     return this.areasService.findAll();
   }
-  
 }
