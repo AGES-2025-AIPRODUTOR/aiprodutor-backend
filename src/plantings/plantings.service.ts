@@ -45,7 +45,7 @@ export class PlantingsService {
     const { productId, areaIds, harvestId } = createPlantingDto;
 
     // 1. Validate product and harvest exist and capture both results.
-    const [product, harvest] = await Promise.all([
+    const [, harvest] = await Promise.all([
       this.productsService.findOne(productId),
       this.harvestsService.findOne(harvestId),
     ]);
