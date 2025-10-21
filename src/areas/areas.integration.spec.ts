@@ -1,8 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe, NotFoundException } from '@nestjs/common';
-import request from 'supertest';
-import { AreasModule } from './areas.module';
+import {
+  INestApplication,
+  ValidationPipe,
+  NotFoundException,
+} from '@nestjs/common';
+import * as request from 'supertest';
+import { AreasController } from './areas.controller';
 import { AreasService } from './areas.service';
 import { AreasRepository } from './areas.repository';
 import { ProducersService } from '../producers/producers.service';
@@ -12,18 +16,15 @@ import { PrismaService } from '../shared/prisma/prisma.service';
 
 // Mock do geojson-validation para testes de integração
 jest.mock('geojson-validation', () => ({
+  default: {
+    isPolygon: jest.fn(),
+  },
   isPolygon: jest.fn(),
 }));
 
-import geojsonValidation from 'geojson-validation';
-
+import * as geojsonValidation from 'geojson-validation';
 describe('AreasController (e2e)', () => {
   let app: INestApplication;
-  let areasService: AreasService;
-  let areasRepository: AreasRepository;
-  let producersService: ProducersService;
-  let soilTypesService: SoilTypesService;
-  let irrigationTypesService: IrrigationTypesService;
 
   const mockAreasRepository = {
     create: jest.fn(),
@@ -57,6 +58,8 @@ describe('AreasController (e2e)', () => {
     producerId: 1,
     soilTypeId: 1,
     irrigationTypeId: 1,
+    color: '#34A853',
+    areaM2: 15700.5,
     polygon: {
       type: 'Polygon',
       coordinates: [
@@ -94,6 +97,8 @@ describe('AreasController (e2e)', () => {
     producerId: 1,
     soilTypeId: 1,
     irrigationTypeId: 1,
+    color: '#34A853',
+    areaM2: 15700.5,
     isActive: true,
     createdAt: '2023-01-01',
     updatedAt: '2023-01-01',
@@ -105,31 +110,35 @@ describe('AreasController (e2e)', () => {
     (geojsonValidation.isPolygon as jest.Mock).mockReturnValue(true);
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AreasModule],
-    })
-      .overrideProvider(AreasRepository)
-      .useValue(mockAreasRepository)
-      .overrideProvider(ProducersService)
-      .useValue(mockProducersService)
-      .overrideProvider(SoilTypesService)
-      .useValue(mockSoilTypesService)
-      .overrideProvider(IrrigationTypesService)
-      .useValue(mockIrrigationTypesService)
-      .overrideProvider(PrismaService)
-      .useValue(mockPrismaService)
-      .compile();
+      controllers: [AreasController],
+      providers: [
+        AreasService,
+        {
+          provide: AreasRepository,
+          useValue: mockAreasRepository,
+        },
+        {
+          provide: ProducersService,
+          useValue: mockProducersService,
+        },
+        {
+          provide: SoilTypesService,
+          useValue: mockSoilTypesService,
+        },
+        {
+          provide: IrrigationTypesService,
+          useValue: mockIrrigationTypesService,
+        },
+        {
+          provide: PrismaService,
+          useValue: mockPrismaService,
+        },
+      ],
+    }).compile();
 
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(
       new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
-    );
-
-    areasService = moduleFixture.get<AreasService>(AreasService);
-    areasRepository = moduleFixture.get<AreasRepository>(AreasRepository);
-    producersService = moduleFixture.get<ProducersService>(ProducersService);
-    soilTypesService = moduleFixture.get<SoilTypesService>(SoilTypesService);
-    irrigationTypesService = moduleFixture.get<IrrigationTypesService>(
-      IrrigationTypesService,
     );
 
     await app.init();
@@ -137,23 +146,28 @@ describe('AreasController (e2e)', () => {
 
   afterEach(async () => {
     jest.clearAllMocks();
-    await app.close();
+    if (app) {
+      await app.close();
+    }
   });
 
   describe('POST /areas', () => {
     it('should create a new area successfully', async () => {
       mockProducersService.findOne.mockResolvedValue(mockProducer);
       mockSoilTypesService.findById.mockResolvedValue(mockSoilType);
-      mockIrrigationTypesService.findById.mockResolvedValue(
-        mockIrrigationType,
-      );
+      mockIrrigationTypesService.findById.mockResolvedValue(mockIrrigationType);
       mockAreasRepository.create.mockResolvedValue(mockArea);
 
       const response = await request(app.getHttpServer())
         .post('/areas')
-        .send(mockValidAreaRequestDto)
-        .expect(201);
+        .send(mockValidAreaRequestDto);
 
+      if (response.status !== 201) {
+        console.log('Response status:', response.status);
+        console.log('Response body:', response.body);
+      }
+
+      expect(response.status).toBe(201);
       expect(response.body).toEqual(mockArea);
       expect(mockProducersService.findOne).toHaveBeenCalledWith(1);
       expect(mockSoilTypesService.findById).toHaveBeenCalledWith(1);
@@ -165,7 +179,7 @@ describe('AreasController (e2e)', () => {
 
     it('should return 404 when producer is not found', async () => {
       mockProducersService.findOne.mockRejectedValue(
-        new NotFoundException('Produtor não encontrado')
+        new NotFoundException('Produtor não encontrado'),
       );
 
       const response = await request(app.getHttpServer())
@@ -183,7 +197,7 @@ describe('AreasController (e2e)', () => {
     it('should return 404 when soil type is not found', async () => {
       mockProducersService.findOne.mockResolvedValue(mockProducer);
       mockSoilTypesService.findById.mockRejectedValue(
-        new NotFoundException('Tipo de solo não encontrado')
+        new NotFoundException('Tipo de solo não encontrado'),
       );
 
       const response = await request(app.getHttpServer())
@@ -202,7 +216,7 @@ describe('AreasController (e2e)', () => {
       mockProducersService.findOne.mockResolvedValue(mockProducer);
       mockSoilTypesService.findById.mockResolvedValue(mockSoilType);
       mockIrrigationTypesService.findById.mockRejectedValue(
-        new NotFoundException('Tipo de irrigação não encontrado')
+        new NotFoundException('Tipo de irrigação não encontrado'),
       );
 
       const response = await request(app.getHttpServer())
@@ -324,7 +338,9 @@ describe('AreasController (e2e)', () => {
         .send(updateDto)
         .expect(404);
 
-      expect(response.body.message).toBe(`Área com o ID ${areaId} não encontrada.`);
+      expect(response.body.message).toBe(
+        `Área com o ID ${areaId} não encontrada.`,
+      );
       expect(mockAreasRepository.findById).toHaveBeenCalledWith(areaId);
       expect(mockAreasRepository.updateStatus).not.toHaveBeenCalled();
     });
@@ -416,7 +432,10 @@ describe('AreasController (e2e)', () => {
 
       expect(response.body).toEqual(updatedArea);
       expect(mockAreasRepository.findById).toHaveBeenCalledWith(areaId);
-      expect(mockAreasRepository.update).toHaveBeenCalledWith(areaId, updateDto);
+      expect(mockAreasRepository.update).toHaveBeenCalledWith(
+        areaId,
+        updateDto,
+      );
     });
 
     it('should return 404 when area is not found', async () => {
@@ -458,7 +477,10 @@ describe('AreasController (e2e)', () => {
 
       expect(response.body).toEqual(updatedArea);
       expect(mockAreasRepository.findById).toHaveBeenCalledWith(areaId);
-      expect(mockAreasRepository.update).toHaveBeenCalledWith(areaId, updateDto);
+      expect(mockAreasRepository.update).toHaveBeenCalledWith(
+        areaId,
+        updateDto,
+      );
     });
 
     it('should update area with only isActive field', async () => {
@@ -482,7 +504,10 @@ describe('AreasController (e2e)', () => {
 
       expect(response.body).toEqual(updatedArea);
       expect(mockAreasRepository.findById).toHaveBeenCalledWith(areaId);
-      expect(mockAreasRepository.update).toHaveBeenCalledWith(areaId, updateDto);
+      expect(mockAreasRepository.update).toHaveBeenCalledWith(
+        areaId,
+        updateDto,
+      );
     });
 
     it('should return 400 when name is not a string', async () => {
@@ -511,7 +536,9 @@ describe('AreasController (e2e)', () => {
         .send(invalidDto)
         .expect(400);
 
-      expect(response.body.message).toContain('soilTypeId must be a number conforming to the specified constraints');
+      expect(response.body.message).toContain(
+        'soilTypeId must be a number conforming to the specified constraints',
+      );
       expect(mockAreasRepository.findById).not.toHaveBeenCalled();
     });
 
@@ -526,7 +553,9 @@ describe('AreasController (e2e)', () => {
         .send(invalidDto)
         .expect(400);
 
-      expect(response.body.message).toContain('irrigationTypeId must be a number conforming to the specified constraints');
+      expect(response.body.message).toContain(
+        'irrigationTypeId must be a number conforming to the specified constraints',
+      );
       expect(mockAreasRepository.findById).not.toHaveBeenCalled();
     });
 
@@ -541,7 +570,9 @@ describe('AreasController (e2e)', () => {
         .send(invalidDto)
         .expect(400);
 
-      expect(response.body.message).toContain('isActive must be a boolean value');
+      expect(response.body.message).toContain(
+        'isActive must be a boolean value',
+      );
       expect(mockAreasRepository.findById).not.toHaveBeenCalled();
     });
 
@@ -605,7 +636,10 @@ describe('AreasController (e2e)', () => {
 
       expect(response.body).toEqual(updatedArea);
       expect(mockAreasRepository.findById).toHaveBeenCalledWith(areaId);
-      expect(mockAreasRepository.update).toHaveBeenCalledWith(areaId, updateDto);
+      expect(mockAreasRepository.update).toHaveBeenCalledWith(
+        areaId,
+        updateDto,
+      );
     });
   });
 });

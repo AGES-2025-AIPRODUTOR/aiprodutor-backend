@@ -36,10 +36,10 @@ export class HarvestHistoryResponseDto {
 
   @ApiProperty({ example: '2025-08-10' })
   safraEndDate: Date | null;
-  
-  @ApiProperty({ 
-    description: "Lista de áreas principais associadas à safra",
-    type: [AreaHistoryDto] 
+
+  @ApiProperty({
+    description: 'Lista de áreas principais associadas à safra',
+    type: [AreaHistoryDto],
   })
   areas: AreaHistoryDto[];
 

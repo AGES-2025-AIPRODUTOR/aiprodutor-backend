@@ -5,8 +5,7 @@ import { HarvestsRepository } from './harvests.repository';
 import { PrismaModule } from '../shared/prisma/prisma.module';
 import { AreasModule } from '../areas/areas.module';
 import { ProducersModule } from '../producers/producers.module';
-import { VarietiesModule } from 'src/varieties/varieties.module';
-import { ProductsModule } from 'src/products/products.module';
+import { ProductsModule } from '../products/products.module';
 
 @Module({
   imports: [
@@ -14,7 +13,6 @@ import { ProductsModule } from 'src/products/products.module';
     AreasModule,
     forwardRef(() => ProducersModule),
     ProductsModule,
-    VarietiesModule,
   ],
   controllers: [HarvestsController],
   providers: [HarvestsService, HarvestsRepository],

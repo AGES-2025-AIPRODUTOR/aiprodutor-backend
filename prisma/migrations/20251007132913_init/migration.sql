@@ -1,4 +1,8 @@
+-- Adiciona a extensão PostGIS se ela não existir
 CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA public;
+
+CREATE TYPE "public"."HarvestStatus" AS ENUM ('in_progress', 'completed', 'cancelled');
+
 -- CreateTable
 CREATE TABLE "public"."producers" (
     "id" SERIAL NOT NULL,
@@ -22,7 +26,7 @@ CREATE TABLE "public"."areas" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "polygon" geometry NOT NULL,
-    "areaM2" Decimal NOT NULL,
+    "areaM2" DECIMAL(65,30) NOT NULL,
     "color" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -38,13 +42,14 @@ CREATE TABLE "public"."areas" (
 CREATE TABLE "public"."harvests" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
-    "cycle" TEXT,
     "startDate" TIMESTAMP(3) NOT NULL,
     "endDate" TIMESTAMP(3),
-    "status" TEXT,
+    -- CORREÇÃO: A coluna 'status' agora usa o novo tipo Enum e tem um valor padrão.
+    "status" "public"."HarvestStatus" DEFAULT 'in_progress',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "producerId" INTEGER NOT NULL,
+    "expected_yield" DOUBLE PRECISION,
 
     CONSTRAINT "harvests_pkey" PRIMARY KEY ("id")
 );
@@ -62,7 +67,7 @@ CREATE TABLE "public"."plantings" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "harvestId" INTEGER NOT NULL,
     "productId" INTEGER NOT NULL,
-    "varietyId" INTEGER NOT NULL,
+    "expected_yield" DOUBLE PRECISION,
 
     CONSTRAINT "plantings_pkey" PRIMARY KEY ("id")
 );
@@ -91,19 +96,9 @@ CREATE TABLE "public"."products" (
     "name" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "producerId" INTEGER,
 
     CONSTRAINT "products_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "public"."varieties" (
-    "id" SERIAL NOT NULL,
-    "name" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-    "productId" INTEGER NOT NULL,
-
-    CONSTRAINT "varieties_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -112,14 +107,6 @@ CREATE TABLE "public"."_AreaToPlanting" (
     "B" INTEGER NOT NULL,
 
     CONSTRAINT "_AreaToPlanting_AB_pkey" PRIMARY KEY ("A","B")
-);
-
--- CreateTable
-CREATE TABLE "public"."_AreaToHarvest" (
-    "A" INTEGER NOT NULL,
-    "B" INTEGER NOT NULL,
-
-    CONSTRAINT "_AreaToHarvest_AB_pkey" PRIMARY KEY ("A","B")
 );
 
 -- CreateIndex
@@ -138,13 +125,7 @@ CREATE UNIQUE INDEX "soil_types_name_key" ON "public"."soil_types"("name");
 CREATE UNIQUE INDEX "irrigation_types_name_key" ON "public"."irrigation_types"("name");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "products_name_key" ON "public"."products"("name");
-
--- CreateIndex
 CREATE INDEX "_AreaToPlanting_B_index" ON "public"."_AreaToPlanting"("B");
-
--- CreateIndex
-CREATE INDEX "_AreaToHarvest_B_index" ON "public"."_AreaToHarvest"("B");
 
 -- AddForeignKey
 ALTER TABLE "public"."areas" ADD CONSTRAINT "areas_irrigationTypeId_fkey" FOREIGN KEY ("irrigationTypeId") REFERENCES "public"."irrigation_types"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -165,19 +146,10 @@ ALTER TABLE "public"."plantings" ADD CONSTRAINT "plantings_harvestId_fkey" FOREI
 ALTER TABLE "public"."plantings" ADD CONSTRAINT "plantings_productId_fkey" FOREIGN KEY ("productId") REFERENCES "public"."products"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."plantings" ADD CONSTRAINT "plantings_varietyId_fkey" FOREIGN KEY ("varietyId") REFERENCES "public"."varieties"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "public"."varieties" ADD CONSTRAINT "varieties_productId_fkey" FOREIGN KEY ("productId") REFERENCES "public"."products"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."products" ADD CONSTRAINT "products_producerId_fkey" FOREIGN KEY ("producerId") REFERENCES "public"."producers"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."_AreaToPlanting" ADD CONSTRAINT "_AreaToPlanting_A_fkey" FOREIGN KEY ("A") REFERENCES "public"."areas"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."_AreaToPlanting" ADD CONSTRAINT "_AreaToPlanting_B_fkey" FOREIGN KEY ("B") REFERENCES "public"."plantings"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "public"."_AreaToHarvest" ADD CONSTRAINT "_AreaToHarvest_A_fkey" FOREIGN KEY ("A") REFERENCES "public"."areas"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "public"."_AreaToHarvest" ADD CONSTRAINT "_AreaToHarvest_B_fkey" FOREIGN KEY ("B") REFERENCES "public"."harvests"("id") ON DELETE CASCADE ON UPDATE CASCADE;

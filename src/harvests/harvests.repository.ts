@@ -2,54 +2,50 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../shared/prisma/prisma.service';
 import { CreateHarvestDto } from './dto/create-harvest.dto';
 import { UpdateHarvestDto } from './dto/update-harvest.dto';
-import { Prisma } from '@prisma/client';
 import { GetHarvestHistoryQueryDto } from './dto/get-harvest-history-query.dto';
+import { Prisma, HarvestStatus } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
+
 
 @Injectable()
 export class HarvestsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * Cria uma nova safra, associando-a a um produtor e a uma lista de áreas.
+   * Cria uma nova safra e, opcionalmente, seus plantios aninhados.
    */
   create(createHarvestDto: CreateHarvestDto) {
-    const { areaIds, producerId, plantings, ...harvestData } = createHarvestDto;
+    const { producerId, plantings, ...harvestData } = createHarvestDto;
 
     return this.prisma.harvest.create({
       data: {
         ...harvestData,
         producer: { connect: { id: producerId } },
-        areas: { connect: areaIds.map((id) => ({ id })) },
-        
         plantings: {
-          create: plantings?.map(p => ({
+          create: plantings?.map((p) => ({
             name: p.name,
             plantingDate: p.plantingDate,
             expectedHarvestDate: p.expectedHarvestDate,
             quantityPlanted: p.quantityPlanted,
-            
             product: { connect: { id: p.productId } },
-            variety: { connect: { id: p.varietyId } },
             areas: { connect: p.areaIds.map((id) => ({ id })) },
           })),
         },
       },
       include: {
         producer: true,
-        areas: true,
-        plantings: { include: { areas: true } },
+        plantings: { include: { areas: true, product: true } },
       },
     });
   }
 
   /**
-   * Busca todas as safras, incluindo suas relações.
+   * Busca todas as safras.
    */
   findAll() {
     return this.prisma.harvest.findMany({
       include: {
         producer: true,
-        areas: true,
         plantings: true,
       },
       orderBy: {
@@ -66,64 +62,45 @@ export class HarvestsRepository {
       where: { id },
       include: {
         producer: true,
-        areas: true,
         plantings: {
           include: {
-            areas: true, // Inclui as áreas de cada plantio
+            areas: true,
             product: true,
-            variety: true,
           },
         },
       },
     });
   }
-  
+
+  /**
+   * Busca uma safra pelo nome.
+   */
+  findByName(name: string) {
+    return this.prisma.harvest.findUnique({
+      where: { name },
+    });
+  }
+
   /**
    * Busca todas as safras de um produtor específico.
    */
   findByProducerId(producerId: number) {
     return this.prisma.harvest.findMany({
-        where: { producerId },
-        include: {
-            areas: true,
-            plantings: true,
-        },
-        orderBy: {
-            startDate: 'desc',
-        },
-    });
-  }
-
-  /**
-   * Atualiza os dados de uma safra, incluindo a lista de áreas associadas.
-   */
-  update(id: number, updateHarvestDto: UpdateHarvestDto) {
-    const { areaIds, ...harvestData } = updateHarvestDto;
-
-    return this.prisma.harvest.update({
-      where: { id },
-      data: {
-        ...harvestData,
-        ...(areaIds && { areas: { set: areaIds.map((id) => ({ id })) } }),
-      },
+      where: { producerId },
       include: {
         producer: true,
-        areas: true,
         plantings: true,
+      },
+      orderBy: {
+        startDate: 'desc',
       },
     });
   }
 
   /**
-   * Remove uma safra do banco de dados.
+   * Busca o histórico de safras de um produtor com base em filtros.
    */
-  remove(id: number) {
-    return this.prisma.harvest.delete({
-      where: { id },
-    });
-  }
-
-  async findHistoryByProducer(
+  findHistoryByProducer(
     producerId: number,
     filters: GetHarvestHistoryQueryDto,
   ) {
@@ -132,7 +109,7 @@ export class HarvestsRepository {
     };
 
     if (filters.status) {
-      where.status = { equals: filters.status, mode: 'insensitive' };
+      where.status = filters.status;
     }
     if (filters.safraName) {
       where.name = { contains: filters.safraName, mode: 'insensitive' };
@@ -147,7 +124,6 @@ export class HarvestsRepository {
     return this.prisma.harvest.findMany({
       where,
       include: {
-        areas: true,
         plantings: {
           include: {
             areas: true,
@@ -159,42 +135,85 @@ export class HarvestsRepository {
       },
     });
   }
-    findByName(name: string) {
-    return this.prisma.harvest.findUnique({
-      where: { name },
+
+  /**
+   * Busca safras em andamento de um produtor.
+   */
+  async findInProgressByProducer(producerId: number) {
+    return this.prisma.harvest.findMany({
+      where: {
+        producerId,
+        status: HarvestStatus.in_progress,
+      },
+      include: {
+        producer: true,
+        plantings: true,
+      },
+      orderBy: {
+        startDate: 'desc',
+      },
     });
   }
 
-  async getTotalAreaForHarvest(harvestId: number): Promise<number> {
-    const result = await this.prisma.$queryRaw<{ total_area: number }[]>`
-      SELECT SUM(ST_Area(a.polygon::geography)) as total_area
-      FROM "public"."areas" AS a
-      INNER JOIN "public"."_AreaToHarvest" AS ah ON a.id = ah."A"
-      WHERE ah."B" = ${harvestId};
-    `;
-
-    return result[0]?.total_area || 0;
-  }
-
-  findOneByProducer(harvestId: number, producerId: number) {
-    return this.prisma.harvest.findFirst({
-      where: {
-        id: harvestId,
-        producerId: producerId,
-      },
+  /**
+   * Atualiza os dados de uma safra.
+   */
+  update(id: number, updateHarvestDto: UpdateHarvestDto) {
+    return this.prisma.harvest.update({
+      where: { id },
+      data: updateHarvestDto,
       include: {
-        areas: true,
+        producer: true,
         plantings: true,
       },
     });
   }
 
-  async findInProgressByProducer(producerId: number) {
-    return this.prisma.harvest.findMany({
-      where: {
-        producerId,
-        status: 'Ativa', // Considerando "Ativa" como em andamento
+  /**
+   * Remove uma safra do banco de dados.
+   */
+  remove(id: number) {
+    return this.prisma.harvest.delete({
+      where: { id },
+    });
+  }
+
+  /**
+   * Calcula a área total (em m²) de uma safra somando as áreas únicas
+   * de todos os seus plantios associados.
+   */
+  async getTotalAreaForHarvest(harvestId: number): Promise<number> {
+    // 1. Busca a safra e inclui os plantios e as áreas de cada plantio.
+    const harvest = await this.prisma.harvest.findUnique({
+      where: { id: harvestId },
+      include: {
+        plantings: {
+          include: {
+            areas: true,
+          },
+        },
       },
     });
+
+    if (!harvest || !harvest.plantings) {
+      return 0;
+    }
+
+    // 2. Extrai e achata a lista de todas as áreas de todos os plantios.
+    const allAreas = harvest.plantings.flatMap((planting) => planting.areas);
+
+    // 3. Remove áreas duplicadas, garantindo que cada área seja contada apenas uma vez.
+    const uniqueAreas = Array.from(
+      new Map(allAreas.map((area) => [area.id, area])).values(),
+    );
+
+    // 4. Soma a área (em m²) de cada área única.
+    const totalAreaDecimal = uniqueAreas.reduce(
+      (sum, area) => sum.plus(area.areaM2),
+      new Decimal(0),
+    );
+
+    // 5. Converte o resultado de Decimal para number.
+    return totalAreaDecimal.toNumber();
   }
 }

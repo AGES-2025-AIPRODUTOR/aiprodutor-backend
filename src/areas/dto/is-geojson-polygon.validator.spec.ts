@@ -1,11 +1,14 @@
 import { validateSync } from 'class-validator';
 import { IsGeoJSONPolygon } from './is-geojson-polygon.validator';
-import geojsonValidation from 'geojson-validation';
 
 jest.mock('geojson-validation', () => ({
+  default: {
+    isPolygon: jest.fn(),
+  },
   isPolygon: jest.fn(),
 }));
 
+import * as geojsonValidation from 'geojson-validation';
 class TestDto {
   @IsGeoJSONPolygon({
     message: 'O campo polygon deve ser um GeoJSON Polygon válido.',

@@ -49,28 +49,25 @@ export class ProducersRepository {
   }
 
   async findPlantingHistory(producerId: number): Promise<any[]> {
-      // query segura contra SQL Injection
-      return this.prisma.$queryRaw(Prisma.sql`
-        SELECT
-          a.name AS "areaName",
-          a."isActive" AS "areaStatus",
-          -- Calcula a área em metros quadrados e converte para hectares (1 ha = 10.000 m²)
-          ST_Area(a.polygon::geography) / 10000 AS "areaM2",
-          p.name AS "plantingName",
-          p."plantingDate",
-          p."quantityPlanted",
-          p."quantityHarvested",
-          v.name AS "varietyName",
-          h.name AS "safraName",
-          h."endDate" AS "harvestDate"
-        FROM "public"."plantings" AS p
-        -- JOIN obrigatório para filtrar pelo produtor
-        INNER JOIN "public"."areas" AS a ON p."areaId" = a.id
-        -- LEFT JOIN para dados que podem não existir (ex: um plantio sem safra ainda)
-        LEFT JOIN "public"."varieties" AS v ON p."varietyId" = v.id
-        LEFT JOIN "public"."harvests" AS h ON p."harvestId" = h.id
-        WHERE a."producerId" = ${producerId}
-        ORDER BY p."plantingDate" DESC;
-      `);
-    }
+    return this.prisma.$queryRaw(Prisma.sql`
+      SELECT
+        a.name AS "areaName",
+        a."isActive" AS "areaStatus",
+        ST_Area(a.polygon::geography) AS "areaM2",
+        p.name AS "plantingName",
+        p."plantingDate",
+        p."quantityPlanted",
+        p."quantityHarvested",
+        prod.name AS "productName",
+        h.name AS "safraName",
+        h."endDate" AS "harvestDate"
+      FROM "public"."plantings" AS p
+      INNER JOIN "public"."_AreaToPlanting" AS ap ON p.id = ap."B"
+      INNER JOIN "public"."areas" AS a ON ap."A" = a.id
+      LEFT JOIN "public"."products" AS prod ON p."productId" = prod.id
+      LEFT JOIN "public"."harvests" AS h ON p."harvestId" = h.id
+      WHERE a."producerId" = ${producerId}
+      ORDER BY p."plantingDate" DESC;
+    `);
+  }
 }

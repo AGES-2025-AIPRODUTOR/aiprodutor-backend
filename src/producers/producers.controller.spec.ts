@@ -3,10 +3,11 @@ import { ProducersController } from './producers.controller';
 import { ProducersService } from './producers.service';
 import { CreateProducerDto } from './dto/create-producer.dto';
 import { ConflictException } from '@nestjs/common';
+import { PlantingsService } from '../plantings/plantings.service';
+import { HarvestsService } from '../harvests/harvests.service';
 
 describe('ProducersController', () => {
   let controller: ProducersController;
-  let service: ProducersService;
 
   const mockProducer = {
     id: 1,
@@ -27,14 +28,25 @@ describe('ProducersController', () => {
     findOne: jest.fn(),
   };
 
+  const mockPlantingsService = {
+    // Adicione aqui os métodos do PlantingsService que são usados no controller
+  };
+
+  const mockHarvestsService = {
+    // Adicione aqui os métodos do HarvestsService que são usados no controller
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ProducersController],
-      providers: [{ provide: ProducersService, useValue: mockService }],
+      providers: [
+        { provide: ProducersService, useValue: mockService },
+        { provide: PlantingsService, useValue: mockPlantingsService },
+        { provide: HarvestsService, useValue: mockHarvestsService },
+      ],
     }).compile();
 
     controller = module.get<ProducersController>(ProducersController);
-    service = module.get<ProducersService>(ProducersService);
   });
 
   afterEach(() => {
@@ -60,7 +72,7 @@ describe('ProducersController', () => {
     };
     const result = await controller.create(dto);
     expect(result).toEqual(mockProducer);
-    expect(service.create).toHaveBeenCalledWith(dto);
+    expect(mockService.create).toHaveBeenCalledWith(dto);
   });
 
   it('should throw ConflictException when service throws', async () => {
@@ -83,14 +95,14 @@ describe('ProducersController', () => {
     mockService.findAllOrByDocument.mockResolvedValue([mockProducer]);
     const result = await controller.findAllOrByDocument();
     expect(result).toEqual([mockProducer]);
-    expect(service.findAllOrByDocument).toHaveBeenCalled();
+    expect(mockService.findAllOrByDocument).toHaveBeenCalled();
   });
 
   it('should return a producer by id', async () => {
     mockService.findOne.mockResolvedValue(mockProducer);
     const result = await controller.findOne(1);
     expect(result).toEqual(mockProducer);
-    expect(service.findOne).toHaveBeenCalledWith(1);
+    expect(mockService.findOne).toHaveBeenCalledWith(1);
   });
 
   it('should return a producer by document', async () => {
@@ -100,6 +112,6 @@ describe('ProducersController', () => {
     };
     const result = await controller.findAllOrByDocument(dto);
     expect(result).toEqual(mockProducer);
-    expect(service.findAllOrByDocument).toHaveBeenCalledWith(dto.document); // <-- fix here
+    expect(mockService.findAllOrByDocument).toHaveBeenCalledWith(dto.document);
   });
 });

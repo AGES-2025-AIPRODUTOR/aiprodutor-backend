@@ -4,7 +4,7 @@ import { IrrigationTypes } from './entities/irrigation-types.entity';
 
 @Injectable()
 export class IrrigationTypesRepository {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async create(data: {
     name: string;
@@ -21,7 +21,10 @@ export class IrrigationTypesRepository {
     return this.prisma.irrigationType.findMany();
   }
 
-  async update(id: number, data: { name?: string; description?: string }): Promise<IrrigationTypes> {
+  async update(
+    id: number,
+    data: { name?: string; description?: string },
+  ): Promise<IrrigationTypes> {
     return this.prisma.irrigationType.update({
       where: { id },
       data,

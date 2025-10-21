@@ -13,6 +13,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Product } from './entities/product.entity';
+import { ProductSimpleResponseDto } from './dto/product-simple-response.dto';
 
 @ApiTags('Products')
 @Controller('products')
@@ -43,6 +44,19 @@ export class ProductsController {
   })
   findAll() {
     return this.productsService.findAll();
+  }
+
+  @Get('producer/:producerId')
+  @ApiOperation({
+    summary: 'Lista produtos de um produtor (globais e customizados)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de produtos (id e nome) retornada com sucesso.',
+    type: [ProductSimpleResponseDto],
+  })
+  findByProducer(@Param('producerId', ParseIntPipe) producerId: number) {
+    return this.productsService.findByProducer(producerId);
   }
 
   @Get(':id')
@@ -80,7 +94,10 @@ export class ProductsController {
     type: Product,
   })
   @ApiResponse({ status: 404, description: 'Produto não encontrado.' })
-  @ApiResponse({ status: 409, description: 'Conflito: o produto está em uso e não pode ser removido.' })
+  @ApiResponse({
+    status: 409,
+    description: 'Conflito: o produto está em uso e não pode ser removido.',
+  })
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.productsService.remove(id);
   }

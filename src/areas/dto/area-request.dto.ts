@@ -1,6 +1,12 @@
 // src/areas/dto/area-request.dto.ts
 
-import { IsInt, IsNotEmpty, IsNumber, IsPositive, IsString } from 'class-validator';
+import {
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsPositive,
+  IsString,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsGeoJSONPolygon } from './is-geojson-polygon.validator';
 

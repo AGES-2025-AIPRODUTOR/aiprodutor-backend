@@ -4,7 +4,7 @@ import { SoilTypes } from './entities/soil-types.entity';
 
 @Injectable()
 export class SoilTypesRepository {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async create(data: {
     name: string;
@@ -21,7 +21,10 @@ export class SoilTypesRepository {
     return this.prisma.soilType.findMany();
   }
 
-  async update(id: number, data: { name?: string; description?: string }): Promise<SoilTypes> {
+  async update(
+    id: number,
+    data: { name?: string; description?: string },
+  ): Promise<SoilTypes> {
     return this.prisma.soilType.update({
       where: { id },
       data,
