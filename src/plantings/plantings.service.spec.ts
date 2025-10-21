@@ -4,7 +4,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PlantingsService } from './plantings.service';
 import { PlantingsRepository } from './plantings.repository';
 import { ProductsService } from '../products/products.service';
-import { VarietiesService } from '../varieties/varieties.service';
 import { AreasService } from '../areas/areas.service';
 import { HarvestsService } from '../harvests/harvests.service';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
@@ -24,7 +23,6 @@ describe('PlantingsService', () => {
   };
 
   const mockProductsService = { findOne: jest.fn() };
-  const mockVarietiesService = { findOne: jest.fn() };
   const mockAreasService = { findOne: jest.fn() };
   const mockHarvestsService = { findOne: jest.fn() };
 
@@ -48,8 +46,7 @@ describe('PlantingsService', () => {
       providers: [
         PlantingsService,
         { provide: PlantingsRepository, useValue: mockRepository },
-        { provide: ProductsService, useValue: mockProductsService },
-        { provide: VarietiesService, useValue: mockVarietiesService },
+  { provide: ProductsService, useValue: mockProductsService },
         { provide: AreasService, useValue: mockAreasService },
         { provide: HarvestsService, useValue: mockHarvestsService },
       ],
@@ -66,11 +63,10 @@ describe('PlantingsService', () => {
 
   describe('create', () => {
     it('creates when related resources exist and area belongs to harvest', async () => {
-      const dto = { productId: 1, varietyId: 1, areaId: 2, harvestId: 1 } as any;
-      mockProductsService.findOne.mockResolvedValue({ id: 1 });
-      mockVarietiesService.findOne.mockResolvedValue({ id: 1 });
-      mockAreasService.findOne.mockResolvedValue({ id: 2 });
-      mockHarvestsService.findOne.mockResolvedValue({ id: 1, areas: [{ id: 2 }] });
+  const dto = { productId: 1, areaIds: [2], harvestId: 1 } as any;
+        mockProductsService.findOne.mockResolvedValue({ id: 1, producerId: 1 });
+  mockAreasService.findOne.mockResolvedValue({ id: 2, producerId: 1 });
+  mockHarvestsService.findOne.mockResolvedValue({ id: 1, producerId: 1, areas: [{ id: 2 }] });
       mockRepository.create.mockResolvedValue(samplePlanting);
 
       const result = await service.create(dto);
@@ -79,11 +75,10 @@ describe('PlantingsService', () => {
     });
 
     it('throws BadRequest if area not in harvest', async () => {
-      const dto = { productId: 1, varietyId: 1, areaId: 3, harvestId: 1 } as any;
-      mockProductsService.findOne.mockResolvedValue({ id: 1 });
-      mockVarietiesService.findOne.mockResolvedValue({ id: 1 });
-      mockAreasService.findOne.mockResolvedValue({ id: 3 });
-      mockHarvestsService.findOne.mockResolvedValue({ id: 1, areas: [{ id: 2 }] });
+  const dto = { productId: 1, areaIds: [3], harvestId: 1 } as any;
+        mockProductsService.findOne.mockResolvedValue({ id: 1, producerId: 1 });
+  mockAreasService.findOne.mockResolvedValue({ id: 3, producerId: 999 });
+  mockHarvestsService.findOne.mockResolvedValue({ id: 1, producerId: 1, areas: [{ id: 2 }] });
 
       await expect(service.create(dto)).rejects.toThrow(BadRequestException);
       expect(mockRepository.create).not.toHaveBeenCalled();
@@ -136,6 +131,22 @@ describe('PlantingsService', () => {
       mockRepository.findByProducerId.mockResolvedValue([samplePlanting]);
       const result = await service.findByProducerId(5);
       expect(result.length).toBe(1);
+    });
+  });
+
+  describe('remove', () => {
+    it('removes existing planting', async () => {
+      mockRepository.findById.mockResolvedValue(samplePlanting);
+      mockRepository.remove.mockResolvedValue({});
+
+      await expect(service.remove(1)).resolves.toBeUndefined();
+      expect(mockRepository.remove).toHaveBeenCalledWith(1);
+    });
+
+    it('throws NotFoundException when removing non-existing planting', async () => {
+      mockRepository.findById.mockResolvedValue(null);
+      await expect(service.remove(999)).rejects.toThrow(NotFoundException);
+      expect(mockRepository.remove).not.toHaveBeenCalled();
     });
   });
 });

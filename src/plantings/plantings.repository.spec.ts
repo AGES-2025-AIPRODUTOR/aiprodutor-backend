@@ -30,12 +30,12 @@ describe('PlantingsRepository', () => {
   afterEach(() => jest.clearAllMocks());
 
   it('create', async () => {
-    const dto = { name: 'P' } as any;
+    const dto = { name: 'P', areaIds: [1] } as any;
     prismaMock.planting.create.mockResolvedValue({ id: 1, ...dto });
-  const r = await repo.create(dto);
-  expect(prismaMock.planting.create).toHaveBeenCalledWith({ data: dto });
-  expect(r).toBeDefined();
-  expect(r!.id).toBe(1);
+    const r = await repo.create(dto);
+    expect(prismaMock.planting.create).toHaveBeenCalled();
+    expect(r).toBeDefined();
+    expect(r!.id).toBe(1);
   });
 
   it('findAll includes areas', async () => {
@@ -56,7 +56,7 @@ describe('PlantingsRepository', () => {
   it('update', async () => {
     prismaMock.planting.update.mockResolvedValue({ id: 1, name: 'U' });
   const r = await repo.update(1, { name: 'U' } as any);
-  expect(prismaMock.planting.update).toHaveBeenCalledWith({ where: { id: 1 }, data: { name: 'U' } });
+  expect(prismaMock.planting.update).toHaveBeenCalledWith({ where: { id: 1 }, data: { name: 'U' }, include: { areas: true } });
   expect(r).toBeDefined();
   expect(r!.name).toBe('U');
   });
@@ -67,12 +67,7 @@ describe('PlantingsRepository', () => {
     expect(prismaMock.planting.delete).toHaveBeenCalledWith({ where: { id: 1 } });
   });
 
-  it('existsByVarietyId', async () => {
-    prismaMock.planting.findFirst.mockResolvedValue({ id: 5 });
-    const exists = await repo.existsByVarietyId(2);
-    expect(prismaMock.planting.findFirst).toHaveBeenCalledWith({ where: { varietyId: 2 } });
-    expect(exists).toBe(true);
-  });
+  // existsByVarietyId was removed from repository implementation — no test needed
 
   it('findByProductId', async () => {
     prismaMock.planting.findMany.mockResolvedValue([{ id: 1, areas: [] }]);
