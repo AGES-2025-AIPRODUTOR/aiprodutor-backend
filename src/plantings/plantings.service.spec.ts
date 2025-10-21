@@ -1,4 +1,4 @@
-jest.mock('src/areas/areas.repository', () => ({ AreasRepository: jest.fn() }));
+jest.mock('../areas/areas.repository', () => ({ AreasRepository: jest.fn() }));
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { PlantingsService } from './plantings.service';
