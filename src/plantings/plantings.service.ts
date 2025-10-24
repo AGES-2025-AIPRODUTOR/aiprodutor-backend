@@ -44,8 +44,8 @@ export class PlantingsService {
   ): Promise<PlantingResponseDto> {
     const { productId, areaIds, harvestId } = createPlantingDto;
 
-    // 1. Valida se a safra e o produto existem e captura o objeto da safra.
-    const [harvest] = await Promise.all([
+    // 1. Validate product and harvest exist and capture both results.
+    const [, harvest] = await Promise.all([
       this.productsService.findOne(productId),
       this.harvestsService.findOne(harvestId),
     ]);
