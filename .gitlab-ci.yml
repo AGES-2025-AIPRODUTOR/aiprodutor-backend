@@ -27,7 +27,7 @@ run_tests:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "developer"'
 
-# ---- NOVO JOB: Roda o Lint em paralelo com os testes ----
+# ----  Roda o Lint em paralelo com os testes ----
 run_lint:
   stage: test
   image: node:20-alpine
@@ -58,7 +58,7 @@ migrate_database:
   rules:
   - if: '$CI_COMMIT_BRANCH == "main"'
 
-# ---- Workflow 1: Roda em merges para a 'main' (Opcional) ----
+# ---- Workflow 1: Roda em merges para a 'main' ----
 seed_database:
   stage: seed
   image: node:20-alpine
@@ -98,7 +98,7 @@ build_and_push_to_ecr:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
 
-# ---- JOB MODIFICADO: Deploy direto na Lambda (sem Canary) ----
+# ---- Deploy direto na Lambda (sem Canary) ----
 deploy_to_lambda:
   stage: deploy_lambda
   image:
@@ -129,8 +129,11 @@ sync_to_github:
     - git config --global user.name "GitLab Pipeline"
     - git remote remove github || true
     - git remote add github "https://AGES-2025-AIPRODUTOR:${GITHUB_TOKEN}@github.com/AGES-2025-AIPRODUTOR/aiprodutor-backend.git"
-    - echo "Enviando de '${CI_COMMIT_REF_NAME}' para a branch 'developer' no GitHub..."
-    - git push github HEAD:developer --force
+    
+    - echo "Enviando de '${CI_COMMIT_REF_NAME}' para a branch '${CI_COMMIT_REF_NAME}' no GitHub..."
+    - git push github HEAD:${CI_COMMIT_REF_NAME} -o ci.skip --force
+    # ------------------
+
     - echo "SINCRONIZAÇÃO COM GITHUB CONCLUÍDA!"
   rules:
     - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "developer"'
