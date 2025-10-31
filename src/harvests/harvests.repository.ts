@@ -216,4 +216,27 @@ export class HarvestsRepository {
     // 5. Converte o resultado de Decimal para number.
     return totalAreaDecimal.toNumber();
   }
+
+  /**
+   * Busca safras ativas (em andamento) com data de término dentro dos próximos 6 meses.
+   */
+  async findActiveHarvestsForMonthlyProduction() {
+    const today = new Date();
+    const sixMonthsFromNow = new Date();
+    sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
+
+    return this.prisma.harvest.findMany({
+      where: {
+        status: HarvestStatus.in_progress,
+        endDate: {
+          gte: today,
+          lte: sixMonthsFromNow,
+        },
+      },
+      select: {
+        endDate: true,
+        expectedYield: true,
+      },
+    });
+  }
 }
