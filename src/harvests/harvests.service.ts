@@ -209,4 +209,57 @@ export class HarvestsService {
     const harvests = await this.repository.findInProgressByProducer(producerId);
     return harvests.map((harvest) => new HarvestEntity(harvest));
   }
+
+  /**
+   * Retorna a produção estimada mensal para os próximos 6 meses.
+   * Considera apenas safras ativas (em andamento) e agrupa por mês de término.
+   */
+  async getMonthlyEstimatedProduction() {
+    const harvests = await this.repository.findActiveHarvestsForMonthlyProduction();
+
+    // Array com os nomes dos meses em português (abreviados)
+    const monthNames = [
+      'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
+      'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'
+    ];
+
+    // Cria um mapa para acumular a produção por mês/ano
+    const productionMap = new Map<string, number>();
+
+    // Gera os próximos 6 meses a partir do mês atual
+    const today = new Date();
+    const monthsToShow: Array<{ mes: string; ano: number; key: string }> = [];
+
+    for (let i = 0; i < 6; i++) {
+      const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+      const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+      monthsToShow.push({
+        mes: monthNames[date.getMonth()],
+        ano: date.getFullYear(),
+        key: monthKey,
+      });
+      // Inicializa com 0
+      productionMap.set(monthKey, 0);
+    }
+
+    // Soma a produção estimada de cada safra no mês correspondente
+    for (const harvest of harvests) {
+      if (harvest.endDate && harvest.expectedYield) {
+        const endDate = new Date(harvest.endDate);
+        const monthKey = `${endDate.getFullYear()}-${endDate.getMonth()}`;
+
+        if (productionMap.has(monthKey)) {
+          const currentValue = productionMap.get(monthKey) || 0;
+          productionMap.set(monthKey, currentValue + harvest.expectedYield);
+        }
+      }
+    }
+
+    // Monta o resultado final
+    return monthsToShow.map((month) => ({
+      mes: month.mes,
+      ano: month.ano,
+      producaoEstimadaKg: productionMap.get(month.key) || 0,
+    }));
+  }
 }
