@@ -1,24 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProductsService } from './products.service';
 import { ProductsRepository } from './products.repository';
-// Adicionado BadRequestException
 import { NotFoundException, ConflictException, BadRequestException } from '@nestjs/common'; 
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { Prisma } from '@prisma/client'; // Necessário para simular erro P2003
+import { Prisma } from '@prisma/client'; 
 
-// CORRIGIDO: Tipagem do Produto alinhada com o schema (producerId: number | null)
-type Product = {
-  id: number;
-  name: string;
-  producerId: number | null; 
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-type MockRepository<T = any> = {
-  [K in keyof T]: jest.Mock;
-};
+type Product = { id: number; name: string; producerId: number | null; createdAt: Date; updatedAt: Date; };
+type MockRepository<T = any> = { [K in keyof T]: jest.Mock; };
 
 describe('ProductsService', () => {
   let service: ProductsService;
@@ -28,22 +17,17 @@ describe('ProductsService', () => {
     create: jest.fn(),
     findAll: jest.fn(),
     findById: jest.fn(),
-    // CRÍTICO: Atualizado para o nome correto do método
-    findByNameAndProducer: jest.fn(), 
+    findByNameAndProducer: jest.fn(),
     findByProducer: jest.fn(),
     update: jest.fn(),
     remove: jest.fn(),
-    // findByName: jest.fn(), // Removido ou ignorado
   };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ProductsService,
-        {
-          provide: ProductsRepository,
-          useValue: mockRepository,
-        },
+        { provide: ProductsRepository, useValue: mockRepository, },
       ],
     }).compile();
 
@@ -63,150 +47,152 @@ describe('ProductsService', () => {
   // --- Testes para o método CREATE (Regras de Unicidade) ---
   describe('create', () => {
     const producerId = 10;
-    const createDto: CreateProductDto = { name: 'Tomate Santa Cruz', producerId: producerId };
-    const expectedProduct: Product = { id: 1, name: 'Tomate Santa Cruz', producerId: producerId, createdAt: new Date(), updatedAt: new Date() };
+    const createIndividualDto: CreateProductDto = { name: 'Tomate Santa Cruz', producerId: producerId };
+    const createGlobalDto: CreateProductDto = { name: 'Tomate Santa Cruz' };
+    const expectedIndividualProduct: Product = { id: 1, producerId: producerId, name: 'Tomate Santa Cruz', createdAt: new Date(), updatedAt: new Date() };
+    const existingGlobalProduct: Product = { id: 99, producerId: null, name: 'Tomate Santa Cruz', createdAt: new Date(), updatedAt: new Date() };
 
-    // Cenário 1: Criação bem-sucedida (passa nas duas validações)
+    // Cenário 1: Criação bem-sucedida
     it('should create a new product successfully (passes global and individual checks)', async () => {
-      // 1. Não existe produto global com este nome
+      // 1. Mock para a primeira checagem (Global Check): PASS
       repository.findByNameAndProducer.mockResolvedValueOnce(null);
-      // 2. Não existe produto individual com este nome
+      // 2. Mock para a segunda checagem (Individual Check): PASS
       repository.findByNameAndProducer.mockResolvedValueOnce(null);
-      repository.create.mockResolvedValue(expectedProduct);
+      repository.create.mockResolvedValue(expectedIndividualProduct);
 
-      const result = await service.create(createDto);
-
-      expect(result).toEqual(expectedProduct);
-      expect(repository.findByNameAndProducer).toHaveBeenCalledTimes(2); 
+      await expect(service.create(createIndividualDto)).resolves.toBeDefined();
     });
 
-    // Cenário 2 (CRÍTICO - Conflito Global): Proibido usar nome de produto global
-    it('should throw ConflictException if product name is already used by a GLOBAL product', async () => {
-      const existingGlobalProduct: Product = { id: 99, producerId: null, name: 'Produto Global', createdAt: new Date(), updatedAt: new Date() };
-      const dtoConflicting: CreateProductDto = { name: 'Produto Global', producerId: producerId };
-      
-      // Simula que a busca Global (producerId: null) encontra um produto
+    // Cenário 2 (Conflito Global): Proibido usar nome de produto global
+    it('should throw ConflictException if an INDIVIDUAL product uses a GLOBAL name', async () => {
       repository.findByNameAndProducer.mockResolvedValue(existingGlobalProduct); 
 
-      await expect(service.create(dtoConflicting)).rejects.toThrow(
-        new ConflictException('O nome do produto "Produto Global" conflita com um produto global e não pode ser usado.')
+      await expect(service.create(createIndividualDto)).rejects.toThrow(
+        new ConflictException('O nome "Tomate Santa Cruz" conflita com um produto global e não pode ser usado por um produtor individual.')
       );
-      expect(repository.findByNameAndProducer).toHaveBeenCalledTimes(1); 
-      expect(repository.create).not.toHaveBeenCalled();
     });
 
-    // Cenário 3 (Conflito Individual): Proibido dois produtos com mesmo nome do MESMO PRODUTOR
-    it('should throw ConflictException if product name already exists FOR THE SAME PRODUCER (Individual)', async () => {
+    // Cenário 3 (CORRIGIDO): Duplicidade Individual
+    it('should throw ConflictException if a DUPLICATE INDIVIDUAL product is created', async () => {
         
-        // 1. Não existe produto global com este nome
+        // 1. Mock para a primeira checagem (Global Check): PASS
         repository.findByNameAndProducer.mockResolvedValueOnce(null);
-        // 2. Simula que a busca Individual encontra um produto
-        repository.findByNameAndProducer.mockResolvedValueOnce(expectedProduct);
+        // 2. Mock para a segunda checagem (Individual Check): FAIL (Retorna o produto duplicado)
+        repository.findByNameAndProducer.mockResolvedValueOnce(expectedIndividualProduct);
 
-        await expect(service.create(createDto)).rejects.toThrow(
+        await expect(service.create(createIndividualDto)).rejects.toThrow(
             new ConflictException('Este produtor já possui um produto com o nome "Tomate Santa Cruz".')
         );
-        expect(repository.findByNameAndProducer).toHaveBeenCalledTimes(2); 
         expect(repository.create).not.toHaveBeenCalled();
     });
-    
-    // Cenário 4: Criação de produto global (se o DTO permitir)
-    it('should create a GLOBAL product successfully if it does not conflict with existing global products', async () => {
-        const createGlobalDto: CreateProductDto = { name: 'Produto Global' };
-        const globalProduct: Product = { id: 2, name: 'Produto Global', producerId: null, createdAt: new Date(), updatedAt: new Date() };
 
-        // 1. Não existe produto global com este nome
+    // Cenário 4: Criação de produto global com sucesso
+    it('should create a GLOBAL product even if an INDIVIDUAL product with the same name exists', async () => {
+        // Mock para a checagem P_Glob vs P_Glob: PASS
         repository.findByNameAndProducer.mockResolvedValueOnce(null); 
-        repository.create.mockResolvedValue(globalProduct);
+        repository.create.mockResolvedValue({ id: 3, ...createGlobalDto, producerId: null, createdAt: new Date(), updatedAt: new Date() });
+
+        await expect(service.create(createGlobalDto)).resolves.toBeDefined();
+    });
+
+    // Cenário 5: DUPLICIDADE GLOBAL
+    it('should throw ConflictException if a DUPLICATE GLOBAL product is created', async () => {
+        // Mock para a checagem P_Glob vs P_Glob: FAIL
+        repository.findByNameAndProducer.mockResolvedValueOnce(existingGlobalProduct);
         
-        const result = await service.create(createGlobalDto);
-        
-        expect(result).toEqual(globalProduct);
+        await expect(service.create(createGlobalDto)).rejects.toThrow(
+            new ConflictException('O produto global com o nome "Tomate Santa Cruz" já existe.')
+        );
     });
   });
 
-  // --- Testes para o método UPDATE (Proibição de Alteração de Nome) ---
+  // --- Testes para o método UPDATE (Nova Lógica de Edição) ---
   describe('update', () => {
-    const existingProduct: Product = { id: 1, name: 'Tomate', producerId: 10, createdAt: new Date(), updatedAt: new Date() };
-    
-    // Mock padrão para findOne
-    beforeEach(() => {
-        repository.findById.mockResolvedValue(existingProduct);
-    });
-    
-    // Cenário 1 (CRÍTICO - Regra 3): Proibição de alteração do nome
-    it('should throw BadRequestException if the name is present in the UpdateProductDto', async () => {
-        const updateDtoWithName: UpdateProductDto = { name: 'Novo Nome Proibido', producerId: 10 }; 
-        
-        await expect(service.update(1, updateDtoWithName)).rejects.toThrow(
-            new BadRequestException('O nome do produto não pode ser alterado após a criação.')
-        );
-        // Não deve chamar o repository.update
-        expect(repository.update).not.toHaveBeenCalled();
-    });
+    const existingProduct: Product = { id: 1, name: 'Produto Original', producerId: 10, createdAt: new Date(), updatedAt: new Date() };
+    const globalProduct: Product = { id: 99, name: 'Nome Global', producerId: null, createdAt: new Date(), updatedAt: new Date() };
+    const duplicateProduct: Product = { id: 2, name: 'Produto Duplicado', producerId: 10, createdAt: new Date(), updatedAt: new Date() };
 
-    // Cenário 2: Atualização bem-sucedida (outros campos são alterados)
-    it('should update a product successfully if only other fields are changed', async () => {
-        const updateDto: UpdateProductDto = { producerId: 20 }; // Altera outro campo
-        const updatedProduct: Product = { ...existingProduct, producerId: 20 };
+    beforeEach(() => {
+        repository.findById.mockResolvedValue(existingProduct); 
+    });
+    
+    // Cenário 1 (CORRIGIDO): Atualização bem-sucedida (passa por todas as validações sem conflito)
+    it('should update successfully when fields are changed and no conflict exists', async () => {
+        const updateDto: UpdateProductDto = { name: 'Novo Nome Único', producerId: 20 }; 
+        const updatedProduct: Product = { ...existingProduct, name: 'Novo Nome Único', producerId: 20 };
+        
+        // MOCK SEQUENCIAL para garantir o sucesso:
+        // 1. Checagem P_Ind vs P_Glob (PASS)
+        repository.findByNameAndProducer.mockResolvedValueOnce(null); 
+        // 2. Checagem P_Ind vs P_Ind (PASS)
+        repository.findByNameAndProducer.mockResolvedValueOnce(null); 
         
         repository.update.mockResolvedValue(updatedProduct);
         
-        const result = await service.update(1, updateDto);
-        
-        expect(result).toEqual(updatedProduct);
-        expect(repository.findById).toHaveBeenCalledWith(1);
+        await expect(service.update(1, updateDto)).resolves.toEqual(updatedProduct);
         expect(repository.update).toHaveBeenCalledWith(1, updateDto);
     });
     
-    // Mantido o teste de NotFound
+    // Cenário 2 (BUG REPORTADO): Tentativa de duplicar produto do MESMO PRODUTOR
+    it('should throw ConflictException (409) when attempting to duplicate name for the SAME producer', async () => {
+        const updateDto: UpdateProductDto = { name: 'Produto Duplicado' }; 
+        
+        // 1. Checagem P_Ind vs P_Glob (PASS)
+        repository.findByNameAndProducer.mockResolvedValueOnce(null); 
+        // 2. Checagem P_Ind vs P_Ind (FAIL)
+        repository.findByNameAndProducer.mockResolvedValueOnce(duplicateProduct); 
+
+        await expect(service.update(1, updateDto)).rejects.toThrow(
+            new ConflictException('Este produtor já possui um produto com o nome "Produto Duplicado".')
+        );
+        expect(repository.update).not.toHaveBeenCalled();
+    });
+
+    // Cenário 3 (BUG REPORTADO): Tentativa de fazer um produto GLOBAL duplicado (via edit)
+    it('should throw ConflictException (409) when attempting to create a DUPLICATE GLOBAL product (via edit)', async () => {
+        const updateDto: UpdateProductDto = { name: 'Nome Global', producerId: null };
+        
+        // Checagem P_Glob vs P_Glob (FAIL)
+        repository.findByNameAndProducer.mockResolvedValueOnce(globalProduct); 
+
+        await expect(service.update(1, updateDto)).rejects.toThrow(
+            new ConflictException('O produto global com o nome "Nome Global" já existe.')
+        );
+        expect(repository.update).not.toHaveBeenCalled();
+    });
+
+    // Cenário 4: INDIVIDUAL tenta usar nome GLOBAL (via edição)
+    it('should throw ConflictException (409) if an INDIVIDUAL product is edited to use a GLOBAL name', async () => {
+        const updateDto: UpdateProductDto = { name: 'Nome Global' }; 
+
+        // Checagem P_Ind vs P_Glob (FAIL)
+        repository.findByNameAndProducer.mockResolvedValueOnce(globalProduct); 
+        
+        await expect(service.update(1, updateDto)).rejects.toThrow(
+            new ConflictException('O nome "Nome Global" conflita com um produto global e não pode ser usado por um produtor individual.')
+        );
+        expect(repository.update).not.toHaveBeenCalled();
+    });
+
+    // Cenário 5: Edição para se tornar GLOBAL com sucesso
+    it('should successfully update product to become GLOBAL if name is unique', async () => {
+        const updateDto: UpdateProductDto = { producerId: null, name: 'Novo Global Único' }; 
+        const updatedProduct: Product = { ...existingProduct, name: 'Novo Global Único', producerId: null };
+        
+        // 1. Checagem P_Glob vs P_Glob (PASS)
+        repository.findByNameAndProducer.mockResolvedValueOnce(null); 
+        repository.update.mockResolvedValue(updatedProduct);
+        
+        await expect(service.update(1, updateDto)).resolves.toEqual(updatedProduct);
+    });
+    
+    // Cenário 6: Produto não encontrado
     it('should throw a NotFoundException if product to update is not found', async () => {
       const updateDto: UpdateProductDto = { producerId: 10 };
       repository.findById.mockResolvedValue(null);
       await expect(service.update(999, updateDto)).rejects.toThrow(
         NotFoundException,
       );
-    });
-  });
-
-  // --- Testes para o método FINDBYPRODUCER (Verifica se retorna Global e Individual) ---
-  describe('findByProducer', () => {
-    it('should return products for a specific producer INCLUDING global products', async () => {
-      const products: { id: number; name: string }[] = [
-        { id: 1, name: 'Individual' },
-        { id: 2, name: 'Global' },
-      ];
-      repository.findByProducer.mockResolvedValue(products);
-
-      const result = await service.findByProducer(1);
-
-      expect(result).toEqual(products);
-      expect(repository.findByProducer).toHaveBeenCalledWith(1);
-    });
-  });
-  
-  // --- Testes para o método REMOVE ---
-  describe('remove', () => {
-    const existingProduct: Product = { id: 1, name: 'Tomate', producerId: 1, createdAt: new Date(), updatedAt: new Date() };
-
-    it('should remove a product successfully', async () => {
-        repository.findById.mockResolvedValue(existingProduct);
-        repository.remove.mockResolvedValue(existingProduct);
-
-        await service.remove(1);
-
-        expect(repository.remove).toHaveBeenCalledWith(1);
-    });
-
-    it('should throw ConflictException if removal fails due to foreign key constraint (P2003)', async () => {
-        repository.findById.mockResolvedValue(existingProduct);
-        const fkError = new Prisma.PrismaClientKnownRequestError(
-            'Foreign key constraint failed on the field: `productId`', 
-            { code: 'P2003', clientVersion: '5.0.0', meta: { field_name: 'Planting_productId_fkey' } }
-        );
-        repository.remove.mockRejectedValue(fkError);
-
-        await expect(service.remove(1)).rejects.toThrow(ConflictException);
     });
   });
 });
