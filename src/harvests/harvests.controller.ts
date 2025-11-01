@@ -18,6 +18,7 @@ import { HarvestPanelResponseDto } from './dto/harvest-panel.dto';
 import { HarvestEntity } from './entities/harvest.entity';
 import { GetHarvestHistoryQueryDto } from './dto/get-harvest-history-query.dto';
 import { HarvestHistoryResponseDto } from './dto/harvest-history-response.dto';
+import { ProductionByCropResponseDto } from './dto/production-by-crop-response.dto';
 
 @ApiTags('Harvests')
 @Controller('harvests')
@@ -152,5 +153,19 @@ export class HarvestsController {
     @Param('producerId', ParseIntPipe) producerId: number,
   ): Promise<HarvestEntity[]> {
     return this.harvestsService.findInProgressByProducer(producerId);
+  }
+
+  @Get('charts/production-by-crop')
+  @ApiOperation({
+    summary: 'Retorna a produção estimada agregada por cultura (top 4)',
+    description: 'Considera apenas safras ativas (em andamento) e retorna as 4 culturas com maior produção estimada.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Produção por cultura retornada com sucesso.',
+    type: [ProductionByCropResponseDto],
+  })
+  getProductionByCrop(): Promise<ProductionByCropResponseDto[]> {
+    return this.harvestsService.getProductionByCrop();
   }
 }
