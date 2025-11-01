@@ -216,4 +216,22 @@ export class HarvestsRepository {
     // 5. Converte o resultado de Decimal para number.
     return totalAreaDecimal.toNumber();
   }
+
+  /**
+   * Busca safras ativas com seus plantios e produtos para agregação por cultura.
+   */
+  async findActiveHarvestsWithPlantings() {
+    return this.prisma.harvest.findMany({
+      where: {
+        status: HarvestStatus.in_progress,
+      },
+      include: {
+        plantings: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
+  }
 }
