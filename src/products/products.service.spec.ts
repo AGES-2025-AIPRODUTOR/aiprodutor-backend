@@ -133,7 +133,7 @@ describe('ProductsService', () => {
         expect(repository.update).toHaveBeenCalledWith(1, updateDto);
     });
     
-    // Cenário 2 (BUG REPORTADO): Tentativa de duplicar produto do MESMO PRODUTOR
+    // Cenário 2 (BUG REPORTADO E CORRIGIDO): Tentativa de duplicar produto do MESMO PRODUTOR
     it('should throw ConflictException (409) when attempting to duplicate name for the SAME producer', async () => {
         const updateDto: UpdateProductDto = { name: 'Produto Duplicado' }; 
         
@@ -193,6 +193,92 @@ describe('ProductsService', () => {
       await expect(service.update(999, updateDto)).rejects.toThrow(
         NotFoundException,
       );
+    });
+  });
+
+  // --- Testes Mantidos ---
+  describe('findAll', () => {
+    it('should return an array of products', async () => {
+      const products: Product[] = [
+        {
+          id: 1,
+          name: 'Tomate',
+          producerId: 1,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+      repository.findAll.mockResolvedValue(products);
+
+      const result = await service.findAll();
+
+      expect(result).toEqual(products);
+      expect(repository.findAll).toHaveBeenCalled();
+    });
+  });
+
+  describe('findByProducer', () => {
+    it('should return products for a specific producer (including global products)', async () => {
+      const products: { id: number; name: string }[] = [
+        { id: 1, name: 'Tomate Santa Cruz' }, // Individual
+        { id: 2, name: 'Alface Americana' }, // Global
+      ];
+      repository.findByProducer.mockResolvedValue(products);
+
+      const result = await service.findByProducer(1);
+
+      expect(result).toEqual(products);
+      expect(repository.findByProducer).toHaveBeenCalledWith(1);
+    });
+  });
+
+  describe('findOne', () => {
+    const product: Product = {
+      id: 1,
+      name: 'Tomate',
+      producerId: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    it('should return a single product by ID', async () => {
+      repository.findById.mockResolvedValue(product);
+      const result = await service.findOne(1);
+      expect(result).toEqual(product);
+    });
+    it('should throw a NotFoundException if product is not found', async () => {
+      repository.findById.mockResolvedValue(null);
+      await expect(service.findOne(999)).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('remove', () => {
+    const existingProduct: Product = {
+      id: 1,
+      name: 'Tomate',
+      producerId: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    it('should remove a product successfully', async () => {
+      repository.findById.mockResolvedValue(existingProduct);
+      repository.remove.mockResolvedValue(existingProduct);
+      await service.remove(1);
+      expect(repository.remove).toHaveBeenCalledWith(1);
+    });
+    
+    it('should throw a NotFoundException if product to remove is not found', async () => {
+        repository.findById.mockResolvedValue(null);
+        await expect(service.remove(999)).rejects.toThrow(NotFoundException);
+    });
+    
+    it('should throw ConflictException if removal fails due to foreign key constraint (P2003)', async () => {
+        repository.findById.mockResolvedValue(existingProduct);
+        const fkError = new Prisma.PrismaClientKnownRequestError(
+            'Foreign key constraint failed', 
+            { code: 'P2003', clientVersion: '5.0.0', meta: { field_name: 'Planting_productId_fkey' } }
+        );
+        repository.remove.mockRejectedValue(fkError);
+        await expect(service.remove(1)).rejects.toThrow(ConflictException);
     });
   });
 });
