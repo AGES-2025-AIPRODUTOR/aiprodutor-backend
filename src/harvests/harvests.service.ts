@@ -212,10 +212,13 @@ export class HarvestsService {
 
   /**
    * Retorna a produção estimada agregada por cultura (top 4 culturas).
-   * Considera apenas safras ativas (em andamento).
+   * Considera apenas safras ativas (em andamento) de um produtor específico.
    */
-  async getProductionByCrop() {
-    const harvests = await this.repository.findActiveHarvestsWithPlantings();
+  async getProductionByCrop(producerId: number) {
+    // Valida se o produtor existe
+    await this.producersService.findOne(producerId);
+    
+    const harvests = await this.repository.findActiveHarvestsWithPlantings(producerId);
 
     // Mapa para acumular produção por cultura
     const productionMap = new Map<string, number>();

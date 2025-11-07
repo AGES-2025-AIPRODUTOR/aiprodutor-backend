@@ -220,11 +220,17 @@ export class HarvestsRepository {
   /**
    * Busca safras ativas com seus plantios e produtos para agregação por cultura.
    */
-  async findActiveHarvestsWithPlantings() {
+  async findActiveHarvestsWithPlantings(producerId?: number) {
+    const where: any = {
+      status: HarvestStatus.in_progress,
+    };
+
+    if (producerId) {
+      where.producerId = producerId;
+    }
+
     return this.prisma.harvest.findMany({
-      where: {
-        status: HarvestStatus.in_progress,
-      },
+      where,
       include: {
         plantings: {
           include: {

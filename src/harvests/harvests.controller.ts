@@ -155,17 +155,21 @@ export class HarvestsController {
     return this.harvestsService.findInProgressByProducer(producerId);
   }
 
-  @Get('charts/production-by-crop')
+  @Get('charts/production-by-crop/:producerId')
   @ApiOperation({
-    summary: 'Retorna a produção estimada agregada por cultura (top 4)',
-    description: 'Considera apenas safras ativas (em andamento) e retorna as 4 culturas com maior produção estimada.',
+    summary: 'Retorna a produção estimada agregada por cultura (top 4) de um produtor',
+    description: 'Considera apenas safras ativas (em andamento) do produtor específico e retorna as 4 culturas com maior produção estimada.',
   })
+  @ApiParam({ name: 'producerId', description: 'ID do produtor' })
   @ApiResponse({
     status: 200,
     description: 'Produção por cultura retornada com sucesso.',
     type: [ProductionByCropResponseDto],
   })
-  getProductionByCrop(): Promise<ProductionByCropResponseDto[]> {
-    return this.harvestsService.getProductionByCrop();
+  @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
+  getProductionByCrop(
+    @Param('producerId', ParseIntPipe) producerId: number,
+  ): Promise<ProductionByCropResponseDto[]> {
+    return this.harvestsService.getProductionByCrop(producerId);
   }
 }
