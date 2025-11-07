@@ -212,10 +212,13 @@ export class HarvestsService {
 
   /**
    * Retorna a produção estimada mensal para os próximos 6 meses.
-   * Considera apenas safras ativas (em andamento) e agrupa por mês de término.
+   * Considera apenas safras ativas (em andamento) de um produtor específico e agrupa por mês de término.
    */
-  async getMonthlyEstimatedProduction() {
-    const harvests = await this.repository.findActiveHarvestsForMonthlyProduction();
+  async getMonthlyEstimatedProduction(producerId: number) {
+    // Valida se o produtor existe
+    await this.producersService.findOne(producerId);
+    
+    const harvests = await this.repository.findActiveHarvestsForMonthlyProduction(producerId);
 
     // Array com os nomes dos meses em português (abreviados)
     const monthNames = [

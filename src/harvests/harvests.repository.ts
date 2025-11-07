@@ -220,19 +220,25 @@ export class HarvestsRepository {
   /**
    * Busca safras ativas (em andamento) com data de término dentro dos próximos 6 meses.
    */
-  async findActiveHarvestsForMonthlyProduction() {
+  async findActiveHarvestsForMonthlyProduction(producerId?: number) {
     const today = new Date();
     const sixMonthsFromNow = new Date();
     sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
 
-    return this.prisma.harvest.findMany({
-      where: {
-        status: HarvestStatus.in_progress,
-        endDate: {
-          gte: today,
-          lte: sixMonthsFromNow,
-        },
+    const where: any = {
+      status: HarvestStatus.in_progress,
+      endDate: {
+        gte: today,
+        lte: sixMonthsFromNow,
       },
+    };
+
+    if (producerId) {
+      where.producerId = producerId;
+    }
+
+    return this.prisma.harvest.findMany({
+      where,
       select: {
         endDate: true,
         expectedYield: true,

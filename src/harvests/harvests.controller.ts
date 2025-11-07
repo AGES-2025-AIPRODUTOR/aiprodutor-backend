@@ -155,17 +155,21 @@ export class HarvestsController {
     return this.harvestsService.findInProgressByProducer(producerId);
   }
 
-  @Get('charts/monthly-production')
+  @Get('charts/monthly-production/:producerId')
   @ApiOperation({
-    summary: 'Retorna a produção estimada mensal para os próximos 6 meses',
-    description: 'Considera apenas safras ativas (em andamento) e agrupa a produção estimada por mês de término da safra.',
+    summary: 'Retorna a produção estimada mensal para os próximos 6 meses de um produtor',
+    description: 'Considera apenas safras ativas (em andamento) do produtor específico e agrupa a produção estimada por mês de término da safra.',
   })
+  @ApiParam({ name: 'producerId', description: 'ID do produtor' })
   @ApiResponse({
     status: 200,
     description: 'Produção estimada mensal retornada com sucesso.',
     type: [MonthlyProductionResponseDto],
   })
-  getMonthlyEstimatedProduction(): Promise<MonthlyProductionResponseDto[]> {
-    return this.harvestsService.getMonthlyEstimatedProduction();
+  @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
+  getMonthlyEstimatedProduction(
+    @Param('producerId', ParseIntPipe) producerId: number,
+  ): Promise<MonthlyProductionResponseDto[]> {
+    return this.harvestsService.getMonthlyEstimatedProduction(producerId);
   }
 }
