@@ -149,7 +149,7 @@ export class ProducersService {
   };
 
   const monthsToShow: MonthInfo[] = [];
-  for (let i = 0; i < 6; i++) {
+  for (let i = -5; i < 1; i++) {
     const d = new Date(today.getFullYear(), today.getMonth() + i, 1);
     monthsToShow.push({
       mes: monthNames[d.getMonth()],
