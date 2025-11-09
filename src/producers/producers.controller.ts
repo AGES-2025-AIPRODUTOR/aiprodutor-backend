@@ -48,7 +48,7 @@ export class ProducersController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Lista todos os produtores ou busca por cpf' })
+  @ApiOperation({ summary: 'Lista todos os produtores ou busca por CPF' })
   @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
   @ApiResponse({ status: 400, description: 'Formato incorreto.' })
   findAllOrByDocument(
@@ -162,7 +162,6 @@ export class ProducersController {
   ): Promise<PlantedAreaMonthlyResponseDto[]> {
     return this.producersService.getPlantedAreaMonthlyReport(id);
   }
-}
 
   @Get(':id/reports/general-view')
   @ApiOperation({ summary: 'Gera o relatório de visão geral do produtor' })
@@ -173,8 +172,9 @@ export class ProducersController {
     type: GeneralViewReportDto,
   })
   @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
-  generateGeneralViewReport(@Param('id', ParseIntPipe) id: number):
-   Promise<GeneralViewReportDto> {
+  generateGeneralViewReport(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<GeneralViewReportDto> {
     return this.producersService.generateGeneralViewReport(id);
   }
 }
