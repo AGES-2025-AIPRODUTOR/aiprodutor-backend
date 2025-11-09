@@ -129,4 +129,21 @@ export class ProducersService {
       areaM2: Number(record.areaM2),
     }));
   }
+
+  async generateGeneralViewReport(producerId: number): Promise<any> {
+    const totalArea = await this.repository.getTotalAreaInProgress(producerId);
+    const uniqueProductsCount = await this.repository.getUniqueInProgressProductsCount(
+      producerId,
+    );
+    const expectedYield = await this.repository.getExpectedYield(producerId);
+    const averageEfficiency = expectedYield / totalArea;
+
+    return {
+      totalAreaHectares: totalArea,
+      uniqueProductsCount,
+      expectedYield: parseFloat(expectedYield.toFixed(1)),
+      averageEfficiency: parseFloat(averageEfficiency.toFixed(1)),
+    };
+  }
+
 }
