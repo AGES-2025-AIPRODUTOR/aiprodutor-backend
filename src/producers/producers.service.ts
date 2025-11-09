@@ -129,4 +129,12 @@ export class ProducersService {
       areaM2: Number(record.areaM2),
     }));
   }
+
+  /**
+   * Indicador de Distribuição de Culturas Atual
+   */
+  async getCropDistributionIndicator(producerId: number) {
+    await this.findOne(producerId);
+    return await this.repository.calculateCropDistribution(producerId);
+  }
 }

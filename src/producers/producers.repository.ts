@@ -2,10 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../shared/prisma/prisma.service';
 import { CreateProducerDto } from './dto/create-producer.dto';
 import { Prisma } from '@prisma/client';
+import { HarvestsRepository } from '../harvests/harvests.repository';
 
 @Injectable()
 export class ProducersRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly harvestsRepository: HarvestsRepository,
+  ) {}
 
   async create(createProducerDto: CreateProducerDto) {
     return this.prisma.producer.create({
@@ -69,5 +73,50 @@ export class ProducersRepository {
       WHERE a."producerId" = ${producerId}
       ORDER BY p."plantingDate" DESC;
     `);
+  }
+
+  async calculateCropDistribution(producerId: number) {
+    // Busca todas as safras em andamento com plantios, produtos e áreas
+    const harvests =
+      await this.harvestsRepository.findInProgressByProducer(producerId);
+
+    // Juntas todos os plantios de todas as safras
+    const plantings = harvests.flatMap((h) => h.plantings);
+
+    if (plantings.length === 0) {
+      return [];
+    }
+
+    // Soma de áreas por cultura
+    const areaByCulture: Record<string, number> = {};
+
+    for (const p of plantings) {
+      // cultura vem do produto
+      const culture = p.product.name;
+
+      // Soma as áreas associadas ao plantio
+      const totalAreaM2 = p.areas
+        .map((a) => Number(a.areaM2))
+        .reduce((sum, val) => sum + val, 0);
+
+      const areaHa = totalAreaM2 / 10000; // converter m² para hectares
+
+      areaByCulture[culture] = (areaByCulture[culture] || 0) + areaHa;
+    }
+
+    // Total área em m2
+    const totalArea = Object.values(areaByCulture).reduce((a, b) => a + b, 0);
+
+    // Calcular percentuais de cada cultura
+    const distribution = Object.entries(areaByCulture).map(
+      ([culture, area]) => ({
+        cultura: culture,
+        percentual: Number(((area / totalArea) * 100).toFixed(1)),
+      }),
+    );
+
+    // Ordenar do maior ao menor os percentuais
+    distribution.sort((a, b) => b.percentual - a.percentual);
+    return distribution;
   }
 }

@@ -146,8 +146,12 @@ export class HarvestsRepository {
         status: HarvestStatus.in_progress,
       },
       include: {
-        producer: true,
-        plantings: true,
+        plantings: {
+          include: {
+            product: true,
+            areas: true,
+          },
+        },
       },
       orderBy: {
         startDate: 'desc',
