@@ -11,10 +11,13 @@ import {
 } from '@nestjs/common';
 import {
   ApiBody,
+  ApiExtraModels,
+  ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiResponse,
   ApiTags,
+  getSchemaPath,
 } from '@nestjs/swagger';
 import { ProducersService } from './producers.service';
 import { CreateProducerDto } from './dto/create-producer.dto';
@@ -24,6 +27,7 @@ import { ProducerResponseDto } from './dto/producer-response.dto';
 import { PlantingHistoryResponseDto } from './dto/planting-history-response.dto';
 import { PlantingsService } from '../plantings/plantings.service';
 import { HarvestsService } from '../harvests/harvests.service';
+import { PlantedAreaMonthlyResponseDto } from './dto/planted-area-monthly-response.dto';
 
 @ApiTags('Producers')
 @Controller('producers')
@@ -125,5 +129,36 @@ export class ProducersController {
     @Param('id', ParseIntPipe) id: number,
   ): Promise<PlantingHistoryResponseDto[]> {
     return this.producersService.getPlantingHistory(id);
+  }
+
+  @Get(':id/reports/planted-area-monthly')
+  @ApiExtraModels(PlantedAreaMonthlyResponseDto)
+  @ApiOkResponse({
+    description: 'Relatório mensal de área plantada (6 meses)',
+    schema: {
+      type: 'array',
+      items: { $ref: getSchemaPath(PlantedAreaMonthlyResponseDto) },
+      example: [
+        { mes: 'Junho', ano: 2024, areaPlantadaHa: 10.5 },
+        { mes: 'Julho', ano: 2024, areaPlantadaHa: 12.3 },
+        { mes: 'Agosto', ano: 2024, areaPlantadaHa: 8.9 },
+        { mes: 'Setembro', ano: 2024, areaPlantadaHa: 9.7 },
+        { mes: 'Outubro', ano: 2024, areaPlantadaHa: 11.0 },
+        { mes: 'Novembro', ano: 2024, areaPlantadaHa: 7.6 },
+      ],
+    },
+  })
+  @ApiOperation({ summary: 'Lista a área plantada mensal de um produtor' })
+  @ApiParam({ name: 'id', description: 'ID do Produtor' })
+  @ApiResponse({
+    status: 200,
+    description: 'Relatório de área plantada mensal retornado com sucesso.',
+    type: [PlantedAreaMonthlyResponseDto],
+  })
+  @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
+  getPlantedAreaMonthly(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<PlantedAreaMonthlyResponseDto[]> {
+    return this.producersService.getPlantedAreaMonthlyReport(id);
   }
 }
