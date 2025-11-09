@@ -217,13 +217,24 @@ export class HarvestsService {
   async getMonthlyEstimatedProduction(producerId: number) {
     // Valida se o produtor existe
     await this.producersService.findOne(producerId);
-    
-    const harvests = await this.repository.findActiveHarvestsForMonthlyProduction(producerId);
+
+    const harvests =
+      await this.repository.findActiveHarvestsForMonthlyProduction(producerId);
 
     // Array com os nomes dos meses em português (abreviados)
     const monthNames = [
-      'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
-      'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'
+      'Jan',
+      'Fev',
+      'Mar',
+      'Abr',
+      'Mai',
+      'Jun',
+      'Jul',
+      'Ago',
+      'Set',
+      'Out',
+      'Nov',
+      'Dez',
     ];
 
     // Cria um mapa para acumular a produção por mês/ano
@@ -264,5 +275,42 @@ export class HarvestsService {
       ano: month.ano,
       producaoEstimadaKg: productionMap.get(month.key) || 0,
     }));
+  }
+
+  /**
+   * Retorna a produção estimada agregada por cultura (top 4 culturas).
+   * Considera apenas safras ativas (em andamento) de um produtor específico.
+   */
+  async getProductionByCrop(producerId: number) {
+    // Valida se o produtor existe
+    await this.producersService.findOne(producerId);
+
+    const harvests =
+      await this.repository.findActiveHarvestsWithPlantings(producerId);
+
+    // Mapa para acumular produção por cultura
+    const productionMap = new Map<string, number>();
+
+    // Para cada safra ativa, soma a produção estimada dos seus plantios por cultura
+    for (const harvest of harvests) {
+      for (const planting of harvest.plantings) {
+        const cropName = planting.product.name;
+        const expectedYield = planting.expectedYield || 0;
+
+        const currentValue = productionMap.get(cropName) || 0;
+        productionMap.set(cropName, currentValue + expectedYield);
+      }
+    }
+
+    // Converte o mapa em array e ordena por produção (decrescente)
+    const sortedCrops = Array.from(productionMap.entries())
+      .map(([cultura, producaoEstimadaKg]) => ({
+        cultura,
+        producaoEstimadaKg,
+      }))
+      .sort((a, b) => b.producaoEstimadaKg - a.producaoEstimadaKg);
+
+    // Retorna apenas as top 4
+    return sortedCrops.slice(0, 4);
   }
 }

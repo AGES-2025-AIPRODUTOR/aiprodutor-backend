@@ -6,7 +6,6 @@ import { GetHarvestHistoryQueryDto } from './dto/get-harvest-history-query.dto';
 import { Prisma, HarvestStatus } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
-
 @Injectable()
 export class HarvestsRepository {
   constructor(private readonly prisma: PrismaService) {}
@@ -242,6 +241,30 @@ export class HarvestsRepository {
       select: {
         endDate: true,
         expectedYield: true,
+      },
+    });
+  }
+
+  /**
+   * Busca safras ativas com seus plantios e produtos para agregação por cultura.
+   */
+  async findActiveHarvestsWithPlantings(producerId?: number) {
+    const where: any = {
+      status: HarvestStatus.in_progress,
+    };
+
+    if (producerId) {
+      where.producerId = producerId;
+    }
+
+    return this.prisma.harvest.findMany({
+      where,
+      include: {
+        plantings: {
+          include: {
+            product: true,
+          },
+        },
       },
     });
   }

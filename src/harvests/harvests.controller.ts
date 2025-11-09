@@ -19,6 +19,7 @@ import { HarvestEntity } from './entities/harvest.entity';
 import { GetHarvestHistoryQueryDto } from './dto/get-harvest-history-query.dto';
 import { HarvestHistoryResponseDto } from './dto/harvest-history-response.dto';
 import { MonthlyProductionResponseDto } from './dto/monthly-production-response.dto';
+import { ProductionByCropResponseDto } from './dto/production-by-crop-response.dto';
 
 @ApiTags('Harvests')
 @Controller('harvests')
@@ -111,7 +112,11 @@ export class HarvestsController {
   @Get('producer/:producerId')
   @ApiOperation({ summary: 'Lista todas as safras de um produtor' })
   @ApiParam({ name: 'producerId', description: 'ID do produtor' })
-  @ApiResponse({ status: 200, description: 'Lista de safras retornada com sucesso.', type: [HarvestResponseDto] })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de safras retornada com sucesso.',
+    type: [HarvestResponseDto],
+  })
   findByProducer(
     @Param('producerId', ParseIntPipe) producerId: number,
   ): Promise<HarvestEntity[]> {
@@ -157,8 +162,10 @@ export class HarvestsController {
 
   @Get('charts/monthly-production/:producerId')
   @ApiOperation({
-    summary: 'Retorna a produção estimada mensal para os próximos 6 meses de um produtor',
-    description: 'Considera apenas safras ativas (em andamento) do produtor específico e agrupa a produção estimada por mês de término da safra.',
+    summary:
+      'Retorna a produção estimada mensal para os próximos 6 meses de um produtor',
+    description:
+      'Considera apenas safras ativas (em andamento) do produtor específico e agrupa a produção estimada por mês de término da safra.',
   })
   @ApiParam({ name: 'producerId', description: 'ID do produtor' })
   @ApiResponse({
@@ -171,5 +178,25 @@ export class HarvestsController {
     @Param('producerId', ParseIntPipe) producerId: number,
   ): Promise<MonthlyProductionResponseDto[]> {
     return this.harvestsService.getMonthlyEstimatedProduction(producerId);
+  }
+
+  @Get('charts/production-by-crop/:producerId')
+  @ApiOperation({
+    summary:
+      'Retorna a produção estimada agregada por cultura (top 4) de um produtor',
+    description:
+      'Considera apenas safras ativas (em andamento) do produtor específico e retorna as 4 culturas com maior produção estimada.',
+  })
+  @ApiParam({ name: 'producerId', description: 'ID do produtor' })
+  @ApiResponse({
+    status: 200,
+    description: 'Produção por cultura retornada com sucesso.',
+    type: [ProductionByCropResponseDto],
+  })
+  @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
+  getProductionByCrop(
+    @Param('producerId', ParseIntPipe) producerId: number,
+  ): Promise<ProductionByCropResponseDto[]> {
+    return this.harvestsService.getProductionByCrop(producerId);
   }
 }
