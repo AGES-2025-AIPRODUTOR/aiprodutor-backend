@@ -18,6 +18,7 @@ import { HarvestPanelResponseDto } from './dto/harvest-panel.dto';
 import { HarvestEntity } from './entities/harvest.entity';
 import { GetHarvestHistoryQueryDto } from './dto/get-harvest-history-query.dto';
 import { HarvestHistoryResponseDto } from './dto/harvest-history-response.dto';
+import { MonthlyProductionResponseDto } from './dto/monthly-production-response.dto';
 
 @ApiTags('Harvests')
 @Controller('harvests')
@@ -152,5 +153,23 @@ export class HarvestsController {
     @Param('producerId', ParseIntPipe) producerId: number,
   ): Promise<HarvestEntity[]> {
     return this.harvestsService.findInProgressByProducer(producerId);
+  }
+
+  @Get('charts/monthly-production/:producerId')
+  @ApiOperation({
+    summary: 'Retorna a produção estimada mensal para os próximos 6 meses de um produtor',
+    description: 'Considera apenas safras ativas (em andamento) do produtor específico e agrupa a produção estimada por mês de término da safra.',
+  })
+  @ApiParam({ name: 'producerId', description: 'ID do produtor' })
+  @ApiResponse({
+    status: 200,
+    description: 'Produção estimada mensal retornada com sucesso.',
+    type: [MonthlyProductionResponseDto],
+  })
+  @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
+  getMonthlyEstimatedProduction(
+    @Param('producerId', ParseIntPipe) producerId: number,
+  ): Promise<MonthlyProductionResponseDto[]> {
+    return this.harvestsService.getMonthlyEstimatedProduction(producerId);
   }
 }
