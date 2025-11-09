@@ -56,7 +56,6 @@ migrate_database:
     - npx prisma migrate deploy
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
-    - if: '$CI_COMMIT_BRANCH == "main"'
 
 # ---- Workflow 1: Roda em merges para a 'main' ----
 seed_database:
