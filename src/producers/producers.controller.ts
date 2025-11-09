@@ -28,6 +28,7 @@ import { PlantingHistoryResponseDto } from './dto/planting-history-response.dto'
 import { PlantingsService } from '../plantings/plantings.service';
 import { HarvestsService } from '../harvests/harvests.service';
 import { PlantedAreaMonthlyResponseDto } from './dto/planted-area-monthly-response.dto';
+import { GeneralViewReportDto } from './dto/general-view-report.dto';
 
 @ApiTags('Producers')
 @Controller('producers')
@@ -160,5 +161,20 @@ export class ProducersController {
     @Param('id', ParseIntPipe) id: number,
   ): Promise<PlantedAreaMonthlyResponseDto[]> {
     return this.producersService.getPlantedAreaMonthlyReport(id);
+  }
+}
+
+  @Get(':id/reports/general-view')
+  @ApiOperation({ summary: 'Gera o relatório de visão geral do produtor' })
+  @ApiParam({ name: 'id', description: 'ID do Produtor' })
+  @ApiResponse({
+    status: 200,
+    description: 'Relatório de visão geral gerado com sucesso.',
+    type: GeneralViewReportDto,
+  })
+  @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
+  generateGeneralViewReport(@Param('id', ParseIntPipe) id: number):
+   Promise<GeneralViewReportDto> {
+    return this.producersService.generateGeneralViewReport(id);
   }
 }
