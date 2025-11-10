@@ -72,6 +72,23 @@ export class ProducersRepository {
     `);
   }
 
+  async getActiveHarvests(producerId: number) {
+    const result = await this.prisma.harvest.findMany({
+      where: {
+        producerId,
+        status: HarvestStatus.in_progress,
+      },
+      include: {
+        plantings: {
+          include: {
+            areas: true,
+          },
+        },
+      }
+    });
+    return result;
+  }
+
   async getTotalAreaInProgress(producerId: number): Promise<number> {
     const producer = await this.prisma.producer.findUnique({
       where: { id: producerId },
@@ -102,9 +119,7 @@ export class ProducersRepository {
           new Decimal(0),
         );
 
-    //convert Decimal to Hectares
     const totalAreaHectares = totalAreaDecimal.dividedBy(10000);
-    //round to 1 decimal place
     return totalAreaHectares.toDecimalPlaces(1).toNumber();
   }
   
@@ -130,5 +145,4 @@ export class ProducersRepository {
     });
     return result._sum.expectedYield ?? 0;  
   }
-
 }

@@ -7,6 +7,8 @@ import {
 import { CreateProducerDto } from './dto/create-producer.dto';
 import { ProducersRepository } from './producers.repository';
 import { PlantingHistoryResponseDto } from './dto/planting-history-response.dto';
+import { Decimal } from '@prisma/client/runtime/library';
+import { PlantedAreaMonthlyResponseDto } from './dto/planted-area-monthly-response.dto';
 
 @Injectable()
 export class ProducersService {
@@ -130,6 +132,71 @@ export class ProducersService {
     }));
   }
 
+  async getPlantedAreaMonthlyReport(
+  producerId: number
+  ): Promise<PlantedAreaMonthlyResponseDto[]> {
+  const harvests = await this.repository.getActiveHarvests(producerId);
+
+  const monthNames = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+  const today = new Date();
+  type MonthInfo = {
+    mes: string;
+    ano: number;
+    key: string;         // e.g. "2025-11"
+    y: number;           // year
+    m: number;           // 0..11
+  };
+
+  const monthsToShow: MonthInfo[] = [];
+  for (let i = -5; i < 1; i++) {
+    const d = new Date(today.getFullYear(), today.getMonth() + i, 1);
+    monthsToShow.push({
+      mes: monthNames[d.getMonth()],
+      ano: d.getFullYear(),
+      key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+      y: d.getFullYear(),
+      m: d.getMonth(),
+    });
+  }
+
+  const totals = new Map<string, number>();
+  monthsToShow.forEach(mi => totals.set(mi.key, 0));
+
+  for (const harvest of harvests) {
+    const start = harvest.startDate ? new Date(harvest.startDate) : null;
+    const end = harvest.endDate ? new Date(harvest.endDate) : null;
+
+    // Unique areas once per harvest
+    const allAreas = harvest.plantings.flatMap((p) => p.areas);
+    const uniqueAreas = Array.from(new Map(allAreas.map(a => [a.id, a])).values());
+    const totalAreaHa = uniqueAreas
+      .reduce((sum, a) => sum.plus(a.areaM2), new Decimal(0))
+      .dividedBy(10000) // m² -> ha
+      .toNumber();
+
+    // Add to each month that overlaps the harvest period
+    for (const mi of monthsToShow) {
+      const monthStart = new Date(mi.y, mi.m, 1);
+      const monthEnd = new Date(mi.y, mi.m + 1, 0, 23, 59, 59, 999);
+
+      const overlaps =
+        (!start || start <= monthEnd) &&
+        (!end || end >= monthStart);
+
+      if (overlaps) {
+        totals.set(mi.key, (totals.get(mi.key) ?? 0) + totalAreaHa);
+      }
+    }
+  }
+
+  return monthsToShow.map((mi) => ({
+    mes: mi.mes,                     // string
+    ano: mi.ano,                     // number
+    areaPlantadaHa: Number(((totals.get(mi.key) ?? 0)).toFixed(1)),
+  }));
+}
+
   async generateGeneralViewReport(producerId: number): Promise<any> {
     const totalArea = await this.repository.getTotalAreaInProgress(producerId);
     const uniqueProductsCount = await this.repository.getUniqueInProgressProductsCount(
@@ -145,5 +212,4 @@ export class ProducersService {
       averageEfficiency: parseFloat(averageEfficiency.toFixed(1)),
     };
   }
-
 }
