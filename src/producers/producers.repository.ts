@@ -1,15 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../shared/prisma/prisma.service';
 import { CreateProducerDto } from './dto/create-producer.dto';
-import { Prisma } from '@prisma/client';
+import { Prisma, HarvestStatus } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 import { HarvestsRepository } from '../harvests/harvests.repository';
 
 @Injectable()
 export class ProducersRepository {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly harvestsRepository: HarvestsRepository,
-  ) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly harvestsRepository: HarvestsRepository,
+    ) {}
 
   async create(createProducerDto: CreateProducerDto) {
     return this.prisma.producer.create({
@@ -75,62 +76,136 @@ export class ProducersRepository {
     `);
   }
 
-  async calculateCropDistribution(producerId: number) {
-    // Busca todas as safras em andamento com plantios, produtos e áreas
-    const harvests =
-      await this.harvestsRepository.findInProgressByProducer(producerId);
+  async getActiveHarvests(producerId: number) {
+    const result = await this.prisma.harvest.findMany({
+      where: {
+        producerId,
+        status: HarvestStatus.in_progress,
+      },
+      include: {
+        plantings: {
+          include: {
+            areas: true,
+          },
+        },
+      }
+    });
+    return result;
+  }
 
-    // Juntas todos os plantios de todas as safras
-    const plantings = harvests.flatMap((h) => h.plantings);
-
-    if (plantings.length === 0) {
-      return [];
+  async getTotalAreaInProgress(producerId: number): Promise<number> {
+    const producer = await this.prisma.producer.findUnique({
+      where: { id: producerId },
+      include: {
+        harvests: { where: { producerId, status: HarvestStatus.in_progress },
+          include: {
+            plantings: {
+              include: {
+                areas: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    if (!producer) {
+      return 0;
     }
-
-    // Soma de áreas por cultura
-    const areaByCulture: Record<string, number> = {};
-
-    for (const p of plantings) {
-      // cultura vem do produto
-      const culture = p.product.name;
-
-      // Soma as áreas associadas ao plantio
-      const totalAreaM2 = p.areas
-        .map((a) => Number(a.areaM2))
-        .reduce((sum, val) => sum + val, 0);
-
-      const areaHa = totalAreaM2 / 10000; // converter m² para hectares
-
-      areaByCulture[culture] = (areaByCulture[culture] || 0) + areaHa;
-    }
-
-    // Total área em m2
-    const totalArea = Object.values(areaByCulture).reduce((a, b) => a + b, 0);
-
-    // Calcular percentuais de cada cultura
-    const distribution = Object.entries(areaByCulture).map(
-      ([culture, area]) => ({
-        cropName: culture,
-        areaPercentage: Number(((area / totalArea) * 100).toFixed(2)),
-      }),
+    const  allAreas = producer.harvests.flatMap((harvest) =>
+      harvest.plantings.flatMap((planting) => planting.areas),
+    );
+    const uniqueAreas = Array.from(
+      new Map(allAreas.map((area) => [area.id, area])).values(),
     );
 
-    // Cálculo exato para dar 100%
-    const totalPercent = distribution.reduce((sum, d) => sum + d.areaPercentage, 0);
-    const diff = Number((100 - totalPercent).toFixed(2));
+    const totalAreaDecimal = uniqueAreas.reduce(
+          (sum, area) => sum.plus(area.areaM2),
+          new Decimal(0),
+        );
 
-    if (Math.abs(diff) > 0) {
-      // Arrendondamento no item de maior percentual
-      const maxIndex = distribution.findIndex(
-          (d)=> d.areaPercentage === Math.max(...distribution.map((i) => i.areaPercentage))
-      );
-      distribution[maxIndex].areaPercentage = Number(
-          (distribution[maxIndex].areaPercentage + diff).toFixed(2)
-      );
-    }
-
-    // Ordenar do maior ao menor os percentuais
-    distribution.sort((a, b) => b.areaPercentage - a.areaPercentage);
-    return distribution;
+    const totalAreaHectares = totalAreaDecimal.dividedBy(10000);
+    return totalAreaHectares.toDecimalPlaces(1).toNumber();
   }
+
+  async getUniqueInProgressProductsCount(producerId: number): Promise<number> {
+  const plantings = await this.prisma.planting.findMany({
+    where: {
+        harvest: {
+            producerId,
+            status: HarvestStatus.in_progress,
+        },
+    },
+      select: {productId: true},
+  });
+
+      const uniqueProductIds = new Set(plantings.map(p => p.productId));
+      return uniqueProductIds.size;
+  }
+
+    async getExpectedYield(producerId: number): Promise<number> {
+        const result = await this.prisma.harvest.aggregate({
+      where: {producerId, status: HarvestStatus.in_progress},
+      _sum: {expectedYield: true},
+    });
+    return result._sum.expectedYield ?? 0;
+  }
+
+    async calculateCropDistribution(producerId: number) {
+        // Busca todas as safras em andamento com plantios, produtos e áreas
+        const harvests =
+            await this.harvestsRepository.findInProgressByProducer(producerId);
+
+        // Juntas todos os plantios de todas as safras
+        const plantings = harvests.flatMap((h) => h.plantings);
+
+        if (plantings.length === 0) {
+            return [];
+        }
+
+        // Soma de áreas por cultura
+        const areaByCulture: Record<string, number> = {};
+
+        for (const p of plantings) {
+            // cultura vem do produto
+            const culture = p.product.name;
+
+            // Soma as áreas associadas ao plantio
+            const totalAreaM2 = p.areas
+                .map((a) => Number(a.areaM2))
+                .reduce((sum, val) => sum + val, 0);
+
+            const areaHa = totalAreaM2 / 10000; // converter m² para hectares
+
+            areaByCulture[culture] = (areaByCulture[culture] || 0) + areaHa;
+        }
+
+        // Total área em m2
+        const totalArea = Object.values(areaByCulture).reduce((a, b) => a + b, 0);
+
+        // Calcular percentuais de cada cultura
+        const distribution = Object.entries(areaByCulture).map(
+            ([culture, area]) => ({
+                cropName: culture,
+                areaPercentage: Number(((area / totalArea) * 100).toFixed(2)),
+            }),
+        );
+
+        // Cálculo exato para dar 100%
+        const totalPercent = distribution.reduce((sum, d) => sum + d.areaPercentage, 0);
+        const diff = Number((100 - totalPercent).toFixed(2));
+
+        if (Math.abs(diff) > 0) {
+            // Arrendondamento no item de maior percentual
+            const maxIndex = distribution.findIndex(
+                (d)=> d.areaPercentage === Math.max(...distribution.map((i) => i.areaPercentage))
+            );
+            distribution[maxIndex].areaPercentage = Number(
+                (distribution[maxIndex].areaPercentage + diff).toFixed(2)
+            );
+        }
+
+        // Ordenar do maior ao menor os percentuais
+        distribution.sort((a, b) => b.areaPercentage - a.areaPercentage);
+        return distribution;
+    }
 }

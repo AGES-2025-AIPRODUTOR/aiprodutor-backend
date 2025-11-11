@@ -6,7 +6,6 @@ import { GetHarvestHistoryQueryDto } from './dto/get-harvest-history-query.dto';
 import { Prisma, HarvestStatus } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
-
 @Injectable()
 export class HarvestsRepository {
   constructor(private readonly prisma: PrismaService) {}
@@ -219,5 +218,58 @@ export class HarvestsRepository {
 
     // 5. Converte o resultado de Decimal para number.
     return totalAreaDecimal.toNumber();
+  }
+
+  /**
+   * Busca safras ativas (em andamento) com data de término dentro dos próximos 6 meses.
+   */
+  async findActiveHarvestsForMonthlyProduction(producerId?: number) {
+    const today = new Date();
+    const sixMonthsFromNow = new Date();
+    sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
+
+    const where: any = {
+      status: HarvestStatus.in_progress,
+      endDate: {
+        gte: today,
+        lte: sixMonthsFromNow,
+      },
+    };
+
+    if (producerId) {
+      where.producerId = producerId;
+    }
+
+    return this.prisma.harvest.findMany({
+      where,
+      select: {
+        endDate: true,
+        expectedYield: true,
+      },
+    });
+  }
+
+  /**
+   * Busca safras ativas com seus plantios e produtos para agregação por cultura.
+   */
+  async findActiveHarvestsWithPlantings(producerId?: number) {
+    const where: any = {
+      status: HarvestStatus.in_progress,
+    };
+
+    if (producerId) {
+      where.producerId = producerId;
+    }
+
+    return this.prisma.harvest.findMany({
+      where,
+      include: {
+        plantings: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
   }
 }
