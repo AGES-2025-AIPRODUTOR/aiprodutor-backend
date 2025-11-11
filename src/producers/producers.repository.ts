@@ -190,12 +190,12 @@ export class ProducersRepository {
             }),
         );
 
-        // Cálculo exato para dar 100%
+        // Cálculo exato para resultar em 100%
         const totalPercent = distribution.reduce((sum, d) => sum + d.areaPercentage, 0);
         const diff = Number((100 - totalPercent).toFixed(2));
 
         if (Math.abs(diff) > 0) {
-            // Arrendondamento no item de maior percentual
+            // Arredondamento na cultura de maior percentual
             const maxIndex = distribution.findIndex(
                 (d)=> d.areaPercentage === Math.max(...distribution.map((i) => i.areaPercentage))
             );
