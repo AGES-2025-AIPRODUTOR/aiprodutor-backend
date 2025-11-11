@@ -29,6 +29,7 @@ import { PlantingsService } from '../plantings/plantings.service';
 import { HarvestsService } from '../harvests/harvests.service';
 import { PlantedAreaMonthlyResponseDto } from './dto/planted-area-monthly-response.dto';
 import { GeneralViewReportDto } from './dto/general-view-report.dto';
+import { ReportsCropsDistributionDto } from './dto/reports-crops-distribution.dto';
 
 @ApiTags('Producers')
 @Controller('producers')
@@ -176,5 +177,18 @@ export class ProducersController {
     @Param('id', ParseIntPipe) id: number,
   ): Promise<GeneralViewReportDto> {
     return this.producersService.generateGeneralViewReport(id);
+  }
+
+  @Get(':id/reports/crops-distribution')
+  @ApiOperation({ summary: 'Gera um relatório de distribuição de culturas' })
+  @ApiParam({ name: 'id', description: 'ID do Produtor' })
+  @ApiResponse({
+    status: 200,
+    type: [ReportsCropsDistributionDto],
+    description: 'Relatório de distribuição de culturas gerado com sucesso.',
+  })
+  @ApiResponse({ status: 404, description: 'Produtor não encontrado.' })
+  getCropsDistributionReport(@Param('id', ParseIntPipe) id: number) {
+    return this.producersService.getCropDistributionIndicator(id);
   }
 }

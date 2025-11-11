@@ -212,4 +212,12 @@ export class ProducersService {
       averageEfficiency: parseFloat(averageEfficiency.toFixed(1)),
     };
   }
+
+  /**
+   * Indicador de Distribuição de Culturas Atual
+   */
+  async getCropDistributionIndicator(producerId: number) {
+    await this.findOne(producerId);
+    return await this.repository.calculateCropDistribution(producerId);
+  }
 }
