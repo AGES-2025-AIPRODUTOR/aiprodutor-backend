@@ -110,13 +110,27 @@ export class ProducersRepository {
     // Calcular percentuais de cada cultura
     const distribution = Object.entries(areaByCulture).map(
       ([culture, area]) => ({
-        cultura: culture,
-        percentual: Number(((area / totalArea) * 100).toFixed(1)),
+        cropName: culture,
+        areaPercentage: Number(((area / totalArea) * 100).toFixed(2)),
       }),
     );
 
+    // Cálculo exato para dar 100%
+    const totalPercent = distribution.reduce((sum, d) => sum + d.areaPercentage, 0);
+    const diff = Number((100 - totalPercent).toFixed(2));
+
+    if (Math.abs(diff) > 0) {
+      // Arrendondamento no item de maior percentual
+      const maxIndex = distribution.findIndex(
+          (d)=> d.areaPercentage === Math.max(...distribution.map((i) => i.areaPercentage))
+      );
+      distribution[maxIndex].areaPercentage = Number(
+          (distribution[maxIndex].areaPercentage + diff).toFixed(2)
+      );
+    }
+
     // Ordenar do maior ao menor os percentuais
-    distribution.sort((a, b) => b.percentual - a.percentual);
+    distribution.sort((a, b) => b.areaPercentage - a.areaPercentage);
     return distribution;
   }
 }
