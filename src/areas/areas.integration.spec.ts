@@ -19,10 +19,10 @@ jest.mock('geojson-validation', () => ({
   default: {
     isPolygon: jest.fn(),
   },
+  isPolygon: jest.fn(),
 }));
 
-import geojsonValidation from 'geojson-validation';
-
+import * as geojsonValidation from 'geojson-validation';
 describe('AreasController (e2e)', () => {
   let app: INestApplication;
 
