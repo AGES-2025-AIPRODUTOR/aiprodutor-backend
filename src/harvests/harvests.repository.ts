@@ -26,6 +26,7 @@ export class HarvestsRepository {
             plantingDate: p.plantingDate,
             expectedHarvestDate: p.expectedHarvestDate,
             quantityPlanted: p.quantityPlanted,
+            expectedYield: p.expectedYield,
             product: { connect: { id: p.productId } },
             areas: { connect: p.areaIds.map((id) => ({ id })) },
           })),

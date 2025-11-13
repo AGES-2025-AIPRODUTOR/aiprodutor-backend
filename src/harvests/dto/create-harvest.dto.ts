@@ -29,6 +29,11 @@ class CreatePlantingNestedDto {
   @IsDate()
   @IsOptional()
   expectedHarvestDate?: Date;
+  @ApiPropertyOptional()
+  @IsNumber()
+  @IsPositive()
+  @IsOptional()
+  expectedYield?: number;
 }
 
 export class CreateHarvestDto {
