@@ -1,129 +1,134 @@
 // schema.prisma
 
 generator client {
-  provider = "prisma-client-js"
-  binaryTargets = ["native", "linux-musl-openssl-3.0.x", "rhel-openssl-3.0.x"]
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
-  provider          = "postgresql"
-  url               = env("DATABASE_URL")
-  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 enum HarvestStatus {
-  in_progress
-  completed
-  cancelled
+  in_progress
+  completed
+  cancelled
 }
 
 model Producer {
-  id         Int      @id @default(autoincrement())
-  name       String
-  document   String   @unique
-  phone      String?
-  email      String   @unique
-  zipCode    String
-  city       String
-  street     String
-  number     String
-  complement String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id         Int      @id @default(autoincrement())
+  name       String
+  document   String   @unique
+  phone      String?
+  email      String   @unique
+  zipCode    String
+  city       String
+  street     String
+  number     String
+  complement String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  areas    Area[]
-  harvests Harvest[]
-  products Product[]
+  areas    Area[]
+  harvests Harvest[]
+  products Product[]
 
-  @@map("producers")
+  @@map("producers")
 }
 
 model Area {
-  id               Int      @id @default(autoincrement())
-  name             String
-  polygon          Unsupported("geometry")
-  areaM2           Decimal
-  color            String
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  producerId       Int
-  soilTypeId       Int
-  irrigationTypeId Int
-  isActive         Boolean  @default(true)
+  id               Int      @id @default(autoincrement())
+  name             String
+  polygon          Unsupported("geometry")
+  areaM2           Decimal
+  color            String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  producerId       Int
+  soilTypeId       Int
+  irrigationTypeId Int
+  isActive         Boolean  @default(true)
 
-  irrigationType IrrigationType @relation(fields: [irrigationTypeId], references: [id])
-  producer       Producer       @relation(fields: [producerId], references: [id])
-  soilType       SoilType       @relation(fields: [soilTypeId], references: [id])
-  plantings      Planting[]
+  irrigationType IrrigationType @relation(fields: [irrigationTypeId], references: [id])
+  producer       Producer       @relation(fields: [producerId], references: [id])
+  soilType       SoilType       @relation(fields: [soilTypeId], references: [id])
+  plantings      Planting[]
 
-  @@map("areas")
+  @@map("areas")
 }
 
 model Harvest {
-  id            Int           @id @default(autoincrement())
-  name          String        @unique
-  startDate     DateTime
-  endDate       DateTime?
-  status        HarvestStatus?  @default(in_progress)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  producerId    Int
-  producer      Producer      @relation(fields: [producerId], references: [id])
-  expectedYield Float?        @map("expected_yield")
+  id            Int           @id @default(autoincrement())
+  name          String        @unique
+  startDate     DateTime
+  endDate       DateTime?
+  status        HarvestStatus?  @default(in_progress)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  producerId    Int
+  producer      Producer      @relation(fields: [producerId], references: [id])
+  expectedYield Float?        @map("expected_yield")
 
-  plantings Planting[]
+  plantings Planting[]
 
-  @@map("harvests")
+  @@map("harvests")
 }
 
 model Planting {
-  id                  Int       @id @default(autoincrement())
-  name                String
-  plantingDate        DateTime
-  plantingEndDate     DateTime?
-  expectedHarvestDate DateTime?
-  quantityPlanted     Float
-  quantityHarvested   Float?
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-  harvestId           Int
-  harvest             Harvest   @relation(fields: [harvestId], references: [id])
-  productId           Int
-  product             Product   @relation(fields: [productId], references: [id])
-  expectedYield       Float?    @map("expected_yield")
+  id                  Int       @id @default(autoincrement())
+  name                String
+  plantingDate        DateTime
+  plantingEndDate     DateTime?
+  expectedHarvestDate DateTime?
+  quantityPlanted     Float
+  quantityHarvested   Float?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  harvestId           Int
+  harvest             Harvest   @relation(fields: [harvestId], references: [id])
+  productId           Int
+  product             Product   @relation(fields: [productId], references: [id])
+  expectedYield       Float?    @map("expected_yield")
 
-  areas Area[]
+  areas Area[]
 
-  @@map("plantings")
+  @@map("plantings")
 }
 
 model SoilType {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
-  description String?
-  areas       Area[]
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  areas       Area[]
 
-  @@map("soil_types")
+  @@map("soil_types")
 }
 
 model IrrigationType {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
-  description String?
-  areas       Area[]
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  areas       Area[]
 
-  @@map("irrigation_types")
+  @@map("irrigation_types")
 }
 
 model Product {
-  id         Int       @id @default(autoincrement())
-  name       String
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  producerId Int?
-  producer   Producer? @relation(fields: [producerId], references: [id])
+  id         Int       @id @default(autoincrement())
+  name       String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  
+  producerId Int?
+  
+  producer   Producer? @relation(fields: [producerId], references: [id])
 
-  plantings Planting[]
+  plantings Planting[]
 
-  @@map("products")
+  // CRÍTICO: Adição da unicidade composta
+  @@unique([producerId, name]) 
+
+  @@map("products")
 }
