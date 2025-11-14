@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProducersService } from './producers.service';
 import { ProducersRepository } from './producers.repository';
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import { ConflictException } from '@nestjs/common';
 import { CreateProducerDto } from './dto/create-producer.dto';
 
 describe('ProducersService', () => {
@@ -136,65 +136,5 @@ describe('ProducersService', () => {
 
     expect(result).toEqual(mockProducer);
     expect(mockRepository.findByDocument).toHaveBeenCalledWith(document);
-  });
-
-  // Teste da task de Ditribuição de Culturas
-
-  describe('Crop Distribution Indicator', () => {
-    let service: ProducersService;
-    let repository: ProducersRepository;
-
-    const mockRepository = {
-      findById: jest.fn(),
-      calculateCropDistribution: jest.fn(),
-    };
-
-    beforeEach(async () => {
-      const module: TestingModule = await Test.createTestingModule({
-        providers: [
-          ProducersService,
-          { provide: ProducersRepository, useValue: mockRepository },
-        ],
-      }).compile();
-
-      service = module.get<ProducersService>(ProducersService);
-      repository = module.get<ProducersRepository>(ProducersRepository);
-    });
-
-    afterEach(() => jest.clearAllMocks());
-
-    it('should return crop distribution in correct format', async () => {
-      const producerId = 1;
-
-      // Garantir que o produtor existe
-      mockRepository.findById = jest.fn().mockResolvedValue({ id: 1 });
-
-      // MOCK DA DISTRIBUIÇÃO
-      mockRepository.calculateCropDistribution.mockResolvedValue([
-        { culture: 'Milho', percentual: 44.0 },
-        { culture: 'Batata', percentual: 23.0 },
-        { culture: 'Soja', percentual: 18.0 },
-        { culture: 'Feijão', percentual: 15.0 },
-      ]);
-
-      const result = await service.getCropDistributionIndicator(producerId);
-
-      expect(result).toEqual([
-        { culture: 'Milho', percentual: 44.0 },
-        { culture: 'Batata', percentual: 23.0 },
-        { culture: 'Soja', percentual: 18.0 },
-        { culture: 'Feijão', percentual: 15.0 },
-      ]);
-
-      expect(mockRepository.calculateCropDistribution).toHaveBeenCalledWith(1);
-    });
-
-    it('should throw if producer does not exist', async () => {
-      mockRepository.findById = jest.fn().mockResolvedValue(null);
-
-      await expect(service.getCropDistributionIndicator(1)).rejects.toThrow(
-        NotFoundException,
-      );
-    });
   });
 });

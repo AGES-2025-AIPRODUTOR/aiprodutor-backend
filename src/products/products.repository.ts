@@ -32,36 +32,21 @@ export class ProductsRepository {
     return this.prisma.product.findUnique({ where: { id } });
   }
 
-  /**
-   * CRÍTICO 1: Renomeado para findByNameAndProducer.
-   * Busca um produto pelo nome E producerId. O producerId pode ser 'null'
-   * para buscar produtos globais, ou um ID para buscar produtos individuais.
-   */
-  async findByNameAndProducer(
-    name: string,
-    producerId: number | null, // Tipagem atualizada para aceitar null
-  ): Promise<Product | null> {
+  async findByName(name: string, producerId?: number): Promise<Product | null> {
     return this.prisma.product.findFirst({
       where: {
         name: { equals: name, mode: 'insensitive' },
-        producerId: producerId, // Usa o valor exato (ID ou null)
+        producerId: producerId || null,
       },
     });
   }
 
-  /**
-   * CRÍTICO 2: Mantido (lógica correta).
-   * Lista produtos de um produtor (produtos individuais + produtos globais).
-   */
   async findByProducer(
     producerId: number,
   ): Promise<{ id: number; name: string }[]> {
     return this.prisma.product.findMany({
       where: {
-        OR: [
-          { producerId }, // Produtos individuais do produtor
-          { producerId: null }, // Produtos globais
-        ],
+        OR: [{ producerId }, { producerId: null }],
       },
       select: {
         id: true,

@@ -4,7 +4,6 @@ import {
   IsDate,
   IsNotEmpty,
   IsOptional,
-  IsPositive,
   IsString,
   IsArray,
   IsInt,
@@ -29,11 +28,6 @@ class CreatePlantingNestedDto {
   @IsDate()
   @IsOptional()
   expectedHarvestDate?: Date;
-  @ApiPropertyOptional()
-  @IsNumber()
-  @IsPositive()
-  @IsOptional()
-  expectedYield?: number;
 }
 
 export class CreateHarvestDto {
@@ -67,15 +61,6 @@ export class CreateHarvestDto {
   @IsEnum(HarvestStatus)
   @IsOptional()
   status?: HarvestStatus;
-
-  @ApiPropertyOptional({
-    description: 'Previsão de rendimento total da safra (opcional)',
-    example: 10000,
-  })
-  @IsNumber()
-  @IsPositive()
-  @IsOptional()
-  expectedYield?: number;
 
   @ApiPropertyOptional({
     description: 'Lista de plantios a serem criados junto com a safra.',
