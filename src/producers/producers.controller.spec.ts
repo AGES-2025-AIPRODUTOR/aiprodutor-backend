@@ -26,15 +26,11 @@ describe('ProducersController', () => {
     create: jest.fn(),
     findAllOrByDocument: jest.fn(),
     findOne: jest.fn(),
+    getCropDistributionIndicator: jest.fn(),
   };
 
-  const mockPlantingsService = {
-    // Adicione aqui os métodos do PlantingsService que são usados no controller
-  };
-
-  const mockHarvestsService = {
-    // Adicione aqui os métodos do HarvestsService que são usados no controller
-  };
+  const mockPlantingsService = {};
+  const mockHarvestsService = {};
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -107,11 +103,26 @@ describe('ProducersController', () => {
 
   it('should return a producer by document', async () => {
     mockService.findAllOrByDocument.mockResolvedValue(mockProducer);
-    const dto = {
-      document: '12345678901',
-    };
+    const dto = { document: '12345678901' };
     const result = await controller.findAllOrByDocument(dto);
     expect(result).toEqual(mockProducer);
     expect(mockService.findAllOrByDocument).toHaveBeenCalledWith(dto.document);
+  });
+
+  // Teste do relatório de distribuição
+  it('should return crop distribution report', async () => {
+    const mockDistribution = [
+      { cultura: 'Milho', percentual: 44.0 },
+      { cultura: 'Batata', percentual: 23.0 },
+    ];
+
+    mockService.getCropDistributionIndicator.mockResolvedValue(
+      mockDistribution,
+    );
+
+    const result = await controller.getCropsDistributionReport(1);
+
+    expect(result).toEqual(mockDistribution);
+    expect(mockService.getCropDistributionIndicator).toHaveBeenCalledWith(1);
   });
 });
