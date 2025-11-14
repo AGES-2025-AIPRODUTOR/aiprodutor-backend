@@ -54,6 +54,13 @@ export class HarvestEntity {
   plantings: PlantingInHarvestEntity[];
 
   @ApiProperty({
+    description: 'Previsão de rendimento total da safra',
+    example: 10000,
+    required: false,
+  })
+  expectedYield?: number | null;
+
+  @ApiProperty({
     description: 'Data de criação',
     example: '2024-01-01',
   })
